@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Clean Search Results",
+  "version": "2.1.0",
+  "description": "Professional search results by removing AI Overview, low-quality sites (SparkNotes, LitCharts), and advertisements from Google Search.",
+  "permissions": ["scripting", "activeTab", "storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://google.com/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.ca/*",
+        "*://*.google.de/*",
+        "*://*.google.fr/*",
+        "*://*.google.it/*",
+        "*://*.google.es/*",
+        "*://*.google.com.au/*",
+        "*://*.google.co.in/*",
+        "*://*.google.co.jp/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "host_permissions": [
+    "*://*.google.com/*",
+    "*://google.com/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.ca/*",
+    "*://*.google.de/*",
+    "*://*.google.fr/*",
+    "*://*.google.it/*",
+    "*://*.google.es/*",
+    "*://*.google.com.au/*",
+    "*://*.google.co.in/*",
+    "*://*.google.co.jp/*"
+  ],
+  "action": {
+    "default_title": "Clean Search Results",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
