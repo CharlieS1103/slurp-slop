@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Clean Search Results",
+  "name": "SlopSlurp",
   "version": "2.1.0",
-  "description": "Professional search results by removing AI Overview, low-quality sites (SparkNotes, LitCharts), and advertisements from Google Search.",
+  "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.",
   "permissions": ["scripting", "activeTab", "storage"],
   "content_scripts": [
     {
@@ -38,7 +38,7 @@
     "*://*.google.co.jp/*"
   ],
   "action": {
-    "default_title": "Clean Search Results",
+    "default_title": "SlopSlurp",
     "default_popup": "popup.html"
   },
   "icons": {

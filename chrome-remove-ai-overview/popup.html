@@ -3,576 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Clean Search Results</title>
-    <style>
-        body {
-            width: 380px;
-            min-height: 320px;
-            margin: 0;
-            padding: 24px;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 14px;
-            line-height: 1.5;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            color: #2d3748;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 20px;
-        }
-
-        .icon {
-            width: 52px;
-            height: 52px;
-            margin: 0 auto 16px;
-            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3748;
-            letter-spacing: 0.5px;
-        }
-
-        .subtitle {
-            font-size: 13px;
-            color: #718096;
-            margin-top: 4px;
-            font-style: italic;
-        }
-
-        .filter-section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #4a5568;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-            border-left: 3px solid #3182ce;
-            padding-left: 8px;
-        }
-
-        .filter-control {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 14px 16px;
-            background: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-        }
-
-        .filter-control:hover {
-            border-color: #cbd5e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .filter-info {
-            flex: 1;
-        }
-
-        .filter-label {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .filter-description {
-            font-size: 12px;
-            color: #718096;
-            margin-top: 2px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 24px;
-            margin-left: 12px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e0;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        input:checked + .slider {
-            background-color: #3182ce;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        .academic-mode .slider {
-            background-color: #cbd5e0;
-        }
-
-        .academic-mode input:checked + .slider {
-            background-color: #805ad5;
-        }
-
-        .academic-mode {
-            border-left: 3px solid #805ad5;
-        }
-
-        .status {
-            padding: 14px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        .status.active {
-            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
-            color: #22543d;
-            border: 1px solid #9ae6b4;
-        }
-
-        .status.inactive {
-            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
-            color: #9c4221;
-            border: 1px solid #fdba74;
-        }
-
-        .status.disabled {
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-            color: #718096;
-            border: 1px solid #edf2f7;
-        }
-
-        .stats-section {
-            margin-bottom: 24px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .stat-item {
-            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
-            padding: 14px 12px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #81e6d9;
-        }
-
-        .stat-number {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2c7a7b;
-            display: block;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #718096;
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        .detailed-stats {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 12px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 13px;
-        }
-
-        .stat-row .label {
-            color: #718096;
-        }
-
-        .stat-row .value {
-            font-weight: 600;
-            color: #4a5568;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-
-        button {
-            padding: 12px 18px;
-            border: 1px solid #cbd5e0;
-            border-radius: 8px;
-            background: #ffffff;
-            color: #4a5568;
-            font-size: 14px;
-            font-family: "Times New Roman", Times, serif;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-
-        button:hover {
-            background: #f7fafc;
-            border-color: #a0aec0;
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            background: #edf2f7;
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .primary {
-            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%) !important;
-            color: white !important;
-            border-color: #3182ce !important;
-            font-weight: 600 !important;
-        }
-
-        .primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2c5282 0%, #2a4365 100%) !important;
-            border-color: #2c5282 !important;
-        }
-
-        .secondary {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
-            color: white !important;
-            border-color: #4a5568 !important;
-        }
-
-        .secondary:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
-            border-color: #2d3748 !important;
-        }
-
-        .academic-btn {
-            background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%) !important;
-            color: white !important;
-            border-color: #805ad5 !important;
-        }
-
-        .academic-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #6b46c1 0%, #553c9a 100%) !important;
-            border-color: #6b46c1 !important;
-        }
-
-        .academic-btn:disabled {
-            background: #a0aec0 !important;
-            border-color: #a0aec0 !important;
-        }
-
-        .footer {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 12px;
-            color: #718096;
-            text-align: center;
-        }
-
-        .footer a {
-            color: #3182ce;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .last-activity {
-            font-size: 11px;
-            color: #a0aec0;
-            text-align: center;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        .settings-section {
-            margin-bottom: 20px;
-        }
-
-        .advanced-panel {
-            margin-top: 16px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-        }
-
-        .advanced-panel .filter-control {
-            margin-bottom: 16px;
-            background: #ffffff;
-        }
-
-        input[type="range"] {
-            width: 80px;
-            height: 4px;
-            background: #e2e8f0;
-            outline: none;
-            border-radius: 2px;
-            cursor: pointer;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #3182ce;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: #3182ce;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .advanced-panel .controls {
-            display: flex;
-            gap: 8px;
-            margin-top: 0;
-        }
-
-        .advanced-panel .controls button {
-            flex: 1;
-            font-size: 13px;
-            padding: 8px 12px;
-        }
-
-        /* Tooltip Styles */
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 220px;
-            background-color: #1f2937;
-            color: #ffffff;
-            text-align: left;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 12px;
-            line-height: 1.4;
-            position: absolute;
-            z-index: 1000;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -110px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #1f2937 transparent transparent transparent;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .help-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            background: #718096;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 10px;
-            line-height: 16px;
-            margin-left: 6px;
-            cursor: help;
-            font-weight: bold;
-        }
-
-        .help-icon:hover {
-            background: #4a5568;
-        }
-
-        /* Onboarding Modal */
-        .onboarding-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .onboarding-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 400px;
-            margin: 20px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
-
-        .onboarding-content h2 {
-            margin: 0 0 16px 0;
-            color: #1a1a1a;
-            font-size: 18px;
-        }
-
-        .onboarding-content p {
-            margin: 0 0 20px 0;
-            color: #6b7280;
-            line-height: 1.5;
-        }
-
-        .onboarding-steps {
-            text-align: left;
-            margin: 20px 0;
-        }
-
-        .onboarding-step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .step-number {
-            background: #3182ce;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            text-align: center;
-            line-height: 24px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .step-text {
-            font-size: 13px;
-            color: #4a5568;
-            line-height: 1.4;
-        }
-
-        .onboarding-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .onboarding-buttons button {
-            flex: 1;
-        }
-
-        /* First-time user highlights */
-        .highlight-new {
-            position: relative;
-            overflow: visible;
-        }
-
-        .highlight-new::after {
-            content: "NEW";
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #38a169;
-            color: white;
-            font-size: 9px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 8px;
-            z-index: 10;
-        }
-
-
-    </style>
+    <title>SlopSlurp</title>
+    <link rel="stylesheet" href="css/popup.css">
 </head>
 <body>
     <div class="header">
-        <div class="icon">CS</div>
-        <h1>Clean Search</h1>
+        <div class="icon">SS</div>
+        <h1>SlopSlurp</h1>
         <div class="subtitle">Professional Search Results</div>
     </div>
     
@@ -581,14 +18,7 @@
         
         <div class="filter-control">
             <div class="filter-info">
-                <div class="filter-label">
-                    AI Overview
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Removes Google's AI-generated summary boxes that appear at the top of search results. These often contain experimental or inaccurate information.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">AI Overview</div>
                 <div class="filter-description">Remove Google AI generated summaries</div>
             </div>
             <label class="toggle-switch">
@@ -599,14 +29,7 @@
         
         <div class="filter-control">
             <div class="filter-info">
-                <div class="filter-label">
-                    Low-Quality Sites
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Removes results from homework help sites like SparkNotes, LitCharts, and CliffsNotes. Helps promote original research and legitimate sources.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">Low-Quality Sites</div>
                 <div class="filter-description">SparkNotes, LitCharts, content farms</div>
             </div>
             <label class="toggle-switch">
@@ -617,14 +40,7 @@
         
         <div class="filter-control">
             <div class="filter-info">
-                <div class="filter-label">
-                    Advertisements
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Removes sponsored search results, shopping ads, and promotional content to show only organic search results.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">Advertisements</div>
                 <div class="filter-description">Sponsored results and shopping ads</div>
             </div>
             <label class="toggle-switch">
@@ -635,14 +51,7 @@
         
         <div class="filter-control">
             <div class="filter-info">
-                <div class="filter-label">
-                    Show Removal Placeholders
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Shows placeholder boxes where content has been removed. Click placeholders to temporarily restore content, right-click for options.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">Show Removal Placeholders</div>
                 <div class="filter-description">Display placeholders for removed content</div>
             </div>
             <label class="toggle-switch">
@@ -651,16 +60,9 @@
             </label>
         </div>
         
-        <div class="filter-control academic-mode highlight-new">
+        <div class="filter-control academic-mode">
             <div class="filter-info">
-                <div class="filter-label">
-                    Academic Mode
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Automatically enhances search queries with academic terms and prioritizes educational sites (.edu), research papers, and scholarly sources.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">Academic Mode</div>
                 <div class="filter-description">Enhance searches for scholarly research</div>
             </div>
             <label class="toggle-switch">
@@ -671,14 +73,18 @@
         
         <div class="filter-control">
             <div class="filter-info">
-                <div class="filter-label">
-                    Master Switch
-                    <span class="tooltip help-icon">?
-                        <span class="tooltiptext">
-                            Completely enables or disables the extension. When off, no content filtering will occur on any Google search pages.
-                        </span>
-                    </span>
-                </div>
+                <div class="filter-label">Minimalist Mode</div>
+                <div class="filter-description">Lightweight AI Overview removal only</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="minimalistToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="filter-control">
+            <div class="filter-info">
+                <div class="filter-label">Master Switch</div>
                 <div class="filter-description">Enable/disable entire extension</div>
             </div>
             <label class="toggle-switch">
@@ -693,15 +99,15 @@
     </div>
     
     <div class="stats-section">
-        <div class="section-title">Performance</div>
+        <div class="section-title">Current Page Performance</div>
         <div class="stats-grid">
             <div class="stat-item">
                 <span id="totalRemovedCount" class="stat-number">0</span>
                 <div class="stat-label">Total Removed</div>
             </div>
             <div class="stat-item">
-                <span id="pagesProcessedCount" class="stat-number">0</span>
-                <div class="stat-label">Pages Cleaned</div>
+                <span id="pagesProcessedCount" class="stat-number">1</span>
+                <div class="stat-label">Current Page</div>
             </div>
         </div>
         
@@ -718,178 +124,49 @@
                 <span class="label">Advertisements:</span>
                 <span class="value" id="adsRemovedCount">0</span>
             </div>
-            <div class="stat-row">
-                <span class="label">Sessions:</span>
-                <span class="value" id="sessionCount">0</span>
-            </div>
         </div>
         
         <div id="lastActivity" class="last-activity">Last activity: Never</div>
     </div>
     
     <div class="settings-section">
-        <div class="section-title">
-            Quick Actions
-            <span class="tooltip help-icon">?
-                <span class="tooltiptext">
-                    These buttons perform immediate actions on the current Google search page or update the extension's data.
-                </span>
-            </span>
-        </div>
+        <div class="section-title">Quick Actions</div>
         <div class="controls">
-            <span class="tooltip" style="display: block;">
-                <button id="scanNow" class="primary">Scan Current Page</button>
-                <span class="tooltiptext">
-                    Immediately scans the current page for unwanted content and removes it. Use this if content wasn't automatically removed.
-                </span>
-            </span>
-            <span class="tooltip" style="display: block;">
-                <button id="enhanceSearch" class="academic-btn">Enhance for Academic Research</button>
-                <span class="tooltiptext">
-                    Adds academic search terms to your current query and shows an indicator. Only works on Google search pages.
-                </span>
-            </span>
-            <span class="tooltip" style="display: block;">
-                <button id="refreshStats" class="secondary">Refresh Statistics</button>
-                <span class="tooltiptext">
-                    Updates the statistics display with the latest data from your browser storage.
-                </span>
-            </span>
+            <button id="scanNow" class="primary">Scan Current Page</button>
         </div>
     </div>
     
     <div class="settings-section">
-        <div class="section-title">Scanning Parameters</div>
-        <div class="controls">
-            <span class="tooltip" style="display: block;">
-                <button id="advancedSettings">Advanced Scanning Settings</button>
-                <span class="tooltiptext">
-                    Configure how the extension scans for content. These are technical settings for power users who want to fine-tune performance.
-                </span>
-            </span>
-        </div>
-        
-        <div id="advancedPanel" class="advanced-panel" style="display: none;">
-            <div class="filter-control">
-                <div class="filter-info">
-                    <div class="filter-label">
-                        Max Scan Depth: <span id="maxDepthValue">12</span>
-                        <span class="tooltip help-icon">?
-                            <span class="tooltiptext">
-                                How many levels deep the extension searches in the webpage structure. Higher values are more thorough but slower. Recommended: 8-15.
-                            </span>
-                        </span>
-                    </div>
-                    <div class="filter-description">How deep to search in DOM tree</div>
+        <div class="section-title">Site Whitelist</div>
+        <div class="whitelist-container">
+            <div class="whitelist-info">
+                <div style="font-size: 12px; color: #718096; margin-bottom: 8px;">
+                    Sites that will never be filtered
                 </div>
-                <input type="range" id="maxDepthSlider" min="5" max="20" value="12" style="margin-left: 12px;">
-            </div>
-            
-            <div class="filter-control">
-                <div class="filter-info">
-                    <div class="filter-label">
-                        Max Text Length: <span id="maxTextLengthValue">500</span>
-                        <span class="tooltip help-icon">?
-                            <span class="tooltiptext">
-                                Maximum characters to analyze when detecting AI content. Lower values are faster but may miss some content. Higher values are more thorough.
-                            </span>
-                        </span>
-                    </div>
-                    <div class="filter-description">Maximum text size to analyze</div>
+                <div id="whitelistDisplay" class="whitelist-display">
+                    No whitelisted sites
                 </div>
-                <input type="range" id="maxTextLengthSlider" min="100" max="1000" value="500" step="50" style="margin-left: 12px;">
             </div>
-            
-            <div class="filter-control">
-                <div class="filter-info">
-                    <div class="filter-label">
-                        Scan Delay: <span id="scanDelayValue">150</span>ms
-                        <span class="tooltip help-icon">?
-                            <span class="tooltiptext">
-                                Time to wait between scans when content changes. Lower values are more responsive but use more CPU. Higher values save battery.
-                            </span>
-                        </span>
-                    </div>
-                    <div class="filter-description">Delay between scans</div>
-                </div>
-                <input type="range" id="scanDelaySlider" min="50" max="500" value="150" step="25" style="margin-left: 12px;">
-            </div>
-            
-            <div class="filter-control">
-                <div class="filter-info">
-                    <div class="filter-label">
-                        Animation Duration: <span id="animationDurationValue">200</span>ms
-                        <span class="tooltip help-icon">?
-                            <span class="tooltiptext">
-                                How long the fade-out animation takes when removing content. Shorter is snappier, longer is smoother.
-                            </span>
-                        </span>
-                    </div>
-                    <div class="filter-description">Element removal animation speed</div>
-                </div>
-                <input type="range" id="animationDurationSlider" min="100" max="500" value="200" step="50" style="margin-left: 12px;">
-            </div>
-            
-            <div class="filter-control">
-                <div class="filter-info">
-                    <div class="filter-label">
-                        Strict AI Matching
-                        <span class="tooltip help-icon">?
-                            <span class="tooltiptext">
-                                When enabled, requires exact phrases like "AI Overview" to remove content. When disabled, uses pattern matching which may be more aggressive.
-                            </span>
-                        </span>
-                    </div>
-                    <div class="filter-description">Require exact AI indicators</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="strictMatchingToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            
-            <div class="controls" style="margin-top: 16px;">
-                <button id="resetScanSettings">Reset to Defaults</button>
-                <button id="applyScanSettings" class="primary">Apply Settings</button>
+            <div class="whitelist-controls">
+                <button id="addToWhitelist" class="whitelist-btn">+ Add Site</button>
+                <button id="clearWhitelist" class="whitelist-btn secondary" style="margin-left: 8px;">Clear All</button>
             </div>
         </div>
-    </div>
-    
-    <div class="settings-section">
-        <div class="section-title">
-            Advanced
-            <span class="tooltip help-icon">?
-                <span class="tooltiptext">
-                    Data management options for power users.
-                </span>
-            </span>
-        </div>
-        <div class="controls">
-            <span class="tooltip" style="display: block;">
-                <button id="manageWhitelist">Manage Site Whitelist</button>
-                <span class="tooltiptext">
-                    Add websites that should never be removed, even if they match filter criteria.
-                </span>
-            </span>
-            <span class="tooltip" style="display: block;">
-                <button id="resetStats">Reset All Data</button>
-                <span class="tooltiptext">
-                    Clear all statistics and reset settings to defaults. This cannot be undone.
-                </span>
-            </span>
+        <div class="controls" style="margin-top: 16px;">
+            <button id="resetStats">Reset Statistics</button>
         </div>
     </div>
     
     <div class="footer">
-        <div>Clean Search v2.1 • Professional Interface</div>
+        <div>SlopSlurp v2.1 • Professional Interface</div>
         <div><a href="#" id="reportIssue">Report Issue</a> • <a href="#" id="viewSource">Source Code</a> • <a href="#" id="showHelp">Help</a></div>
     </div>
 
     <!-- Onboarding Modal -->
     <div id="onboardingModal" class="onboarding-modal">
         <div class="onboarding-content">
-            <h2>Welcome to Clean Search! 🎉</h2>
-            <p>Clean Search removes clutter from Google search results to help you find better, more reliable information.</p>
+            <h2>Welcome to SlopSlurp! 🎉</h2>
+            <p>SlopSlurp removes clutter from Google search results to help you find better, more reliable information.</p>
             
             <div class="onboarding-steps">
                 <div class="onboarding-step">
@@ -902,21 +179,21 @@
                 </div>
                 <div class="onboarding-step">
                     <span class="step-number">3</span>
-                    <span class="step-text">Hover over the ? icons throughout this popup for helpful explanations of each feature.</span>
+                    <span class="step-text">Use Minimalist Mode for lightweight AI Overview removal only.</span>
                 </div>
                 <div class="onboarding-step">
                     <span class="step-number">4</span>
-                    <span class="step-text">Visit any Google search page to see Clean Search in action!</span>
+                    <span class="step-text">Visit any Google search page to see SlopSlurp in action!</span>
                 </div>
             </div>
             
             <div class="onboarding-buttons">
                 <button id="skipOnboarding">Skip Tour</button>
-                <button id="startUsing" class="primary">Start Using Clean Search</button>
+                <button id="startUsing" class="primary">Start Using SlopSlurp</button>
             </div>
         </div>
     </div>
 
-    <script src="popup.js"></script>
+    <script src="js/popup.js"></script>
 </body>
 </html>

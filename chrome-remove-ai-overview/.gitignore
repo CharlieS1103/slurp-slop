@@ -1,0 +1,33 @@
+# Build and distribution files
+dist/
+*.zip
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Development files
+.DS_Store
+.vscode/
+*.log
+*.tmp
+
+# Backup files
+*-old.*
+*-backup.*
+
+# OS generated files
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+
+# Chrome extension development
+*.pem
+*.crx

@@ -1,112 +1,220 @@
-# Remove Google AI Overview - Chrome Extension
+# SlopSlurp Chrome Extension# Remove Google AI Overview - Chrome Extension
 
-A lightweight Chrome extension that automatically removes AI Overview sections from Google Search results, allowing you to see only traditional search results.
 
-## Features
 
-- ✅ **Automatic Detection**: Intelligently identifies and removes AI Overview content
-- ✅ **Real-time Monitoring**: Uses MutationObserver to catch dynamically loaded content  
-- ✅ **Multiple Triggers**: Detects AI content by text patterns, CSS selectors, and HTML attributes
-- ✅ **Global Support**: Works on all major Google domains (google.com, google.co.uk, etc.)
-- ✅ **Smooth Animations**: Fade-out effect when removing AI content
-- ✅ **Debug Tools**: Built-in debugging helpers for troubleshooting
-- ✅ **User Interface**: Popup interface for manual scanning and status checking
+Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.A lightweight Chrome extension that automatically removes AI Overview sections from Google Search results, allowing you to see only traditional search results.
+
+
+
+## Features## Features
+
+
+
+- 🤖 **AI Overview Removal**: Removes Google's AI-generated summaries- ✅ **Automatic Detection**: Intelligently identifies and removes AI Overview content
+
+- 📚 **Low-Quality Site Filtering**: Blocks SparkNotes, LitCharts, and other homework sites- ✅ **Real-time Monitoring**: Uses MutationObserver to catch dynamically loaded content  
+
+- 📢 **Ad Blocking**: Removes sponsored results and shopping ads- ✅ **Multiple Triggers**: Detects AI content by text patterns, CSS selectors, and HTML attributes
+
+- 🎓 **Academic Mode**: Enhances searches for scholarly research- ✅ **Global Support**: Works on all major Google domains (google.com, google.co.uk, etc.)
+
+- ⚡ **Minimalist Mode**: Lightweight AI Overview removal only- ✅ **Smooth Animations**: Fade-out effect when removing AI content
+
+- 🛡️ **Smart Auto-Disable**: Automatically disables when searching for filtered content- ✅ **Debug Tools**: Built-in debugging helpers for troubleshooting
+
+- 📊 **Performance Stats**: Track what's been filtered per page- ✅ **User Interface**: Popup interface for manual scanning and status checking
+
+- 🎨 **Site Whitelist**: Protect specific sites from filtering
 
 ## Installation (Developer Mode)
 
+## Development
+
 1. Open Chrome (or any Chromium-based browser like Edge)
-2. Navigate to `chrome://extensions` (or `edge://extensions` for Edge)
+
+### Prerequisites2. Navigate to `chrome://extensions` (or `edge://extensions` for Edge)
+
 3. Enable **"Developer mode"** (toggle in top-right corner)
-4. Click **"Load unpacked"** and select this folder: `chrome-remove-ai-overview`
-5. The extension icon should appear in your browser toolbar
+
+- Node.js 18+ and npm 9+4. Click **"Load unpacked"** and select this folder: `chrome-remove-ai-overview`
+
+- Chrome browser for testing5. The extension icon should appear in your browser toolbar
+
 6. Visit Google Search - AI Overview sections will be automatically removed!
+
+### Setup
 
 ## How It Works
 
-The extension uses multiple detection methods:
+```bash
+
+# Install dependenciesThe extension uses multiple detection methods:
+
+npm install
 
 ### 1. **CSS Selectors**
-Targets specific HTML elements commonly used for AI Overview:
-- `[jscontroller="EYwa3d"]` - Main AI Overview controller
+
+# Start development mode with file watchingTargets specific HTML elements commonly used for AI Overview:
+
+npm run dev- `[jscontroller="EYwa3d"]` - Main AI Overview controller
+
 - `[data-async-type="folsrch"]` - AI content containers
-- `[jsname="dEwkXc"]` - AI Overview wrapper
+
+# Build for production- `[jsname="dEwkXc"]` - AI Overview wrapper
+
+npm run build
 
 ### 2. **Text Pattern Matching**
-Scans for these phrases (case-insensitive):
-- "AI Overview"
-- "Overview from Google" 
+
+# Lint and format codeScans for these phrases (case-insensitive):
+
+npm run lint- "AI Overview"
+
+npm run format- "Overview from Google" 
+
 - "Google AI"
-- "AI Response"
-- "Dive deeper in AI mode"
 
-### 3. **HTML Attributes**
-Checks for AI-specific attributes and values in the page HTML
+# Package for distribution- "AI Response"
 
-## Usage
+npm run package- "Dive deeper in AI mode"
 
-### Automatic Operation
-- The extension runs automatically on all Google search pages
-- No user interaction required - AI Overview content is removed as it loads
-
-### Manual Controls
-Click the extension icon in your toolbar to access:
-- **Scan Current Page**: Force a manual scan for AI content
-- **Show Debug Info**: View detection statistics in console
-- **Report Issue**: Link to report problems (when configured)
-
-### Debug Console
-Open browser DevTools and use these commands:
-```javascript
-// Manual scan
-window.debugAiRemover.scan()
-
-// Disconnect monitoring  
-window.debugAiRemover.disconnect()
-
-// Reconnect monitoring
-window.debugAiRemover.reconnect()
 ```
 
-## Supported Google Domains
+### 3. **HTML Attributes**
 
-- google.com
+### Available CommandsChecks for AI-specific attributes and values in the page HTML
+
+
+
+| Command | Description |## Usage
+
+|---------|-------------|
+
+| `npm run build` | Production build with minification |### Automatic Operation
+
+| `npm run build:dev` | Development build (no minification) |- The extension runs automatically on all Google search pages
+
+| `npm run dev` | Development mode with file watching |- No user interaction required - AI Overview content is removed as it loads
+
+| `npm run lint` | Check code for issues |
+
+| `npm run lint:fix` | Auto-fix linting issues |### Manual Controls
+
+| `npm run format` | Format code with Prettier |Click the extension icon in your toolbar to access:
+
+| `npm run package` | Create distribution ZIP file |- **Scan Current Page**: Force a manual scan for AI content
+
+| `npm run validate` | Run full validation (lint + build) |- **Show Debug Info**: View detection statistics in console
+
+| `npm run size` | Check bundle sizes |- **Report Issue**: Link to report problems (when configured)
+
+| `npm run clean` | Clean build directory |
+
+### Debug Console
+
+### Project StructureOpen browser DevTools and use these commands:
+
+```javascript
+
+```// Manual scan
+
+slopslurp/window.debugAiRemover.scan()
+
+├── manifest.json          # Extension manifest
+
+├── popup.html             # Popup interface// Disconnect monitoring  
+
+├── content-script.js      # Main filtering logicwindow.debugAiRemover.disconnect()
+
+├── css/
+
+│   └── popup.css          # Popup styles// Reconnect monitoring
+
+├── js/window.debugAiRemover.reconnect()
+
+│   ├── popup.js           # Popup functionality```
+
+│   └── utils.js           # Shared utilities
+
+├── icons/                 # Extension icons## Supported Google Domains
+
+└── dist/                  # Built extension (generated)
+
+```- google.com
+
 - google.co.uk  
-- google.ca
+
+### Development Workflow- google.ca
+
 - google.de
-- google.fr
-- google.it
-- google.es
-- google.com.au
-- google.co.in
+
+1. **Make Changes**: Edit source files in `js/`, `css/`, or root directory- google.fr
+
+2. **Auto-Build**: Files are automatically rebuilt when changed (if using `npm run dev`)- google.it
+
+3. **Test**: Load the `dist/` folder as an unpacked extension in Chrome- google.es
+
+4. **Validate**: Run `npm run validate` before committing- google.com.au
+
+5. **Package**: Use `npm run package` to create distribution ZIP- google.co.in
+
 - google.co.jp
+
+### Loading in Chrome
 
 ## Troubleshooting
 
-### AI Overview Still Appears?
-1. Click the extension icon and try **"Scan Current Page"**
-2. Open DevTools Console and run `window.debugAiRemover.scan()`
+1. Open `chrome://extensions/`
+
+2. Enable "Developer mode"### AI Overview Still Appears?
+
+3. Click "Load unpacked"1. Click the extension icon and try **"Scan Current Page"**
+
+4. Select the `dist/` folder2. Open DevTools Console and run `window.debugAiRemover.scan()`
+
 3. Refresh the page
-4. Check if the extension is enabled in `chrome://extensions`
 
-### Extension Not Working?
-1. Verify you're on a Google search results page (not just google.com homepage)
-2. Check that the extension is enabled and has permissions
+### Build Output4. Check if the extension is enabled in `chrome://extensions`
+
+
+
+- **Development**: `dist/` folder with unminified files### Extension Not Working?
+
+- **Production**: `dist/` folder with minified files1. Verify you're on a Google search results page (not just google.com homepage)
+
+- **Package**: `slopslurp-v2.1.0.zip` ready for Chrome Web Store2. Check that the extension is enabled and has permissions
+
 3. Look for error messages in DevTools Console
-4. Try disabling and re-enabling the extension
 
-### Performance Issues?
+## Installation4. Try disabling and re-enabling the extension
+
+
+
+Download the latest release from the [Chrome Web Store](https://chrome.google.com/webstore) or load the extension manually from the releases page.### Performance Issues?
+
 The extension is designed to be lightweight:
-- Only runs on Google domains
-- Uses efficient DOM scanning techniques
-- Minimal memory footprint
-- No background processes
 
-## Technical Details
+## Contributing- Only runs on Google domains
+
+- Uses efficient DOM scanning techniques
+
+1. Fork the repository- Minimal memory footprint
+
+2. Create a feature branch- No background processes
+
+3. Make your changes
+
+4. Run `npm run validate`## Technical Details
+
+5. Submit a pull request
 
 - **Manifest Version**: 3 (latest Chrome extension format)
-- **Permissions**: `scripting`, `activeTab` (minimal permissions required)
+
+## License- **Permissions**: `scripting`, `activeTab` (minimal permissions required)
+
 - **Content Script Timing**: Runs at `document_start` for early detection
-- **Browser Support**: Chrome, Edge, and other Chromium-based browsers
+
+MIT License - see LICENSE file for details.- **Browser Support**: Chrome, Edge, and other Chromium-based browsers
 
 ## Privacy & Security
 
