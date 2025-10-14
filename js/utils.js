@@ -1,4 +1,5 @@
 // SlopSlurp Extension Utilities
+/* eslint-disable no-unused-vars */
 
 // Settings management
 const Settings = {
@@ -77,10 +78,10 @@ const UI = {
   showNotification(element, message, type = 'active', duration = 2000) {
     const originalClass = element.className;
     const originalText = element.textContent;
-    
+
     element.className = `status ${type}`;
     element.textContent = message;
-    
+
     setTimeout(() => {
       element.className = originalClass;
       element.textContent = originalText;
@@ -91,23 +92,23 @@ const UI = {
     if (!timestamp) {
       return 'Never';
     }
-    
+
     const now = new Date();
     const time = new Date(timestamp);
     const diffMinutes = Math.floor((now - time) / 60000);
-    
+
     if (diffMinutes < 1) {
       return 'Just now';
     }
     if (diffMinutes < 60) {
       return `${diffMinutes} minutes ago`;
     }
-    
+
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) {
       return `${diffHours} hours ago`;
     }
-    
+
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays} days ago`;
   }
@@ -137,15 +138,11 @@ const ContentScript = {
   async isGoogleSearchTab() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tabs[0]?.url;
-    return url && (
-      url.includes('google.com/search') ||
-      url.includes('google.co.uk/search') ||
-      /google\.[a-z]{2,3}\/search/.test(url)
+    return (
+      url &&
+      (url.includes('google.com/search') ||
+        url.includes('google.co.uk/search') ||
+        /google\.[a-z]{2,3}\/search/.test(url))
     );
   }
 };
-
-// Export for use in popup
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { Settings, Stats, UI, ContentScript };
-}

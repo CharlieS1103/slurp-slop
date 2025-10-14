@@ -1,199 +1,233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SlopSlurp</title>
-    <link rel="stylesheet" href="css/popup.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/popup.css" />
+  </head>
+  <body>
     <div class="header">
-        <div class="icon">SS</div>
-        <h1>SlopSlurp</h1>
-        <div class="subtitle">Professional Search Results</div>
+      <div class="icon">SS</div>
+      <h1>SlopSlurp</h1>
+      <div class="subtitle">Professional Search Results</div>
     </div>
-    
+
     <div class="filter-section">
-        <div class="section-title">Content Filters</div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">AI Overview</div>
-                <div class="filter-description">Remove Google AI generated summaries</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="aiToggle" checked>
-                <span class="slider"></span>
-            </label>
+      <div class="section-title">Content Filters</div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">AI Overview</div>
+          <div class="filter-description">
+            Remove Google AI generated summaries
+          </div>
         </div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">Low-Quality Sites</div>
-                <div class="filter-description">SparkNotes, LitCharts, content farms</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="lowQualityToggle" checked>
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="aiToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Low-Quality Sites</div>
+          <div class="filter-description">
+            SparkNotes, LitCharts, content farms
+          </div>
         </div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">Advertisements</div>
-                <div class="filter-description">Sponsored results and shopping ads</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="adsToggle" checked>
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="lowQualityToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Advertisements</div>
+          <div class="filter-description">
+            Sponsored results and shopping ads
+          </div>
         </div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">Show Removal Placeholders</div>
-                <div class="filter-description">Display placeholders for removed content</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="placeholdersToggle">
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="adsToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Show Removal Placeholders</div>
+          <div class="filter-description">
+            Display placeholders for removed content
+          </div>
         </div>
-        
-        <div class="filter-control academic-mode">
-            <div class="filter-info">
-                <div class="filter-label">Academic Mode</div>
-                <div class="filter-description">Enhance searches for scholarly research</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="academicToggle">
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="placeholdersToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control academic-mode">
+        <div class="filter-info">
+          <div class="filter-label">Academic Mode</div>
+          <div class="filter-description">
+            Enhance searches for scholarly research
+          </div>
         </div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">Minimalist Mode</div>
-                <div class="filter-description">Lightweight AI Overview removal only</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="minimalistToggle">
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="academicToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Minimalist Mode</div>
+          <div class="filter-description">
+            Lightweight AI Overview removal only
+          </div>
         </div>
-        
-        <div class="filter-control">
-            <div class="filter-info">
-                <div class="filter-label">Master Switch</div>
-                <div class="filter-description">Enable/disable entire extension</div>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="extensionToggle" checked>
-                <span class="slider"></span>
-            </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="minimalistToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Master Switch</div>
+          <div class="filter-description">Enable/disable entire extension</div>
         </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="extensionToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
-    
-    <div id="status" class="status active">
-        Extension Active
-    </div>
-    
+
+    <div id="status" class="status active">Extension Active</div>
+
     <div class="stats-section">
-        <div class="section-title">Current Page Performance</div>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span id="totalRemovedCount" class="stat-number">0</span>
-                <div class="stat-label">Total Removed</div>
-            </div>
-            <div class="stat-item">
-                <span id="pagesProcessedCount" class="stat-number">1</span>
-                <div class="stat-label">Current Page</div>
-            </div>
+      <div class="section-title">Current Page Performance</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span id="totalRemovedCount" class="stat-number">0</span>
+          <div class="stat-label">Total Removed</div>
         </div>
-        
-        <div class="detailed-stats">
-            <div class="stat-row">
-                <span class="label">AI Overview:</span>
-                <span class="value" id="aiRemovedCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="label">Low-Quality Sites:</span>
-                <span class="value" id="lowQualityRemovedCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="label">Advertisements:</span>
-                <span class="value" id="adsRemovedCount">0</span>
-            </div>
+        <div class="stat-item">
+          <span id="pagesProcessedCount" class="stat-number">1</span>
+          <div class="stat-label">Current Page</div>
         </div>
-        
-        <div id="lastActivity" class="last-activity">Last activity: Never</div>
+      </div>
+
+      <div class="detailed-stats">
+        <div class="stat-row">
+          <span class="label">AI Overview:</span>
+          <span class="value" id="aiRemovedCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Low-Quality Sites:</span>
+          <span class="value" id="lowQualityRemovedCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Advertisements:</span>
+          <span class="value" id="adsRemovedCount">0</span>
+        </div>
+      </div>
+
+      <div id="lastActivity" class="last-activity">Last activity: Never</div>
     </div>
-    
+
     <div class="settings-section">
-        <div class="section-title">Quick Actions</div>
-        <div class="controls">
-            <button id="scanNow" class="primary">Scan Current Page</button>
-        </div>
+      <div class="section-title">Quick Actions</div>
+      <div class="controls">
+        <button id="scanNow" class="primary">Scan Current Page</button>
+      </div>
     </div>
-    
+
     <div class="settings-section">
-        <div class="section-title">Site Whitelist</div>
-        <div class="whitelist-container">
-            <div class="whitelist-info">
-                <div style="font-size: 12px; color: #718096; margin-bottom: 8px;">
-                    Sites that will never be filtered
-                </div>
-                <div id="whitelistDisplay" class="whitelist-display">
-                    No whitelisted sites
-                </div>
-            </div>
-            <div class="whitelist-controls">
-                <button id="addToWhitelist" class="whitelist-btn">+ Add Site</button>
-                <button id="clearWhitelist" class="whitelist-btn secondary" style="margin-left: 8px;">Clear All</button>
-            </div>
+      <div class="section-title">Site Whitelist</div>
+      <div class="whitelist-container">
+        <div class="whitelist-info">
+          <div style="font-size: 12px; color: #718096; margin-bottom: 8px">
+            Sites that will never be filtered
+          </div>
+          <div id="whitelistDisplay" class="whitelist-display">
+            No whitelisted sites
+          </div>
         </div>
-        <div class="controls" style="margin-top: 16px;">
-            <button id="resetStats">Reset Statistics</button>
+        <div class="whitelist-controls">
+          <button id="addToWhitelist" class="whitelist-btn">+ Add Site</button>
+          <button
+            id="clearWhitelist"
+            class="whitelist-btn secondary"
+            style="margin-left: 8px"
+          >
+            Clear All
+          </button>
         </div>
+      </div>
+      <div class="controls" style="margin-top: 16px">
+        <button id="resetStats">Reset Statistics</button>
+      </div>
     </div>
-    
+
     <div class="footer">
-        <div>SlopSlurp v2.1 • Professional Interface</div>
-        <div><a href="#" id="reportIssue">Report Issue</a> • <a href="#" id="viewSource">Source Code</a> • <a href="#" id="showHelp">Help</a></div>
+      <div>SlopSlurp v2.1 • Professional Interface</div>
+      <div>
+        <a href="#" id="reportIssue">Report Issue</a> •
+        <a href="#" id="viewSource">Source Code</a> •
+        <a href="#" id="showHelp">Help</a>
+      </div>
     </div>
 
     <!-- Onboarding Modal -->
     <div id="onboardingModal" class="onboarding-modal">
-        <div class="onboarding-content">
-            <h2>Welcome to SlopSlurp! 🎉</h2>
-            <p>SlopSlurp removes clutter from Google search results to help you find better, more reliable information.</p>
-            
-            <div class="onboarding-steps">
-                <div class="onboarding-step">
-                    <span class="step-number">1</span>
-                    <span class="step-text">The extension automatically removes AI Overview boxes and low-quality sites from your search results.</span>
-                </div>
-                <div class="onboarding-step">
-                    <span class="step-number">2</span>
-                    <span class="step-text">Try Academic Mode for scholarly research - it enhances your searches with academic terms.</span>
-                </div>
-                <div class="onboarding-step">
-                    <span class="step-number">3</span>
-                    <span class="step-text">Use Minimalist Mode for lightweight AI Overview removal only.</span>
-                </div>
-                <div class="onboarding-step">
-                    <span class="step-number">4</span>
-                    <span class="step-text">Visit any Google search page to see SlopSlurp in action!</span>
-                </div>
-            </div>
-            
-            <div class="onboarding-buttons">
-                <button id="skipOnboarding">Skip Tour</button>
-                <button id="startUsing" class="primary">Start Using SlopSlurp</button>
-            </div>
+      <div class="onboarding-content">
+        <h2>Welcome to SlopSlurp! 🎉</h2>
+        <p>
+          SlopSlurp removes clutter from Google search results to help you find
+          better, more reliable information.
+        </p>
+
+        <div class="onboarding-steps">
+          <div class="onboarding-step">
+            <span class="step-number">1</span>
+            <span class="step-text"
+              >The extension automatically removes AI Overview boxes and
+              low-quality sites from your search results.</span
+            >
+          </div>
+          <div class="onboarding-step">
+            <span class="step-number">2</span>
+            <span class="step-text"
+              >Try Academic Mode for scholarly research - it enhances your
+              searches with academic terms.</span
+            >
+          </div>
+          <div class="onboarding-step">
+            <span class="step-number">3</span>
+            <span class="step-text"
+              >Use Minimalist Mode for lightweight AI Overview removal
+              only.</span
+            >
+          </div>
+          <div class="onboarding-step">
+            <span class="step-number">4</span>
+            <span class="step-text"
+              >Visit any Google search page to see SlopSlurp in action!</span
+            >
+          </div>
         </div>
+
+        <div class="onboarding-buttons">
+          <button id="skipOnboarding">Skip Tour</button>
+          <button id="startUsing" class="primary">Start Using SlopSlurp</button>
+        </div>
+      </div>
     </div>
 
     <script src="js/popup.js"></script>
-</body>
+  </body>
 </html>

@@ -6,12 +6,12 @@
   'use strict';
 
   // ============ CORE VARIABLES ============
-  
+
   let extensionEnabled = true;
   let lastQuery = '';
   let minimalistObserver = null;
   let comprehensiveObserver = null;
-  
+
   let currentStats = {
     aiElementsRemoved: 0,
     lowQualitySitesRemoved: 0,
@@ -33,12 +33,13 @@
   };
 
   // ============ UTILITY FUNCTIONS ============
-  
+
   // Simple logger
   const Logger = {
     info: (msg, data) => console.log(`[SlopSlurp] INFO: ${msg}`, data || ''),
     warn: (msg, data) => console.warn(`[SlopSlurp] WARN: ${msg}`, data || ''),
-    error: (msg, data) => console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
+    error: (msg, data) =>
+      console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
     debug: (msg, data) => console.log(`[SlopSlurp] DEBUG: ${msg}`, data || '')
   };
 
@@ -49,7 +50,7 @@
     if (!query) {
       return false;
     }
-    
+
     const lowerQuery = query.toLowerCase();
     const disableTerms = [
       'ai overview',
@@ -60,17 +61,19 @@
       'remove ai results',
       'block ai overview'
     ];
-    
+
     return disableTerms.some(term => lowerQuery.includes(term));
   }
 
   // Show banner when auto-disabled
   function showAutoDisableBanner() {
-    const existingBanner = document.getElementById('clean-search-auto-disable-banner');
+    const existingBanner = document.getElementById(
+      'clean-search-auto-disable-banner'
+    );
     if (existingBanner) {
       existingBanner.remove();
     }
-    
+
     const banner = document.createElement('div');
     banner.id = 'clean-search-auto-disable-banner';
     banner.style.cssText = `
@@ -90,14 +93,14 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       transition: all 0.3s ease;
     `;
-    
+
     banner.innerHTML = `
       🛡️ SlopSlurp temporarily disabled - Click to re-enable
       <small style="display: block; margin-top: 4px; opacity: 0.9; font-size: 12px;">
         Auto-disabled because your search might be looking for filtered content
       </small>
     `;
-    
+
     banner.addEventListener('click', () => {
       extensionEnabled = true;
       banner.remove();
@@ -110,7 +113,7 @@
         }
       }, 100);
     });
-    
+
     document.body.appendChild(banner);
   }
 
@@ -132,14 +135,14 @@
       transform: translateX(100%);
       transition: transform 0.3s ease;
     `;
-    
+
     notification.textContent = message;
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       notification.style.transform = 'translateX(0)';
     }, 100);
-    
+
     setTimeout(() => {
       notification.style.transform = 'translateX(100%)';
       setTimeout(() => {
@@ -154,7 +157,7 @@
   function resetStats() {
     const urlParams = new URLSearchParams(window.location.search);
     const currentQuery = urlParams.get('q');
-    
+
     if (currentQuery !== lastQuery) {
       lastQuery = currentQuery;
       currentStats = {
@@ -166,7 +169,7 @@
         lastScanTime: Date.now(),
         placeholdersCreated: 0
       };
-      
+
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.set({ cleanSearchStats: currentStats });
       }
@@ -178,17 +181,17 @@
     currentStats[type] += count;
     currentStats.totalElementsRemoved += count;
     currentStats.lastScanTime = Date.now();
-    
+
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.set({ cleanSearchStats: currentStats });
     }
   }
 
   // ============ MINIMALIST MODE IMPLEMENTATION ============
-  
+
   function initMinimalistMode() {
     Logger.info('Starting minimalist mode');
-    
+
     // Disconnect any existing observers
     if (minimalistObserver) {
       minimalistObserver.disconnect();
@@ -196,7 +199,7 @@
     if (comprehensiveObserver) {
       comprehensiveObserver.disconnect();
     }
-    
+
     // Multilingual patterns for AI Overview detection
     const patterns = [
       /übersicht mit ki/i, // de
@@ -207,17 +210,19 @@
       /AI 摘要/, // zh-TW
       /AI-overzicht/i, // nl
       /Vista creada con IA/i, // es
-      /Přehled od AI/i, // cz
+      /Přehled od AI/i // cz
     ];
 
     minimalistObserver = new MutationObserver(() => {
       if (!extensionEnabled) {
         return;
       }
-      
+
       // each time there's a mutation in the document see if there's an ai overview to hide
       const mainBody = document.querySelector('div#rcnt');
-      const aiText = [...mainBody?.querySelectorAll('h1, h2')].find(e => patterns.some(pattern => pattern.test(e.innerText)));
+      const aiText = [...(mainBody?.querySelectorAll('h1, h2') || [])].find(e =>
+        patterns.some(pattern => pattern.test(e.innerText))
+      );
 
       let aiOverview = aiText?.closest('div#rso > div'); // AI overview as a search result
       if (!aiOverview) {
@@ -245,10 +250,10 @@
 
       // Remove entries in "People also ask" section if it contains "AI overview"
       const peopleAlsoAskAiOverviews = [
-        ...document.querySelectorAll('div.related-question-pair'),
-      ].filter((el) => patterns.some((pattern) => pattern.test(el.innerHTML)));
+        ...document.querySelectorAll('div.related-question-pair')
+      ].filter(el => patterns.some(pattern => pattern.test(el.innerHTML)));
 
-      peopleAlsoAskAiOverviews.forEach((el) => {
+      peopleAlsoAskAiOverviews.forEach(el => {
         if (!el.hasAttribute('data-clean-search-removed')) {
           el.parentElement.parentElement.style.display = 'none';
           el.setAttribute('data-clean-search-removed', 'true');
@@ -259,12 +264,11 @@
 
     minimalistObserver.observe(document, {
       childList: true,
-      subtree: true,
+      subtree: true
     });
-    
+
     // Trigger initial scan
     setTimeout(() => {
-      const event = new Event('mutation');
       minimalistObserver.takeRecords();
       // Manually trigger the callback for initial scan
       const mainBody = document.querySelector('div#rcnt');
@@ -275,57 +279,34 @@
   }
 
   // ============ COMPREHENSIVE MODE IMPLEMENTATION ============
-  
-  const LOW_QUALITY_DOMAINS = [
-    'sparknotes.com',
-    'litcharts.com', 
-    'shmoop.com',
-    'cliffsnotes.com',
-    'coursehero.com'
-  ];
 
   const AI_SELECTORS = [
     '[jscontroller="EYwa3d"]',
     '[jscontroller="g5dM4c"]',
-    '[data-async-type="folsrch"]'
+    '[data-initdone="true"]',
+    '[data-async-context]',
+    'div[data-async-token]',
+    'g-section-with-header'
   ];
 
-  function isLowQualitySite(element) {
-    if (!element || !filterSettings.removeLowQualitySites) {
-      return false;
-    }
-    
-    const mainLink = element.querySelector('a[href*="/url?"], a[href^="http"]');
-    if (!mainLink) {
-      return false;
-    }
-    
+  function isLowQualitySite(url) {
     try {
-      let actualUrl = '';
-      if (mainLink.href.includes('/url?')) {
-        const urlParams = new URLSearchParams(mainLink.href.split('/url?')[1]);
-        actualUrl = decodeURIComponent(urlParams.get('q') || '');
-      } else {
-        actualUrl = mainLink.href;
-      }
-      
-      if (!actualUrl || !actualUrl.startsWith('http')) {
-        return false;
-      }
-      
-      const urlObj = new URL(actualUrl);
-      const hostname = urlObj.hostname.toLowerCase();
-      
+      const hostname = new URL(url).hostname.toLowerCase();
       const exactMatches = [
-        'sparknotes.com', 'www.sparknotes.com',
-        'litcharts.com', 'www.litcharts.com',
-        'shmoop.com', 'www.shmoop.com',
-        'cliffsnotes.com', 'www.cliffsnotes.com',
-        'coursehero.com', 'www.coursehero.com'
+        'sparknotes.com',
+        'www.sparknotes.com',
+        'litcharts.com',
+        'www.litcharts.com',
+        'shmoop.com',
+        'www.shmoop.com',
+        'cliffsnotes.com',
+        'www.cliffsnotes.com',
+        'coursehero.com',
+        'www.coursehero.com'
       ];
-      
+
       return exactMatches.includes(hostname);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -334,15 +315,20 @@
     if (!extensionEnabled || !element || element.hasAttribute('data-removed')) {
       return;
     }
-    
+
     try {
       element.setAttribute('data-removed', 'true');
       element.style.display = 'none';
-      
-      const statType = type === 'ai' ? 'aiElementsRemoved' : 
-        type === 'low-quality' ? 'lowQualitySitesRemoved' : 
-          type === 'ad' ? 'adsRemoved' : 'totalElementsRemoved';
-      
+
+      const statType =
+        type === 'ai'
+          ? 'aiElementsRemoved'
+          : type === 'low-quality'
+            ? 'lowQualitySitesRemoved'
+            : type === 'ad'
+              ? 'adsRemoved'
+              : 'totalElementsRemoved';
+
       updateStats(statType, 1);
       Logger.info(`Removed ${type} element`);
     } catch (error) {
@@ -354,10 +340,10 @@
     if (!extensionEnabled || filterSettings.minimalistMode) {
       return;
     }
-    
+
     try {
       currentStats.scanCount++;
-      
+
       // Scan for AI content
       if (filterSettings.removeAiOverview) {
         AI_SELECTORS.forEach(selector => {
@@ -366,16 +352,19 @@
             elements.forEach(el => {
               if (!el.hasAttribute('data-removed')) {
                 const text = (el.textContent || '').toLowerCase();
-                if (text.includes('ai overview') || text.includes('generative ai')) {
+                if (
+                  text.includes('ai overview') ||
+                  text.includes('generative ai')
+                ) {
                   removeElement(el, 'ai');
                 }
               }
             });
-          } catch (e) {
+          } catch {
             // Ignore invalid selectors
           }
         });
-        
+
         // Text-based detection
         const headings = document.querySelectorAll('h1, h2, h3');
         headings.forEach(heading => {
@@ -388,17 +377,19 @@
           }
         });
       }
-      
+
       // Scan for low-quality sites
       if (filterSettings.removeLowQualitySites) {
         const searchResults = document.querySelectorAll('.g');
         searchResults.forEach(result => {
-          if (!result.hasAttribute('data-removed') && isLowQualitySite(result)) {
+          if (
+            !result.hasAttribute('data-removed') &&
+            isLowQualitySite(result)
+          ) {
             removeElement(result, 'low-quality');
           }
         });
       }
-      
     } catch (error) {
       Logger.error('Error scanning for content', error);
     }
@@ -406,7 +397,7 @@
 
   function initComprehensiveMode() {
     Logger.info('Starting comprehensive mode');
-    
+
     // Disconnect any existing observers
     if (minimalistObserver) {
       minimalistObserver.disconnect();
@@ -414,18 +405,18 @@
     if (comprehensiveObserver) {
       comprehensiveObserver.disconnect();
     }
-    
+
     comprehensiveObserver = new MutationObserver(() => {
       if (extensionEnabled && !filterSettings.minimalistMode) {
         setTimeout(() => scanForContent(), 150);
       }
     });
-    
+
     comprehensiveObserver.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true
     });
-    
+
     // Initial scans
     scanForContent();
     setTimeout(() => scanForContent(), 500);
@@ -433,7 +424,7 @@
   }
 
   // ============ INITIALIZATION ============
-  
+
   function initialize() {
     // Check for auto-disable first
     if (shouldAutoDisable()) {
@@ -442,29 +433,32 @@
       Logger.info('Extension auto-disabled due to query content');
       return;
     }
-    
+
     // Reset stats for new queries
     resetStats();
-    
+
     // Load settings from storage
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get(['cleanSearchEnabled', 'filterSettings'], (result) => {
-        if (result.cleanSearchEnabled !== undefined) {
-          extensionEnabled = result.cleanSearchEnabled && extensionEnabled;
-        }
-        if (result.filterSettings) {
-          filterSettings = { ...filterSettings, ...result.filterSettings };
-        }
-        
-        // Initialize the appropriate mode
-        if (extensionEnabled) {
-          if (filterSettings.minimalistMode) {
-            initMinimalistMode();
-          } else {
-            initComprehensiveMode();
+      chrome.storage.local.get(
+        ['cleanSearchEnabled', 'filterSettings'],
+        result => {
+          if (result.cleanSearchEnabled !== undefined) {
+            extensionEnabled = result.cleanSearchEnabled && extensionEnabled;
+          }
+          if (result.filterSettings) {
+            filterSettings = { ...filterSettings, ...result.filterSettings };
+          }
+
+          // Initialize the appropriate mode
+          if (extensionEnabled) {
+            if (filterSettings.minimalistMode) {
+              initMinimalistMode();
+            } else {
+              initComprehensiveMode();
+            }
           }
         }
-      });
+      );
     } else {
       // Fallback when chrome storage is not available
       if (extensionEnabled) {
@@ -475,8 +469,8 @@
         }
       }
     }
-    
-    Logger.info('SlopSlurp initialized', { 
+
+    Logger.info('SlopSlurp initialized', {
       url: window.location.href,
       mode: filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
       enabled: extensionEnabled
@@ -484,7 +478,7 @@
   }
 
   // ============ DEBUG HELPERS ============
-  
+
   window.cleanSearchDebug = {
     scan: () => {
       if (filterSettings.minimalistMode) {
@@ -508,7 +502,7 @@
         chrome.storage.local.set({ cleanSearchStats: currentStats });
       }
     },
-    setEnabled: (enabled) => {
+    setEnabled: enabled => {
       extensionEnabled = enabled;
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.set({ cleanSearchEnabled: enabled });
@@ -528,10 +522,10 @@
         }
       }
     },
-    updateSettings: (newSettings) => {
+    updateSettings: newSettings => {
       const oldMinimalistMode = filterSettings.minimalistMode;
       filterSettings = { ...filterSettings, ...newSettings };
-      
+
       // Handle mode changes
       if (oldMinimalistMode !== filterSettings.minimalistMode) {
         if (filterSettings.minimalistMode) {
@@ -542,21 +536,22 @@
           showNotification('Switched to comprehensive mode', 'success');
         }
       }
-      
+
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.set({ filterSettings: filterSettings });
       }
     },
     getSettings: () => filterSettings,
     isEnabled: () => extensionEnabled,
-    getMode: () => filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
+    getMode: () =>
+      filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
     switchMode: () => {
       filterSettings.minimalistMode = !filterSettings.minimalistMode;
       window.cleanSearchDebug.updateSettings(filterSettings);
       return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
     }
   };
-  
+
   // Legacy compatibility
   window.debugAiRemover = window.cleanSearchDebug;
 
@@ -566,5 +561,4 @@
   } else {
     initialize();
   }
-
 })();

@@ -8,7 +8,7 @@
     "build:dev": "npm run clean && npm run copy",
     "clean": "rm -rf dist/",
     "copy": "npm run copy:static && npm run copy:js && npm run copy:css",
-    "copy:static": "mkdir -p dist && cp manifest.json popup.html dist/ && cp -r icons/ dist/",
+    "copy:static": "mkdir -p dist && cp manifest.json popup.html dist/ && cp -r icons dist/",
     "copy:js": "mkdir -p dist/js && cp js/*.js dist/js/ && cp content-script.js dist/",
     "copy:css": "mkdir -p dist/css && cp css/*.css dist/css/",
     "minify": "npm run minify:js && npm run minify:css",
