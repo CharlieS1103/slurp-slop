@@ -4,18 +4,24 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'chrome-remove-ai-overview/**'
+      - '**/*.js'
+      - '**/*.json'
+      - '**/*.html'
+      - '**/*.css'
       - '.github/workflows/**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'chrome-remove-ai-overview/**'
+      - '**/*.js'
+      - '**/*.json'
+      - '**/*.html'
+      - '**/*.css'
   workflow_dispatch:
     inputs:
       create_release:
         description: 'Create a GitHub release'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:
@@ -33,34 +39,29 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: 'chrome-remove-ai-overview/package-lock.json'
+        cache-dependency-path: 'package-lock.json'
 
     - name: Install dependencies
-      working-directory: chrome-remove-ai-overview
       run: npm ci
 
     - name: Lint code
-      working-directory: chrome-remove-ai-overview
       run: npm run lint
 
     - name: Build extension
-      working-directory: chrome-remove-ai-overview
       run: npm run build
 
     - name: Package extension
-      working-directory: chrome-remove-ai-overview
       run: npm run package
 
     - name: Get version from package.json
       id: version
-      working-directory: chrome-remove-ai-overview
       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
     - name: Create build artifacts
       run: |
         mkdir -p build-artifacts
-        cp chrome-remove-ai-overview/slopslurp-v${{ steps.version.outputs.version }}.zip build-artifacts/
-        cp chrome-remove-ai-overview/manifest.json build-artifacts/
+        cp slopslurp-v${{ steps.version.outputs.version }}.zip build-artifacts/
+        cp manifest.json build-artifacts/
         echo "Build Date: $(date)" > build-artifacts/build-info.txt
         echo "Commit: ${{ github.sha }}" >> build-artifacts/build-info.txt
         echo "Version: ${{ steps.version.outputs.version }}" >> build-artifacts/build-info.txt
@@ -89,7 +90,7 @@ jobs:
         cp -r build-artifacts/* .
         
         # Copy the built extension directory for easy access
-        cp -r chrome-remove-ai-overview/dist/ extension/
+        cp -r dist/ extension/
         
         # Create README for build branch
         cat > README.md << 'EOF'
@@ -175,7 +176,7 @@ jobs:
           
           **Build Info**: Commit ${{ github.sha }} • Built on $(date)
         files: |
-          chrome-remove-ai-overview/slopslurp-v${{ steps.version.outputs.version }}.zip
+          slopslurp-v${{ steps.version.outputs.version }}.zip
         draft: false
         prerelease: false
       env:
