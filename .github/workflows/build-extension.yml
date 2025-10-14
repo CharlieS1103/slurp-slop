@@ -9,6 +9,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -75,5 +80,5 @@ jobs:
         git add .
         git commit -m "🚀 Deploy SlopSlurp v${{ steps.version.outputs.version }}"
         
-        # Force push to build branch
-        git push origin build --force
+        # Force push to build branch using GITHUB_TOKEN
+        git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git build --force
