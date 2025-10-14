@@ -35,14 +35,20 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
+        # Store ZIP file path
+        ZIP_FILE="slopslurp-v${{ steps.version.outputs.version }}.zip"
+        
+        # Move ZIP to temp location
+        mv "$ZIP_FILE" "/tmp/$ZIP_FILE"
+        
         # Create orphan build branch (completely separate from main)
         git checkout --orphan build
         
         # Remove all files from working directory
         git rm -rf .
         
-        # Copy only the ZIP file
-        cp slopslurp-v${{ steps.version.outputs.version }}.zip .
+        # Move ZIP file back
+        mv "/tmp/$ZIP_FILE" .
         
         # Create simple README
         cat > README.md << 'EOF'
