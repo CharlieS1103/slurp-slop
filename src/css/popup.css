@@ -150,17 +150,13 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-.academic-mode .slider {
-  background-color: #cbd5e0;
+/* Academic mode styling - make it match the other toggles */
+input:checked + .slider {
+  background-color: #3182ce;
 }
 
-.academic-mode input:checked + .slider {
-  background-color: #805ad5;
-}
+/* Remove specific academic mode styling to match other toggles */
 
-.academic-mode {
-  border-left: 3px solid #805ad5;
-}
 
 .status {
   padding: 14px 16px;
@@ -367,10 +363,32 @@ button:disabled {
   margin-left: 4px;
 }
 
+.whitelist-input-container {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+#whitelistInput {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-right: 8px;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+#whitelistInput:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.1);
+}
+
 .whitelist-controls {
   margin-top: 10px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .whitelist-btn {

@@ -31,6 +31,7 @@
     removeAds: true,
     academicMode: false,
     minimalistMode: false,
+    hideAiModeButton: true,
     showReplacementPlaceholders: false,
     customWhitelist: []
   };
@@ -230,6 +231,11 @@
       if (!extensionEnabled) {
         return;
       }
+      
+      // Also hide AI Mode button in minimalist mode if that setting is enabled
+      if (filterSettings.hideAiModeButton) {
+        hideAiModeInTopbar();
+      }
 
       // each time there's a mutation in the document see if there's an ai overview to hide
       const mainBody = document.querySelector('div#rcnt');
@@ -290,16 +296,28 @@
   // ============ COMPREHENSIVE MODE IMPLEMENTATION ============
 
   const AI_SELECTORS = [
-    '[jscontroller="EYwa3d"]',
-    '[jscontroller="g5dM4c"]',
-    '[data-initdone="true"]',
-    '[data-async-context]',
-    'div[data-async-token]',
-    'g-section-with-header'
+    // More specific selectors to target only AI components, not entire search results
+    'g-section-with-header:has(div.lLGV5d)',
+    'div.JJSijf',  // AI overview specific container
+    'div.aeJESe',  // AI content-specific container
+    'div[data-attrid*="ai_generated"]',
+    'div[data-sokoban-feature="ai_generated"]',
+    'div.xvfwl', // Common AI container class
+    'div.ULMdaf', // Another AI container class
+    'div.hlcw0c > g-section-with-header', // AI content section
+    'div.ETsHvc', // Common AI summary section
+    'g-card', // Card format sometimes used for AI content
+    'g-section-with-header h2[role="heading"]:contains("AI")' // Section headers with AI text
   ];
 
-  function isLowQualitySite(url) {
+  function isLowQualitySite(result) {
     try {
+      const anchorElement = result.querySelector('a');
+      if (!anchorElement || !anchorElement.href) {
+        return false;
+      }
+      
+      const url = anchorElement.href;
       const hostname = new URL(url).hostname.toLowerCase();
       const exactMatches = [
         'sparknotes.com',
@@ -325,10 +343,14 @@
       !extensionEnabled ||
       !element ||
       element.hasAttribute('data-removed') ||
-      element.hasAttribute('data-clean-search-removed')
+      element.hasAttribute('data-clean-search-removed') ||
+      safetyCounter >= MAX_REMOVALS_PER_SCAN
     ) {
       return;
     }
+    
+    // Increment safety counter to prevent excessive removals
+    safetyCounter++;
 
     try {
       // Mark element as removed by either system so other code won't try again
@@ -354,13 +376,85 @@
     }
   }
 
+  // Safety mechanism to prevent excessive removal
+  let safetyCounter = 0;
+  const MAX_REMOVALS_PER_SCAN = 10;
+
+  // Function to hide the AI Mode button in the topbar
+  function hideAiModeInTopbar() {
+    if (!extensionEnabled || !filterSettings.hideAiModeButton) {
+      return;
+    }
+
+    try {
+      // Select the AI Mode button in the topbar
+      // Based on its position as the first item or by text content
+      const aiModeButtons = Array.from(document.querySelectorAll('div[role="listitem"] a')).filter(a => {
+        const text = a.textContent.toLowerCase();
+        return text.includes('ai mode');
+      });
+
+      aiModeButtons.forEach(button => {
+        const listItem = button.closest('div[role="listitem"]');
+        if (listItem && !listItem.hasAttribute('data-removed')) {
+          listItem.style.display = 'none';
+          listItem.setAttribute('data-removed', 'true');
+          Logger.debug('Hidden AI Mode button in topbar');
+        }
+      });
+    } catch (error) {
+      Logger.error('Error hiding AI Mode button:', error);
+    }
+  }
+
   function scanForContent() {
-    if (!extensionEnabled || filterSettings.minimalistMode) {
+    if (!extensionEnabled) {
       return;
     }
 
     try {
       currentStats.scanCount++;
+      // Reset safety counter for this scan
+      safetyCounter = 0;
+      
+      // Check if we should hide the AI Mode button
+      if (filterSettings.hideAiModeButton) {
+        hideAiModeInTopbar();
+      }
+      
+      // Even in comprehensive mode, run the minimalist scan logic first to catch obvious AI overviews
+      // This ensures we don't miss anything the minimalist mode would catch
+      const patterns = [
+        /übersicht mit ki/i, // de
+        /ai overview/i, // en
+        /prezentare generală generată de ai/i, // ro
+        /AI による概要/, // ja
+        /Обзор от ИИ/, // ru
+        /AI 摘要/, // zh-TW
+        /AI-overzicht/i, // nl
+        /Vista creada con IA/i, // es
+        /Přehled od AI/i // cz
+      ];
+      
+      const mainBody = document.querySelector('div#rcnt');
+      const aiText = [...(mainBody?.querySelectorAll('h1, h2') || [])].find(e =>
+        patterns.some(pattern => pattern.test(e.innerText))
+      );
+
+      let aiOverview = aiText?.closest('div#rso > div'); // AI overview as a search result
+      if (!aiOverview) {
+        aiOverview = aiText?.closest('div#rcnt > div');
+      } // AI overview above search results
+
+      // Hide AI overview
+      if (aiOverview) {
+        removeElement(aiOverview, 'ai');
+      }
+      
+      // If we're in minimalist mode, don't continue with the more aggressive scanning
+      if (filterSettings.minimalistMode) {
+        return;
+      }
 
       // Scan for AI content
       if (filterSettings.removeAiOverview) {
@@ -370,26 +464,50 @@
             elements.forEach(el => {
               if (!el.hasAttribute('data-removed')) {
                 const text = (el.textContent || '').toLowerCase();
+                // Check that the element contains AI-related text before removing
+                // This adds a safety check to prevent removing non-AI content
                 if (
                   text.includes('ai overview') ||
-                  text.includes('generative ai')
+                  text.includes('generative ai') ||
+                  text.includes('generated by ai') ||
+                  text.includes('ai-generated')
                 ) {
+                  Logger.debug('Found AI element with selector:', selector);
                   removeElement(el, 'ai');
                 }
               }
             });
-          } catch {
-            // Ignore invalid selectors
+          } catch (e) {
+            Logger.error('Error with selector ' + selector, e);
           }
         });
 
-        // Text-based detection
+        // Text-based detection - more comprehensive approach
         const headings = document.querySelectorAll('h1, h2, h3');
+        const aiRelatedPhrases = [
+          'ai overview', 'overview from google', 'generative ai',
+          'generated by ai', 'ai-generated content', 'ai summary',
+          'ai insights', 'ai-powered', 'ai-assisted'
+        ];
+        
         headings.forEach(heading => {
           const text = (heading.textContent || '').toLowerCase().trim();
-          if (text === 'ai overview' || text === 'overview from google') {
-            const container = heading.closest('.g, .yf, [data-ved]');
-            if (container && !container.hasAttribute('data-removed')) {
+          if (aiRelatedPhrases.some(phrase => text.includes(phrase))) {
+            // Try different container selectors in order of specificity
+            const containers = [
+              heading.closest('.g, .yf, [data-ved]'),
+              heading.closest('[data-hveid]'),
+              heading.closest('div[jscontroller]'),
+              heading.closest('g-section-with-header'),
+              heading.closest('div.cUnQKe'),
+              // If all else fails, go up three parent levels
+              heading.parentElement?.parentElement?.parentElement
+            ];
+            
+            // Use the first valid container
+            const container = containers.find(el => el && !el.hasAttribute('data-removed'));
+            if (container) {
+              Logger.debug('Found AI content via text detection', { text, container });
               removeElement(container, 'ai');
             }
           }
@@ -437,7 +555,13 @@
 
     // Initial scans
     scanForContent();
-    setTimeout(() => scanForContent(), 500);
+    // Additional scan specifically for the AI Mode button to catch it after page loads
+    setTimeout(() => {
+      if (filterSettings.hideAiModeButton) {
+        hideAiModeInTopbar();
+      }
+      scanForContent();
+    }, 500);
     setTimeout(() => scanForContent(), 2000);
   }
 
@@ -477,7 +601,7 @@
             if (filterSettings.minimalistMode) {
               initMinimalistMode();
             } else {
-              initMinimalistMode();
+              // Only initialize comprehensive mode, don't run both
               initComprehensiveMode();
             }
           }
@@ -489,6 +613,7 @@
         if (filterSettings.minimalistMode) {
           initMinimalistMode();
         } else {
+          // Only run one mode to avoid conflicts
           initComprehensiveMode();
         }
       }
@@ -588,6 +713,37 @@
         filterSettings.minimalistMode = !filterSettings.minimalistMode;
         window.cleanSearchDebug.updateSettings(filterSettings);
         return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
+      },
+      
+      // Test helper function to help debug with feudalism.html test file
+      runDiagnostics: () => {
+        Logger.info('Running diagnostics...');
+        loggingEnabled = true;
+        
+        const aiElements = {};
+        AI_SELECTORS.forEach(selector => {
+          try {
+            const elements = document.querySelectorAll(selector);
+            aiElements[selector] = elements.length;
+            Logger.info(`Selector ${selector} matches ${elements.length} elements`);
+          } catch (e) {
+            Logger.error(`Error with selector ${selector}:`, e);
+          }
+        });
+        
+        Logger.info('Checking for AI mode button in topbar');
+        const aiModeButtons = Array.from(document.querySelectorAll('div[role="listitem"] a')).filter(a => {
+          const text = a.textContent.toLowerCase();
+          return text.includes('ai mode');
+        });
+        Logger.info(`Found ${aiModeButtons.length} AI mode buttons`);
+        
+        return {
+          aiElements,
+          aiModeButtons: aiModeButtons.length,
+          settings: filterSettings,
+          stats: currentStats
+        };
       }
     };
 

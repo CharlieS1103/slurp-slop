@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const academicToggle = document.getElementById('academicToggle');
   const placeholdersToggle = document.getElementById('placeholdersToggle');
   const minimalistToggle = document.getElementById('minimalistToggle');
+  const hideAiModeToggle = document.getElementById('hideAiModeToggle');
   const scanNowBtn = document.getElementById('scanNow');
-  const resetStatsBtn = document.getElementById('resetStats');
   const addToWhitelistBtn = document.getElementById('addToWhitelist');
   const clearWhitelistBtn = document.getElementById('clearWhitelist');
   const whitelistDisplay = document.getElementById('whitelistDisplay');
@@ -118,6 +118,12 @@ document.addEventListener('DOMContentLoaded', function() {
       filterSettings.customWhitelist.push(cleanDomain);
       saveFilterSettings();
       updateWhitelistDisplay();
+
+      // Clear the input field after adding
+      const whitelistInput = document.getElementById('whitelistInput');
+      if (whitelistInput) {
+        whitelistInput.value = '';
+      }
 
       statusDiv.className = 'status active';
       statusDiv.textContent = `Added ${cleanDomain} to whitelist`;
@@ -277,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
       adsToggle.checked = filterSettings.removeAds;
       academicToggle.checked = filterSettings.academicMode;
       minimalistToggle.checked = filterSettings.minimalistMode || false;
+      hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
       placeholdersToggle.checked =
         filterSettings.showReplacementPlaceholders || false;
 
@@ -542,11 +549,23 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
-    // Whitelist button event listeners
+    // Whitelist input field and button event listeners
+    const whitelistInput = document.getElementById('whitelistInput');
+    
     addToWhitelistBtn.addEventListener('click', function() {
-      const domain = prompt('Enter domain to whitelist (e.g., wikipedia.org):');
+      const domain = whitelistInput.value;
       if (domain) {
         addToWhitelist(domain);
+      }
+    });
+    
+    // Also add domain when pressing Enter in the input field
+    whitelistInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const domain = whitelistInput.value;
+        if (domain) {
+          addToWhitelist(domain);
+        }
       }
     });
 
@@ -554,35 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
       clearWhitelist();
     });
 
-    // Reset stats button
-    resetStatsBtn.addEventListener('click', function() {
-      if (
-        confirm('Reset statistics for this page? This action cannot be undone.')
-      ) {
-        currentStats = {
-          aiElementsRemoved: 0,
-          lowQualitySitesRemoved: 0,
-          adsRemoved: 0,
-          totalElementsRemoved: 0,
-          scanCount: 0,
-          lastScanTime: Date.now(),
-          placeholdersCreated: 0
-        };
-
-        chrome.storage.local.set({ cleanSearchStats: currentStats });
-        updateStatsDisplay();
-
-        chrome.tabs.query(
-          { active: true, currentWindow: true },
-          function(tabs) {
-            chrome.scripting.executeScript({
-              target: { tabId: tabs[0].id },
-              function: resetStats
-            });
-          }
-        );
-      }
-    });
+    // Reset stats button removed as requested
 
     // Report issue button -> open email
     reportIssueBtn.addEventListener('click', function() {
@@ -599,7 +590,11 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-    // No AI Mode toggle: AI Overview filter is always available in the UI
+    // Add event listener for AI Mode button toggle
+    hideAiModeToggle.addEventListener('change', function() {
+      filterSettings.hideAiModeButton = hideAiModeToggle.checked;
+      saveFilterSettings();
+    });
   }
 
   // Initialize the popup
@@ -640,13 +635,14 @@ function getStats() {
   }
   return null;
 }
-
+/*
 function resetStats() {
   if (window.cleanSearchDebug && window.cleanSearchDebug.resetStats) {
     window.cleanSearchDebug.resetStats();
     console.log('Statistics reset via popup');
   }
 }
+  */
 
 function setLogging(enabled) {
   if (window.cleanSearchDebug && window.cleanSearchDebug.setLogging) {

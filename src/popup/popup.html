@@ -14,6 +14,17 @@
     </div>
 
     <div class="filter-section">
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Master Switch</div>
+          <div class="filter-description">Enable/disable entire extension</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="extensionToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+      
       <div class="section-title">Content Filters</div>
 
       <div class="filter-control" id="aiFilterControl">
@@ -54,33 +65,24 @@
           <span class="slider"></span>
         </label>
       </div>
-
+      
       <div class="filter-control">
         <div class="filter-info">
-          <div class="filter-label">Show Removal Placeholders</div>
+          <div class="filter-label">Hide AI Mode Button</div>
           <div class="filter-description">
-            Display placeholders for removed content
+            Hide AI Mode button in Google Search topbar
           </div>
         </div>
         <label class="toggle-switch">
-          <input type="checkbox" id="placeholdersToggle" />
+          <input type="checkbox" id="hideAiModeToggle" checked />
           <span class="slider"></span>
         </label>
       </div>
-
-      <div class="filter-control academic-mode">
-        <div class="filter-info">
-          <div class="filter-label">Academic Mode</div>
-          <div class="filter-description">
-            Enhance searches for scholarly research
-          </div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="academicToggle" />
-          <span class="slider"></span>
-        </label>
-      </div>
-
+    </div>
+    
+    <div class="filter-section">
+      <div class="section-title">Mode Settings</div>
+      
       <div class="filter-control">
         <div class="filter-info">
           <div class="filter-label">Minimalist Mode</div>
@@ -93,14 +95,29 @@
           <span class="slider"></span>
         </label>
       </div>
-
+      
       <div class="filter-control">
         <div class="filter-info">
-          <div class="filter-label">Master Switch</div>
-          <div class="filter-description">Enable/disable entire extension</div>
+          <div class="filter-label">Academic Mode</div>
+          <div class="filter-description">
+            Enhance searches for scholarly research
+          </div>
         </div>
         <label class="toggle-switch">
-          <input type="checkbox" id="extensionToggle" checked />
+          <input type="checkbox" id="academicToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Show Removal Placeholders</div>
+          <div class="filter-description">
+            Display placeholders for removed content
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="placeholdersToggle" />
           <span class="slider"></span>
         </label>
       </div>
@@ -153,24 +170,25 @@
           <div style="font-size: 12px; color: #718096; margin-bottom: 8px">
             Sites that will never be filtered
           </div>
+          <div class="whitelist-input-container">
+            <input type="text" id="whitelistInput" placeholder="Enter domain (e.g., wikipedia.org)" />
+            <button id="addToWhitelist" class="whitelist-btn">Add</button>
+          </div>
           <div id="whitelistDisplay" class="whitelist-display">
             No whitelisted sites
           </div>
         </div>
         <div class="whitelist-controls">
-          <button id="addToWhitelist" class="whitelist-btn">+ Add Site</button>
           <button
             id="clearWhitelist"
             class="whitelist-btn secondary"
-            style="margin-left: 8px"
           >
             Clear All
           </button>
         </div>
       </div>
       <div class="controls" style="margin-top: 16px">
-        <button id="resetStats">Reset Statistics</button>
-        <button id="toggleLogging" class="logging-btn disabled" style="margin-top:8px">Logging Disabled</button>
+        <button id="toggleLogging" class="logging-btn disabled">Logging Disabled</button>
       </div>
     </div>
 
