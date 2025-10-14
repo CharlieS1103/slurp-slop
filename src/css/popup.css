@@ -1,0 +1,22 @@
+/* Copied popup CSS into src/ for refactor */
+
+/* SlopSlurp Extension Styles */
+
+body {
+  width: 380px;
+  min-height: 320px;
+  margin: 0;
+  padding: 24px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  color: #2d3748;
+}
+
+/* ... rest of CSS copied from original popup.css ... */
+
+/* Hide AI filter control by default; reveal with user toggle */
+#aiFilterControl {
+  display: none;
+}

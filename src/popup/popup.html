@@ -8,15 +8,15 @@
   </head>
   <body>
     <div class="header">
-      <div class="icon">SS</div>
+      <div class="icon"><img src="images/icon-128.png" alt="SlopSlurp Icon" /></div>
       <h1>SlopSlurp</h1>
-      <div class="subtitle">Professional Search Results</div>
+      <div class="subtitle">Get Better Search Results</div>
     </div>
 
     <div class="filter-section">
       <div class="section-title">Content Filters</div>
 
-      <div class="filter-control">
+      <div class="filter-control" id="aiFilterControl">
         <div class="filter-info">
           <div class="filter-label">AI Overview</div>
           <div class="filter-description">
@@ -143,6 +143,10 @@
       <div class="section-title">Quick Actions</div>
       <div class="controls">
         <button id="scanNow" class="primary">Scan Current Page</button>
+        <label style="display:flex;align-items:center;margin-top:8px;font-size:12px;color:#718096">
+          <input type="checkbox" id="showAiModeToggle" style="margin-right:8px" />
+          Show AI Mode
+        </label>
       </div>
     </div>
 
@@ -182,51 +186,7 @@
       </div>
     </div>
 
-    <!-- Onboarding Modal -->
-    <div id="onboardingModal" class="onboarding-modal">
-      <div class="onboarding-content">
-        <h2>Welcome to SlopSlurp! 🎉</h2>
-        <p>
-          SlopSlurp removes clutter from Google search results to help you find
-          better, more reliable information.
-        </p>
-
-        <div class="onboarding-steps">
-          <div class="onboarding-step">
-            <span class="step-number">1</span>
-            <span class="step-text"
-              >The extension automatically removes AI Overview boxes and
-              low-quality sites from your search results.</span
-            >
-          </div>
-          <div class="onboarding-step">
-            <span class="step-number">2</span>
-            <span class="step-text"
-              >Try Academic Mode for scholarly research - it enhances your
-              searches with academic terms.</span
-            >
-          </div>
-          <div class="onboarding-step">
-            <span class="step-number">3</span>
-            <span class="step-text"
-              >Use Minimalist Mode for lightweight AI Overview removal
-              only.</span
-            >
-          </div>
-          <div class="onboarding-step">
-            <span class="step-number">4</span>
-            <span class="step-text"
-              >Visit any Google search page to see SlopSlurp in action!</span
-            >
-          </div>
-        </div>
-
-        <div class="onboarding-buttons">
-          <button id="skipOnboarding">Skip Tour</button>
-          <button id="startUsing" class="primary">Start Using SlopSlurp</button>
-        </div>
-      </div>
-    </div>
+    <!-- Onboarding removed: modal and buttons deleted -->
 
     <script src="js/popup.js"></script>
   </body>

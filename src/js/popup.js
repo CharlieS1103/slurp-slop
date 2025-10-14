@@ -1,4 +1,6 @@
-// SlopSlurp Extension Popup Script
+// Copied canonical popup script into src/ for refactor
+// SlopSlurp Extension Popup (source)
+// Handles user interface interactions and extension state management
 
 document.addEventListener('DOMContentLoaded', function() {
   // UI Elements
@@ -18,16 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const reportIssueBtn = document.getElementById('reportIssue');
   const viewSourceBtn = document.getElementById('viewSource');
   const showHelpBtn = document.getElementById('showHelp');
-  
-  // Onboarding elements
-  const onboardingModal = document.getElementById('onboardingModal');
-  const skipOnboardingBtn = document.getElementById('skipOnboarding');
-  const startUsingBtn = document.getElementById('startUsing');
-  
+  const showAiModeToggle = document.getElementById('showAiModeToggle');
+  const aiFilterControl = document.getElementById('aiFilterControl');
+
+
   // Stat elements - simplified
   const totalRemovedCount = document.getElementById('totalRemovedCount');
   const aiRemovedCount = document.getElementById('aiRemovedCount');
-  const lowQualityRemovedCount = document.getElementById('lowQualityRemovedCount');
+  const lowQualityRemovedCount = document.getElementById(
+    'lowQualityRemovedCount'
+  );
   const adsRemovedCount = document.getElementById('adsRemovedCount');
   const pagesProcessedCount = document.getElementById('pagesProcessedCount');
   const lastActivity = document.getElementById('lastActivity');
@@ -52,19 +54,45 @@ document.addEventListener('DOMContentLoaded', function() {
     customWhitelist: []
   };
 
+  // Keep previous toggle states to restore when leaving Minimalist Mode
+  const _prevToggleState = {
+    aiToggle: null,
+    lowQualityToggle: null,
+    adsToggle: null,
+    placeholdersToggle: null
+  };
+
+  // Save filter settings function
+  function saveFilterSettings() {
+    const filterData = { filterSettings };
+    chrome.storage.local.set(filterData);
+
+    // Broadcast to all tabs
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        function: updateFilterSettings,
+        args: [filterSettings]
+      });
+    });
+  }
+
   // Whitelist management functions
   function updateWhitelistDisplay() {
     const whitelist = filterSettings.customWhitelist || [];
-    
+
     if (whitelist.length === 0) {
       whitelistDisplay.innerHTML = 'No whitelisted sites';
       whitelistDisplay.className = 'whitelist-display empty';
     } else {
       whitelistDisplay.className = 'whitelist-display';
-      whitelistDisplay.innerHTML = whitelist.map(site => 
-        `<span class="whitelist-site" data-site="${site}">${site}</span>`
-      ).join('');
-      
+      whitelistDisplay.innerHTML = whitelist
+        .map(
+          site =>
+            `<span class="whitelist-site" data-site="${site}">${site}</span>`
+        )
+        .join('');
+
       // Add click handlers to remove sites
       whitelistDisplay.querySelectorAll('.whitelist-site').forEach(siteEl => {
         siteEl.addEventListener('click', () => {
@@ -76,18 +104,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function addToWhitelist(domain) {
-    if (!domain || domain.trim() === '') return;
-    
+    if (!domain || domain.trim() === '') {
+      return;
+    }
+
     const cleanDomain = domain.trim().toLowerCase();
     if (!filterSettings.customWhitelist) {
       filterSettings.customWhitelist = [];
     }
-    
+
     if (!filterSettings.customWhitelist.includes(cleanDomain)) {
       filterSettings.customWhitelist.push(cleanDomain);
       saveFilterSettings();
       updateWhitelistDisplay();
-      
+
       statusDiv.className = 'status active';
       statusDiv.textContent = `Added ${cleanDomain} to whitelist`;
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
@@ -95,14 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function removeFromWhitelist(domain) {
-    if (!filterSettings.customWhitelist) return;
-    
+    if (!filterSettings.customWhitelist) {
+      return;
+    }
+
     const index = filterSettings.customWhitelist.indexOf(domain);
     if (index > -1) {
       filterSettings.customWhitelist.splice(index, 1);
       saveFilterSettings();
       updateWhitelistDisplay();
-      
+
       statusDiv.className = 'status active';
       statusDiv.textContent = `Removed ${domain} from whitelist`;
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
@@ -114,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
       filterSettings.customWhitelist = [];
       saveFilterSettings();
       updateWhitelistDisplay();
-      
+
       statusDiv.className = 'status active';
       statusDiv.textContent = 'Whitelist cleared';
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
@@ -124,30 +156,40 @@ document.addEventListener('DOMContentLoaded', function() {
   // Simplified stats loading
   function loadStats() {
     // Get current page stats from storage
-    chrome.storage.local.get(['cleanSearchStats'], (result) => {
+    chrome.storage.local.get(['cleanSearchStats'], result => {
       if (result.cleanSearchStats) {
         currentStats = { ...currentStats, ...result.cleanSearchStats };
       }
-      
+
       // Try to get real-time stats from active tab's content script
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        if (tabs[0] && tabs[0].url && tabs[0].url.includes('google.com/search')) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (
+          tabs[0] &&
+          tabs[0].url &&
+          tabs[0].url.includes('google.com/search')
+        ) {
           try {
-            chrome.scripting.executeScript({
-              target: {tabId: tabs[0].id},
-              function: getStats
-            }, (result) => {
-              if (chrome.runtime.lastError) {
-                console.log('Could not access content script:', chrome.runtime.lastError.message);
-                updateStatsDisplay();
-              } else if (result && result[0] && result[0].result) {
-                // Use current page stats directly
-                currentStats = { ...currentStats, ...result[0].result };
-                updateStatsDisplay();
-              } else {
-                updateStatsDisplay();
+            chrome.scripting.executeScript(
+              {
+                target: { tabId: tabs[0].id },
+                function: getStats
+              },
+              result => {
+                if (chrome.runtime.lastError) {
+                  console.log(
+                    'Could not access content script:',
+                    chrome.runtime.lastError.message
+                  );
+                  updateStatsDisplay();
+                } else if (result && result[0] && result[0].result) {
+                  // Use current page stats directly
+                  currentStats = { ...currentStats, ...result[0].result };
+                  updateStatsDisplay();
+                } else {
+                  updateStatsDisplay();
+                }
               }
-            });
+            );
           } catch (error) {
             console.log('Error accessing content script:', error);
             updateStatsDisplay();
@@ -160,18 +202,29 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateStatsDisplay() {
-    if (totalRemovedCount) totalRemovedCount.textContent = currentStats.totalElementsRemoved || 0;
-    if (aiRemovedCount) aiRemovedCount.textContent = currentStats.aiElementsRemoved || 0;
-    if (lowQualityRemovedCount) lowQualityRemovedCount.textContent = currentStats.lowQualitySitesRemoved || 0;
-    if (adsRemovedCount) adsRemovedCount.textContent = currentStats.adsRemoved || 0;
-    if (pagesProcessedCount) pagesProcessedCount.textContent = currentStats.pagesProcessed || 0;
-    
+    if (totalRemovedCount) {
+      totalRemovedCount.textContent = currentStats.totalElementsRemoved || 0;
+    }
+    if (aiRemovedCount) {
+      aiRemovedCount.textContent = currentStats.aiElementsRemoved || 0;
+    }
+    if (lowQualityRemovedCount) {
+      lowQualityRemovedCount.textContent =
+        currentStats.lowQualitySitesRemoved || 0;
+    }
+    if (adsRemovedCount) {
+      adsRemovedCount.textContent = currentStats.adsRemoved || 0;
+    }
+    if (pagesProcessedCount) {
+      pagesProcessedCount.textContent = currentStats.pagesProcessed || 0;
+    }
+
     // Update last activity
     if (lastActivity && currentStats.lastScanTime) {
       const lastTime = new Date(currentStats.lastScanTime);
       const now = new Date();
       const diffMinutes = Math.floor((now - lastTime) / 60000);
-      
+
       if (diffMinutes < 1) {
         lastActivity.textContent = 'Last activity: Just now';
       } else if (diffMinutes < 60) {
@@ -198,7 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
       loadStats();
       checkCurrentPage();
       setupEventListeners();
-      checkFirstTimeUser();
       console.log('SlopSlurp popup initialized successfully');
     } catch (error) {
       console.error('Error initializing popup:', error);
@@ -210,37 +262,67 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(['cleanSearchEnabled', 'filterSettings'], (result) => {
-      const enabled = result.cleanSearchEnabled !== false;
-      extensionToggle.checked = enabled;
-      
-      if (result.filterSettings) {
-        filterSettings = { ...filterSettings, ...result.filterSettings };
+    chrome.storage.local.get(
+      ['cleanSearchEnabled', 'filterSettings', 'showAiMode'],
+      result => {
+        const enabled = result.cleanSearchEnabled !== false;
+        extensionToggle.checked = enabled;
+
+        if (result.filterSettings) {
+          filterSettings = { ...filterSettings, ...result.filterSettings };
+        }
+
+        // Update individual toggles
+        aiToggle.checked = filterSettings.removeAiOverview;
+        lowQualityToggle.checked = filterSettings.removeLowQualitySites;
+        adsToggle.checked = filterSettings.removeAds;
+        academicToggle.checked = filterSettings.academicMode;
+        minimalistToggle.checked = filterSettings.minimalistMode || false;
+        placeholdersToggle.checked =
+          filterSettings.showReplacementPlaceholders || false;
+
+        // Update whitelist display
+        updateWhitelistDisplay();
+
+        // Handle AI Mode visibility (hidden by default unless user enabled)
+        const showAi = result.showAiMode === true;
+        if (showAi) {
+          aiFilterControl.style.display = '';
+          if (showAiModeToggle) {
+            showAiModeToggle.checked = true;
+          }
+        } else {
+          aiFilterControl.style.display = 'none';
+          if (showAiModeToggle) {
+            showAiModeToggle.checked = false;
+          }
+        }
+
+        // If minimalist mode was stored as enabled, enforce UI state
+        if (filterSettings.minimalistMode) {
+          aiToggle.checked = true;
+          lowQualityToggle.checked = false;
+          adsToggle.checked = false;
+          placeholdersToggle.checked = false;
+
+          lowQualityToggle.disabled = true;
+          adsToggle.disabled = true;
+          placeholdersToggle.disabled = true;
+        }
+
+        updateStatus(enabled);
       }
-      
-      // Update individual toggles
-      aiToggle.checked = filterSettings.removeAiOverview;
-      lowQualityToggle.checked = filterSettings.removeLowQualitySites;
-      adsToggle.checked = filterSettings.removeAds;
-      academicToggle.checked = filterSettings.academicMode;
-      minimalistToggle.checked = filterSettings.minimalistMode || false;
-      placeholdersToggle.checked = filterSettings.showReplacementPlaceholders || false;
-      
-      // Update whitelist display
-      updateWhitelistDisplay();
-      
-      updateStatus(enabled);
-    });
+    );
   }
 
   function updateStatus(enabled) {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       const currentTab = tabs[0];
-      const isGoogleSearch = currentTab.url && (
-        currentTab.url.includes('google.com/search') ||
-        currentTab.url.includes('google.co.uk/search') ||
-        /google\.[a-z]{2,3}\/search/.test(currentTab.url)
-      );
+      const isGoogleSearch =
+        currentTab.url &&
+        (currentTab.url.includes('google.com/search') ||
+          currentTab.url.includes('google.co.uk/search') ||
+          /google\.[a-z]{2,3}\/search/.test(currentTab.url));
 
       if (!enabled) {
         statusDiv.className = 'status disabled';
@@ -259,18 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function checkCurrentPage() {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(_tabs) {
       updateStatus(extensionToggle.checked);
-    });
-  }
-
-  function checkFirstTimeUser() {
-    chrome.storage.local.get(['hasSeenOnboarding'], function(result) {
-      if (!result.hasSeenOnboarding) {
-        setTimeout(() => {
-          showOnboarding(false);
-        }, 800);
-      }
     });
   }
 
@@ -280,10 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const enabled = extensionToggle.checked;
       chrome.storage.local.set({ cleanSearchEnabled: enabled });
       updateStatus(enabled);
-      
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
+          target: { tabId: tabs[0].id },
           function: updateExtensionState,
           args: [enabled]
         });
@@ -314,11 +386,11 @@ document.addEventListener('DOMContentLoaded', function() {
     placeholdersToggle.addEventListener('change', function() {
       filterSettings.showReplacementPlaceholders = placeholdersToggle.checked;
       saveFilterSettings();
-      
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
-          func: (show) => {
+          target: { tabId: tabs[0].id },
+          func: show => {
             if (window.cleanSearchDebug) {
               window.cleanSearchDebug.showPlaceholders(show);
             }
@@ -330,31 +402,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
     minimalistToggle.addEventListener('change', function() {
       filterSettings.minimalistMode = minimalistToggle.checked;
-      
-      // If minimalist mode is enabled, disable other filters and show a note
+
+      // If minimalist mode is enabled, remember previous states and disable other filters
       if (filterSettings.minimalistMode) {
+        // save previous states
+        _prevToggleState.aiToggle = aiToggle.checked;
+        _prevToggleState.lowQualityToggle = lowQualityToggle.checked;
+        _prevToggleState.adsToggle = adsToggle.checked;
+        _prevToggleState.placeholdersToggle = placeholdersToggle.checked;
+
+        // turn off dependant toggles
+        filterSettings.removeAiOverview = true; // keep AI overview removal on
         filterSettings.removeLowQualitySites = false;
         filterSettings.removeAds = false;
         filterSettings.showReplacementPlaceholders = false;
-        
+
+        // update UI and disable them
+        aiToggle.checked = filterSettings.removeAiOverview;
         lowQualityToggle.checked = false;
         adsToggle.checked = false;
         placeholdersToggle.checked = false;
-        
+
+        lowQualityToggle.disabled = true;
+        adsToggle.disabled = true;
+        placeholdersToggle.disabled = true;
+
         statusDiv.className = 'status active';
         statusDiv.textContent = 'Minimalist Mode: Lightweight AI Overview removal only';
         setTimeout(() => updateStatus(extensionToggle.checked), 3000);
+      } else {
+        // restore previous states
+        filterSettings.removeAiOverview =
+          _prevToggleState.aiToggle === null
+            ? filterSettings.removeAiOverview
+            : _prevToggleState.aiToggle;
+        filterSettings.removeLowQualitySites =
+          _prevToggleState.lowQualityToggle === null
+            ? filterSettings.removeLowQualitySites
+            : _prevToggleState.lowQualityToggle;
+        filterSettings.removeAds =
+          _prevToggleState.adsToggle === null
+            ? filterSettings.removeAds
+            : _prevToggleState.adsToggle;
+        filterSettings.showReplacementPlaceholders =
+          _prevToggleState.placeholdersToggle === null
+            ? filterSettings.showReplacementPlaceholders
+            : _prevToggleState.placeholdersToggle;
+
+        // update UI and re-enable
+        aiToggle.checked = !!filterSettings.removeAiOverview;
+        lowQualityToggle.checked = !!filterSettings.removeLowQualitySites;
+        adsToggle.checked = !!filterSettings.removeAds;
+        placeholdersToggle.checked = !!filterSettings.showReplacementPlaceholders;
+
+        lowQualityToggle.disabled = false;
+        adsToggle.disabled = false;
+        placeholdersToggle.disabled = false;
+
+        statusDiv.className = 'status active';
+        statusDiv.textContent = 'Minimalist Mode disabled';
+        setTimeout(() => updateStatus(extensionToggle.checked), 1500);
       }
-      
+
       saveFilterSettings();
     });
 
     function saveFilterSettings() {
       chrome.storage.local.set({ filterSettings: filterSettings });
-      
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
+          target: { tabId: tabs[0].id },
           function: updateFilterSettings,
           args: [filterSettings]
         });
@@ -366,28 +484,34 @@ document.addEventListener('DOMContentLoaded', function() {
       scanNowBtn.disabled = true;
       const originalText = scanNowBtn.textContent;
       scanNowBtn.textContent = 'Scanning Page...';
-      
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
-          function: triggerScan
-        }, function(results) {
-          if (chrome.runtime.lastError) {
-            console.error('Script injection failed:', chrome.runtime.lastError);
-            statusDiv.className = 'status inactive';
-            statusDiv.textContent = 'Failed to scan page';
-          } else {
-            statusDiv.className = 'status active';
-            statusDiv.textContent = 'Scan completed successfully';
-            setTimeout(() => {
-              loadStats();
-              updateStatus(extensionToggle.checked);
-            }, 1000);
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tabs[0].id },
+            function: triggerScan
+          },
+          function(_results) {
+            if (chrome.runtime.lastError) {
+              console.error(
+                'Script injection failed:',
+                chrome.runtime.lastError
+              );
+              statusDiv.className = 'status inactive';
+              statusDiv.textContent = 'Failed to scan page';
+            } else {
+              statusDiv.className = 'status active';
+              statusDiv.textContent = 'Scan completed successfully';
+              setTimeout(() => {
+                loadStats();
+                updateStatus(extensionToggle.checked);
+              }, 1000);
+            }
+
+            scanNowBtn.disabled = false;
+            scanNowBtn.textContent = originalText;
           }
-          
-          scanNowBtn.disabled = false;
-          scanNowBtn.textContent = originalText;
-        });
+        );
       });
     });
 
@@ -405,7 +529,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reset stats button
     resetStatsBtn.addEventListener('click', function() {
-      if (confirm('Reset statistics for this page? This action cannot be undone.')) {
+      if (
+        confirm('Reset statistics for this page? This action cannot be undone.')
+      ) {
         currentStats = {
           aiElementsRemoved: 0,
           lowQualitySitesRemoved: 0,
@@ -415,16 +541,19 @@ document.addEventListener('DOMContentLoaded', function() {
           lastScanTime: Date.now(),
           placeholdersCreated: 0
         };
-        
+
         chrome.storage.local.set({ cleanSearchStats: currentStats });
         updateStatsDisplay();
-        
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          chrome.scripting.executeScript({
-            target: {tabId: tabs[0].id},
-            function: resetStats
-          });
-        });
+
+        chrome.tabs.query(
+          { active: true, currentWindow: true },
+          function(tabs) {
+            chrome.scripting.executeScript({
+              target: { tabId: tabs[0].id },
+              function: resetStats
+            });
+          }
+        );
       }
     });
 
@@ -442,49 +571,19 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
-    // Show help button
+    // Show help opens README on GitHub
     showHelpBtn.addEventListener('click', function() {
-      showOnboarding(true);
+      chrome.tabs.create({ url: 'https://github.com/charliesimons/ai-overwith#readme' });
     });
 
-    // Onboarding event handlers
-    skipOnboardingBtn.addEventListener('click', function() {
-      hideOnboarding();
-      markOnboardingComplete();
-    });
-
-    startUsingBtn.addEventListener('click', function() {
-      hideOnboarding();
-      markOnboardingComplete();
-      chrome.tabs.create({
-        url: 'https://www.google.com/search?q=artificial+intelligence+overview'
+    // Show/hide AI Mode control
+    if (showAiModeToggle) {
+      showAiModeToggle.addEventListener('change', function() {
+        const show = !!showAiModeToggle.checked;
+        aiFilterControl.style.display = show ? '' : 'none';
+        chrome.storage.local.set({ showAiMode: show });
       });
-    });
-
-    onboardingModal.addEventListener('click', function(e) {
-      if (e.target === onboardingModal) {
-        hideOnboarding();
-      }
-    });
-  }
-
-  function showOnboarding(isHelp = false) {
-    onboardingModal.style.display = 'flex';
-    
-    if (isHelp) {
-      const title = onboardingModal.querySelector('h2');
-      const startBtn = document.getElementById('startUsing');
-      title.textContent = 'Clean Search Help Guide 📖';
-      startBtn.textContent = 'Got it!';
     }
-  }
-
-  function hideOnboarding() {
-    onboardingModal.style.display = 'none';
-  }
-
-  function markOnboardingComplete() {
-    chrome.storage.local.set({ hasSeenOnboarding: true });
   }
 
   // Initialize the popup
@@ -495,7 +594,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateExtensionState(enabled) {
   if (window.cleanSearchDebug && window.cleanSearchDebug.setEnabled) {
     window.cleanSearchDebug.setEnabled(enabled);
-    console.log(`SlopSlurp extension ${enabled ? 'enabled' : 'disabled'} via popup`);
+    console.log(
+      `SlopSlurp extension ${enabled ? 'enabled' : 'disabled'} via popup`
+    );
   }
 }
 
