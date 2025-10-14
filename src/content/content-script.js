@@ -225,7 +225,8 @@
       /Přehled od AI/i // cz
     ];
 
-    minimalistObserver = new MutationObserver(() => {
+    // Extracted scan function so it can be invoked directly for initial scans
+    function performMinimalistScan(/* mutations */) {
       if (!extensionEnabled) {
         return;
       }
@@ -268,7 +269,9 @@
           removeElement(target, 'ai');
         }
       });
-    });
+    }
+
+    minimalistObserver = new MutationObserver(performMinimalistScan);
 
     minimalistObserver.observe(document, {
       childList: true,
@@ -277,12 +280,10 @@
 
     // Trigger initial scan
     setTimeout(() => {
+      // Ensure any pending records are cleared
       minimalistObserver.takeRecords();
-      // Manually trigger the callback for initial scan
-      const mainBody = document.querySelector('div#rcnt');
-      if (mainBody) {
-        minimalistObserver.callback([]);
-      }
+      // Run the same scan logic once to pick up initial AI Overview blocks
+      performMinimalistScan();
     }, 100);
   }
 
@@ -592,15 +593,13 @@
 
     // Legacy compatibility
     window.debugAiRemover = window.cleanSearchDebug;
-
-    // Start initialization when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initialize);
-    } else {
-      initialize();
-    }
   }
 
-  // Initialize on script load
-  initialize();
+  // Start initialization when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    // Initialize on script load
+    initialize();
+  }
 })();
