@@ -22,6 +22,9 @@
     placeholdersCreated: 0
   };
 
+  // Logging toggle for verbose console output
+  let loggingEnabled = false;
+
   let filterSettings = {
     removeAiOverview: true,
     removeLowQualitySites: true,
@@ -36,11 +39,20 @@
 
   // Simple logger
   const Logger = {
-    info: (msg, data) => console.log(`[SlopSlurp] INFO: ${msg}`, data || ''),
+    info: (msg, data) => {
+      if (!loggingEnabled) {
+        return;
+      }
+      console.log(`[SlopSlurp] INFO: ${msg}`, data || '');
+    },
     warn: (msg, data) => console.warn(`[SlopSlurp] WARN: ${msg}`, data || ''),
-    error: (msg, data) =>
-      console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
-    debug: (msg, data) => console.log(`[SlopSlurp] DEBUG: ${msg}`, data || '')
+    error: (msg, data) => console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
+    debug: (msg, data) => {
+      if (!loggingEnabled) {
+        return;
+      }
+      console.log(`[SlopSlurp] DEBUG: ${msg}`, data || '');
+    }
   };
 
   // Check if we should auto-disable extension based on search query
@@ -95,7 +107,7 @@
     `;
 
     banner.innerHTML = `
-      🛡️ SlopSlurp temporarily disabled - Click to re-enable
+       SlopSlurp temporarily disabled - Click to re-enable
       <small style="display: block; margin-top: 4px; opacity: 0.9; font-size: 12px;">
         Auto-disabled because your search might be looking for filtered content
       </small>
@@ -229,12 +241,9 @@
         aiOverview = aiText?.closest('div#rcnt > div');
       } // AI overview above search results
 
-      // Hide AI overview
-      if (aiOverview && !aiOverview.hasAttribute('data-clean-search-removed')) {
-        aiOverview.style.display = 'none';
-        aiOverview.setAttribute('data-clean-search-removed', 'true');
-        updateStats('aiElementsRemoved', 1);
-        Logger.info('Minimalist mode removed AI Overview');
+      // Hide AI overview (use centralized removal so logging and stats are consistent)
+      if (aiOverview) {
+        removeElement(aiOverview, 'ai');
       }
 
       // Restore padding after header tabs
@@ -254,10 +263,9 @@
       ].filter(el => patterns.some(pattern => pattern.test(el.innerHTML)));
 
       peopleAlsoAskAiOverviews.forEach(el => {
-        if (!el.hasAttribute('data-clean-search-removed')) {
-          el.parentElement.parentElement.style.display = 'none';
-          el.setAttribute('data-clean-search-removed', 'true');
-          updateStats('aiElementsRemoved', 1);
+        const target = el.parentElement && el.parentElement.parentElement ? el.parentElement.parentElement : el;
+        if (target) {
+          removeElement(target, 'ai');
         }
       });
     });
@@ -312,12 +320,19 @@
   }
 
   function removeElement(element, type = 'unknown') {
-    if (!extensionEnabled || !element || element.hasAttribute('data-removed')) {
+    if (
+      !extensionEnabled ||
+      !element ||
+      element.hasAttribute('data-removed') ||
+      element.hasAttribute('data-clean-search-removed')
+    ) {
       return;
     }
 
     try {
+      // Mark element as removed by either system so other code won't try again
       element.setAttribute('data-removed', 'true');
+      element.setAttribute('data-clean-search-removed', 'true');
       element.style.display = 'none';
 
       const statType =
@@ -330,7 +345,9 @@
               : 'totalElementsRemoved';
 
       updateStats(statType, 1);
-      Logger.info(`Removed ${type} element`);
+
+      // Log the removed DOM node (object) so developers can inspect it when logging is enabled
+      Logger.info('Removed element', { type, element });
     } catch (error) {
       Logger.warn(`Error removing ${type} element:`, error);
     }
@@ -440,7 +457,7 @@
     // Load settings from storage
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.get(
-        ['cleanSearchEnabled', 'filterSettings'],
+        ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
         result => {
           if (result.cleanSearchEnabled !== undefined) {
             extensionEnabled = result.cleanSearchEnabled && extensionEnabled;
@@ -449,11 +466,17 @@
             filterSettings = { ...filterSettings, ...result.filterSettings };
           }
 
+          // Load logging enabled flag
+          if (typeof result.loggingEnabled !== 'undefined') {
+            loggingEnabled = !!result.loggingEnabled;
+          }
+
           // Initialize the appropriate mode
           if (extensionEnabled) {
             if (filterSettings.minimalistMode) {
               initMinimalistMode();
             } else {
+              initMinimalistMode();
               initComprehensiveMode();
             }
           }
@@ -475,90 +498,109 @@
       mode: filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
       enabled: extensionEnabled
     });
-  }
 
-  // ============ DEBUG HELPERS ============
+    // ============ DEBUG HELPERS ============
 
-  window.cleanSearchDebug = {
-    scan: () => {
-      if (filterSettings.minimalistMode) {
-        initMinimalistMode();
-      } else {
-        scanForContent();
-      }
-    },
-    getStats: () => currentStats,
-    resetStats: () => {
-      currentStats = {
-        aiElementsRemoved: 0,
-        lowQualitySitesRemoved: 0,
-        adsRemoved: 0,
-        totalElementsRemoved: 0,
-        scanCount: 0,
-        lastScanTime: Date.now(),
-        placeholdersCreated: 0
-      };
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ cleanSearchStats: currentStats });
-      }
-    },
-    setEnabled: enabled => {
-      extensionEnabled = enabled;
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ cleanSearchEnabled: enabled });
-      }
-      if (enabled) {
+    window.cleanSearchDebug = {
+      scan: () => {
         if (filterSettings.minimalistMode) {
           initMinimalistMode();
         } else {
-          initComprehensiveMode();
+          scanForContent();
         }
-      } else {
-        if (minimalistObserver) {
-          minimalistObserver.disconnect();
+      },
+      getStats: () => currentStats,
+      resetStats: () => {
+        currentStats = {
+          aiElementsRemoved: 0,
+          lowQualitySitesRemoved: 0,
+          adsRemoved: 0,
+          totalElementsRemoved: 0,
+          scanCount: 0,
+          lastScanTime: Date.now(),
+          placeholdersCreated: 0
+        };
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ cleanSearchStats: currentStats });
         }
-        if (comprehensiveObserver) {
-          comprehensiveObserver.disconnect();
+      },
+      setEnabled: enabled => {
+        extensionEnabled = enabled;
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ cleanSearchEnabled: enabled });
         }
-      }
-    },
-    updateSettings: newSettings => {
-      const oldMinimalistMode = filterSettings.minimalistMode;
-      filterSettings = { ...filterSettings, ...newSettings };
-
-      // Handle mode changes
-      if (oldMinimalistMode !== filterSettings.minimalistMode) {
-        if (filterSettings.minimalistMode) {
-          initMinimalistMode();
-          showNotification('Switched to minimalist mode', 'success');
+        if (enabled) {
+          if (filterSettings.minimalistMode) {
+            initMinimalistMode();
+          } else {
+            initComprehensiveMode();
+          }
         } else {
-          initComprehensiveMode();
-          showNotification('Switched to comprehensive mode', 'success');
+          if (minimalistObserver) {
+            minimalistObserver.disconnect();
+          }
+          if (comprehensiveObserver) {
+            comprehensiveObserver.disconnect();
+          }
         }
-      }
+      },
+      updateSettings: newSettings => {
+        const oldMinimalistMode = filterSettings.minimalistMode;
+        filterSettings = { ...filterSettings, ...newSettings };
 
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ filterSettings: filterSettings });
+        // Apply logging flag if present in the settings object
+        if (newSettings && typeof newSettings.loggingEnabled !== 'undefined') {
+          loggingEnabled = !!newSettings.loggingEnabled;
+        }
+
+        // Handle mode changes
+        if (oldMinimalistMode !== filterSettings.minimalistMode) {
+          if (filterSettings.minimalistMode) {
+            initMinimalistMode();
+            showNotification('Switched to minimalist mode', 'success');
+          } else {
+            initComprehensiveMode();
+            showNotification('Switched to comprehensive mode', 'success');
+          }
+        }
+
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ filterSettings: filterSettings });
+        }
+      },
+      getSettings: () => filterSettings,
+      isEnabled: () => extensionEnabled,
+      getMode: () => (filterSettings.minimalistMode ? 'minimalist' : 'comprehensive'),
+      setLogging: enabled => {
+        loggingEnabled = !!enabled;
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ loggingEnabled: loggingEnabled });
+        }
+        if (loggingEnabled) {
+          Logger.info('Logging enabled');
+        } else {
+          console.log('[SlopSlurp] Logging disabled');
+        }
+      },
+      getLogging: () => loggingEnabled,
+      switchMode: () => {
+        filterSettings.minimalistMode = !filterSettings.minimalistMode;
+        window.cleanSearchDebug.updateSettings(filterSettings);
+        return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
       }
-    },
-    getSettings: () => filterSettings,
-    isEnabled: () => extensionEnabled,
-    getMode: () =>
-      filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
-    switchMode: () => {
-      filterSettings.minimalistMode = !filterSettings.minimalistMode;
-      window.cleanSearchDebug.updateSettings(filterSettings);
-      return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
+    };
+
+    // Legacy compatibility
+    window.debugAiRemover = window.cleanSearchDebug;
+
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+      initialize();
     }
-  };
-
-  // Legacy compatibility
-  window.debugAiRemover = window.cleanSearchDebug;
-
-  // Start initialization when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
   }
+
+  // Initialize on script load
+  initialize();
 })();

@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const reportIssueBtn = document.getElementById('reportIssue');
   const viewSourceBtn = document.getElementById('viewSource');
   const showHelpBtn = document.getElementById('showHelp');
-  const showAiModeToggle = document.getElementById('showAiModeToggle');
-  const aiFilterControl = document.getElementById('aiFilterControl');
+  const toggleLoggingBtn = document.getElementById('toggleLogging');
 
+  // Logging state for popup UI
+  let loggingEnabled = false;
 
   // Stat elements - simplified
   const totalRemovedCount = document.getElementById('totalRemovedCount');
@@ -262,57 +263,67 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(
-      ['cleanSearchEnabled', 'filterSettings', 'showAiMode'],
-      result => {
-        const enabled = result.cleanSearchEnabled !== false;
-        extensionToggle.checked = enabled;
+    chrome.storage.local.get(['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'], result => {
+      const enabled = result.cleanSearchEnabled !== false;
+      extensionToggle.checked = enabled;
 
-        if (result.filterSettings) {
-          filterSettings = { ...filterSettings, ...result.filterSettings };
-        }
-
-        // Update individual toggles
-        aiToggle.checked = filterSettings.removeAiOverview;
-        lowQualityToggle.checked = filterSettings.removeLowQualitySites;
-        adsToggle.checked = filterSettings.removeAds;
-        academicToggle.checked = filterSettings.academicMode;
-        minimalistToggle.checked = filterSettings.minimalistMode || false;
-        placeholdersToggle.checked =
-          filterSettings.showReplacementPlaceholders || false;
-
-        // Update whitelist display
-        updateWhitelistDisplay();
-
-        // Handle AI Mode visibility (hidden by default unless user enabled)
-        const showAi = result.showAiMode === true;
-        if (showAi) {
-          aiFilterControl.style.display = '';
-          if (showAiModeToggle) {
-            showAiModeToggle.checked = true;
-          }
-        } else {
-          aiFilterControl.style.display = 'none';
-          if (showAiModeToggle) {
-            showAiModeToggle.checked = false;
-          }
-        }
-
-        // If minimalist mode was stored as enabled, enforce UI state
-        if (filterSettings.minimalistMode) {
-          aiToggle.checked = true;
-          lowQualityToggle.checked = false;
-          adsToggle.checked = false;
-          placeholdersToggle.checked = false;
-
-          lowQualityToggle.disabled = true;
-          adsToggle.disabled = true;
-          placeholdersToggle.disabled = true;
-        }
-
-        updateStatus(enabled);
+      if (result.filterSettings) {
+        filterSettings = { ...filterSettings, ...result.filterSettings };
       }
-    );
+
+      // Update individual toggles
+      aiToggle.checked = filterSettings.removeAiOverview;
+      lowQualityToggle.checked = filterSettings.removeLowQualitySites;
+      adsToggle.checked = filterSettings.removeAds;
+      academicToggle.checked = filterSettings.academicMode;
+      minimalistToggle.checked = filterSettings.minimalistMode || false;
+      placeholdersToggle.checked =
+        filterSettings.showReplacementPlaceholders || false;
+
+      // Update whitelist display
+      updateWhitelistDisplay();
+
+      // AI filter control should be present and styled like the other filters
+
+      // Load logging state and update UI
+      loggingEnabled = !!result.loggingEnabled;
+      updateLoggingButtonUI(loggingEnabled);
+
+      // Broadcast current logging state to active tab so content script is in sync
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (!tabs[0]) {
+          return;
+        }
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          function: setLogging,
+          args: [loggingEnabled]
+        });
+      });
+
+      // If minimalist mode was stored as enabled, enforce UI state
+      if (filterSettings.minimalistMode) {
+        aiToggle.checked = true;
+        lowQualityToggle.checked = false;
+        adsToggle.checked = false;
+        placeholdersToggle.checked = false;
+
+        lowQualityToggle.disabled = true;
+        adsToggle.disabled = true;
+        placeholdersToggle.disabled = true;
+      }
+
+      updateStatus(enabled);
+    });
+  }
+
+  function updateLoggingButtonUI(enabled) {
+    if (!toggleLoggingBtn) {
+      return;
+    }
+    toggleLoggingBtn.classList.toggle('enabled', enabled);
+    toggleLoggingBtn.classList.toggle('disabled', !enabled);
+    toggleLoggingBtn.textContent = enabled ? 'Logging Enabled' : 'Logging Disabled';
   }
 
   function updateStatus(enabled) {
@@ -467,6 +478,22 @@ document.addEventListener('DOMContentLoaded', function() {
       saveFilterSettings();
     });
 
+    // Logging toggle
+    toggleLoggingBtn.addEventListener('click', function() {
+      loggingEnabled = !loggingEnabled;
+      chrome.storage.local.set({ loggingEnabled });
+
+      updateLoggingButtonUI(loggingEnabled);
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          function: setLogging,
+          args: [loggingEnabled]
+        });
+      });
+    });
+
     function saveFilterSettings() {
       chrome.storage.local.set({ filterSettings: filterSettings });
 
@@ -557,33 +584,22 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    // Report issue button
+    // Report issue button -> open email
     reportIssueBtn.addEventListener('click', function() {
-      chrome.tabs.create({
-        url: 'https://github.com/charliesimons/ai-overwith/issues'
-      });
+      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-    // View source button
+    // View source button -> open email
     viewSourceBtn.addEventListener('click', function() {
-      chrome.tabs.create({
-        url: 'https://github.com/charliesimons/ai-overwith'
-      });
+      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-    // Show help opens README on GitHub
+    // Show help -> open email
     showHelpBtn.addEventListener('click', function() {
-      chrome.tabs.create({ url: 'https://github.com/charliesimons/ai-overwith#readme' });
+      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-    // Show/hide AI Mode control
-    if (showAiModeToggle) {
-      showAiModeToggle.addEventListener('change', function() {
-        const show = !!showAiModeToggle.checked;
-        aiFilterControl.style.display = show ? '' : 'none';
-        chrome.storage.local.set({ showAiMode: show });
-      });
-    }
+    // No AI Mode toggle: AI Overview filter is always available in the UI
   }
 
   // Initialize the popup
@@ -629,5 +645,12 @@ function resetStats() {
   if (window.cleanSearchDebug && window.cleanSearchDebug.resetStats) {
     window.cleanSearchDebug.resetStats();
     console.log('Statistics reset via popup');
+  }
+}
+
+function setLogging(enabled) {
+  if (window.cleanSearchDebug && window.cleanSearchDebug.setLogging) {
+    window.cleanSearchDebug.setLogging(enabled);
+    console.log(`Logging ${enabled ? 'enabled' : 'disabled'} via popup`);
   }
 }
