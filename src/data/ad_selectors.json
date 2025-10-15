@@ -1,0 +1,14 @@
+[
+  "[data-text-ad]",
+  "div.uEierd",
+  "div[data-veid*='ads']",
+  "div[data-sokoban-feature='shopping_ads']",
+  "div.cu-container",
+  "div[aria-label='Ads']",
+  "div[aria-label='Ads results']",
+  "div[aria-label='Sponsored']",
+  "div[class*='commercial-unit-desktop']",
+  "div[class*='commercial-unit-mobile']",
+  "div[jscontroller='sYACre']",
+  "div[jscontroller='CnRgdd']"
+]
