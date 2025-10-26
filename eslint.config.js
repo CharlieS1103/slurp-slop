@@ -2,6 +2,8 @@
 import js from '@eslint/js';
 
 export default [
+  // Ignore build artifacts and vendor assets
+  { ignores: ['dist/**', 'node_modules/**', 'icons/**'] },
   js.configs.recommended,
   {
     files: ['**/*.js'],
@@ -37,6 +39,7 @@ export default [
       'no-var': 'error',
       'eqeqeq': 'error',
       'curly': 'error',
+      'no-empty': ['error', { allowEmptyCatch: true }],
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
@@ -56,7 +59,7 @@ export default [
     }
   },
   {
-    files: ['content-script.js'],
+    files: ['src/content/content-script.js', 'dist/content-script.js'],
     languageOptions: {
       globals: {
         // Additional globals for content scripts

@@ -31,6 +31,8 @@
     removeAds: true,
     academicMode: false,
     minimalistMode: false,
+    // New: Links-only mode shows only plain organic links
+    linksOnlyMode: false,
     hideAiModeButton: true,
     showReplacementPlaceholders: false,
     customWhitelist: []
@@ -155,7 +157,8 @@
       console.log(`[SlopSlurp] INFO: ${msg}`, data || '');
     },
     warn: (msg, data) => console.warn(`[SlopSlurp] WARN: ${msg}`, data || ''),
-    error: (msg, data) => console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
+    error: (msg, data) =>
+      console.error(`[SlopSlurp] ERROR: ${msg}`, data || ''),
     debug: (msg, data) => {
       if (!loggingEnabled) {
         return;
@@ -188,7 +191,9 @@
 
   function cloneDefaultData() {
     return {
-      disableTerms: sanitizeCaseInsensitiveArray(DEFAULT_FILTER_DATA.disableTerms),
+      disableTerms: sanitizeCaseInsensitiveArray(
+        DEFAULT_FILTER_DATA.disableTerms
+      ),
       aiOverviewPatterns: sanitizeCaseInsensitiveArray(
         DEFAULT_FILTER_DATA.aiOverviewPatterns
       ),
@@ -238,7 +243,8 @@
       const data = cloneDefaultData();
 
       const fetchFn =
-        typeof globalThis !== 'undefined' && typeof globalThis.fetch === 'function'
+        typeof globalThis !== 'undefined' &&
+        typeof globalThis.fetch === 'function'
           ? globalThis.fetch.bind(globalThis)
           : null;
 
@@ -254,7 +260,9 @@
             try {
               const response = await fetchFn(assetUrl);
               if (!response.ok) {
-                Logger.warn(`Failed to load data file ${path}: ${response.status}`);
+                Logger.warn(
+                  `Failed to load data file ${path}: ${response.status}`
+                );
                 return;
               }
 
@@ -300,7 +308,9 @@
       return false;
     }
     const normalized = text.toLowerCase();
-    return filterData.aiOverviewPatterns.some(pattern => normalized.includes(pattern));
+    return filterData.aiOverviewPatterns.some(pattern =>
+      normalized.includes(pattern)
+    );
   }
 
   function containsAiIndicator(text) {
@@ -308,7 +318,9 @@
       return false;
     }
     const normalized = text.toLowerCase();
-    return filterData.aiIndicatorPhrases.some(phrase => normalized.includes(phrase));
+    return filterData.aiIndicatorPhrases.some(phrase =>
+      normalized.includes(phrase)
+    );
   }
 
   function isDomainWhitelisted(hostname) {
@@ -343,8 +355,8 @@
       return false;
     }
 
-    return filterData.lowQualityDomains.some(domain =>
-      normalized === domain || normalized.endsWith(`.${domain}`)
+    return filterData.lowQualityDomains.some(
+      domain => normalized === domain || normalized.endsWith(`.${domain}`)
     );
   }
 
@@ -536,12 +548,32 @@
       containsAiOverviewHeading(heading?.innerText || heading?.textContent)
     );
 
-    let aiOverview = aiHeading?.closest('div#rso > div');
-    if (!aiOverview) {
-      aiOverview = aiHeading?.closest('div#rcnt > div');
-    }
-    if (aiOverview) {
-      removeElement(aiOverview, 'ai');
+    // Find the nearest specific AI Overview container to avoid removing broad wrappers
+    if (aiHeading) {
+      let aiOverview = null;
+
+      // Prefer explicit AI selectors first
+      try {
+        for (const selector of filterData.aiSelectors) {
+          const cand = aiHeading.closest(selector);
+          if (cand) {
+            aiOverview = cand;
+            break;
+          }
+        }
+      } catch {}
+
+      // Conservative fallbacks
+      if (!aiOverview) {
+        aiOverview =
+          aiHeading.closest('g-section-with-header') ||
+          aiHeading.closest('div[data-attrid*="ai"]') ||
+          aiHeading.closest('div[data-sokoban-feature*="ai"]');
+      }
+
+      if (aiOverview && !isDangerousContainer(aiOverview)) {
+        removeElement(aiOverview, 'ai');
+      }
     }
 
     const headerTabs = document.querySelector('div#hdtb-sc > div');
@@ -588,7 +620,7 @@
       if (!anchorElement || !anchorElement.href) {
         return false;
       }
-      
+
       const url = anchorElement.href;
       const hostname = new URL(url).hostname;
       return isLowQualityHostname(hostname);
@@ -607,7 +639,12 @@
     ) {
       return;
     }
-    
+    // Extra guard: never remove core page containers
+    if (isDangerousContainer(element)) {
+      Logger.warn('Refusing to remove dangerous container', { type, element });
+      return;
+    }
+
     // Increment safety counter to prevent excessive removals
     safetyCounter++;
 
@@ -619,7 +656,10 @@
         } catch {
           originalDisplay = '';
         }
-        element.setAttribute('data-clean-search-original-display', originalDisplay);
+        element.setAttribute(
+          'data-clean-search-original-display',
+          originalDisplay
+        );
       }
 
       element.setAttribute('data-clean-search-type', type);
@@ -648,6 +688,45 @@
     } catch (error) {
       Logger.warn(`Error removing ${type} element:`, error);
     }
+  }
+
+  // Heuristic to avoid unintentionally hiding the whole page
+  function isDangerousContainer(el) {
+    if (!el) {
+      return true;
+    }
+
+    const tag = (el.tagName || '').toUpperCase();
+    if (tag === 'HTML' || tag === 'BODY') {
+      return true;
+    }
+
+    const id = (el.id || '').toLowerCase();
+    const role =
+      (el.getAttribute && (el.getAttribute('role') || '').toLowerCase()) || '';
+
+    // Common Google search root wrappers
+    if (
+      id === 'rcnt' ||
+      id === 'search' ||
+      id === 'appbar' ||
+      role === 'main'
+    ) {
+      return true;
+    }
+
+    try {
+      // If the node fully contains the main area, be conservative
+      const main = document.querySelector('[role="main"], #search');
+      if (main && (el === main || el.contains(main))) {
+        const childCount = el.childElementCount || 0;
+        if (childCount > 5) {
+          return true;
+        }
+      }
+    } catch {}
+
+    return false;
   }
 
   function ensurePlaceholderStyles() {
@@ -838,7 +917,8 @@
     placeholder.setAttribute('aria-expanded', 'true');
     entry.active = true;
 
-    let originalDisplay = element.getAttribute('data-clean-search-original-display') || '';
+    let originalDisplay =
+      element.getAttribute('data-clean-search-original-display') || '';
     if (!originalDisplay || originalDisplay === 'none') {
       originalDisplay = '';
     }
@@ -850,8 +930,14 @@
       entry.timer = null;
     }
 
-    if (typeof PLACEHOLDER_TIMEOUT_MS === 'number' && PLACEHOLDER_TIMEOUT_MS > 0) {
-      entry.timer = window.setTimeout(() => hideRestoredContent(entry, false), PLACEHOLDER_TIMEOUT_MS);
+    if (
+      typeof PLACEHOLDER_TIMEOUT_MS === 'number' &&
+      PLACEHOLDER_TIMEOUT_MS > 0
+    ) {
+      entry.timer = window.setTimeout(
+        () => hideRestoredContent(entry, false),
+        PLACEHOLDER_TIMEOUT_MS
+      );
     }
 
     if (!entry.closeButton && element.nodeType === 1) {
@@ -947,7 +1033,9 @@
   }
 
   function applyPlaceholdersToRemovedContent() {
-    const removedElements = document.querySelectorAll('[data-clean-search-removed]');
+    const removedElements = document.querySelectorAll(
+      '[data-clean-search-removed]'
+    );
     removedElements.forEach(element => {
       const type = element.getAttribute('data-clean-search-type') || 'unknown';
       createRemovalPlaceholder(element, type);
@@ -976,7 +1064,9 @@
     try {
       // Select the AI Mode button in the topbar
       // Based on its position as the first item or by text content
-      const aiModeButtons = Array.from(document.querySelectorAll('div[role="listitem"] a')).filter(a => {
+      const aiModeButtons = Array.from(
+        document.querySelectorAll('div[role="listitem"] a')
+      ).filter(a => {
         const text = a.textContent.toLowerCase();
         return text.includes('ai mode');
       });
@@ -1003,16 +1093,22 @@
       currentStats.scanCount++;
       // Reset safety counter for this scan
       safetyCounter = 0;
+      // Always run the minimalist pass first so comprehensive mode includes it
       runMinimalistScan();
-
       if (filterSettings.minimalistMode) {
-        return;
+        return; // Minimalist stops here
       }
 
       if (filterSettings.removeAiOverview) {
         removeAiBlocksBySelector();
         removeAiBlocksByHeadings();
         removeAiResultsByContent();
+        // Also clear AI responses embedded inside People Also Ask entries
+        removePeopleAlsoAskEntries();
+      }
+
+      if (filterSettings.linksOnlyMode) {
+        enforceLinksOnlyLayout();
       }
 
       if (filterSettings.removeLowQualitySites) {
@@ -1025,6 +1121,100 @@
     } catch (error) {
       Logger.error('Error scanning for content', error);
     }
+  }
+
+  // ============ LINKS-ONLY MODE =========
+
+  // Remove PAA blocks as whole sections, not just pairs
+  function removePeopleAlsoAskBlocksFully() {
+    const pairs = document.querySelectorAll('div.related-question-pair');
+    pairs.forEach(pair => {
+      const container =
+        pair.closest('g-section-with-header') ||
+        pair.closest('div[jscontroller]') ||
+        pair.closest('.g') ||
+        pair.closest('[data-ved]') ||
+        pair.closest('[data-hveid]');
+      if (container && !container.hasAttribute('data-clean-search-removed')) {
+        removeElement(container, 'links-only');
+      }
+    });
+  }
+
+  function removeRightRailPanels() {
+    const rhs = document.querySelector('#rhs, [role="complementary"]');
+    if (
+      rhs &&
+      !rhs.hasAttribute('data-clean-search-removed') &&
+      !isDangerousContainer(rhs)
+    ) {
+      removeElement(rhs, 'links-only');
+    }
+  }
+
+  function isOrganicResult(el) {
+    try {
+      // Keep results that have an external link and a visible title
+      const anchor = el.querySelector('a[href^="http"]');
+      const hasH3 = !!el.querySelector('h3');
+      if (!anchor || !hasH3) {
+        return false;
+      }
+      const host = extractHostname(anchor.href);
+      if (!host) {
+        return false;
+      }
+      return !/(^|\.)google\./i.test(host);
+    } catch {
+      return false;
+    }
+  }
+
+  function pruneNonOrganicModules() {
+    const rso = document.querySelector('#rso');
+    if (!rso) {
+      return;
+    }
+
+    const children = Array.from(rso.children);
+    children.forEach(node => {
+      if (node.hasAttribute('data-clean-search-removed')) {
+        return;
+      }
+
+      // Remove obvious modules
+      const moduleSelectors = [
+        'g-scrolling-carousel',
+        'g-section-with-header',
+        '[data-hveid] g-card',
+        '[aria-label*="Videos" i]',
+        '[aria-label*="Images" i]'
+      ];
+      if (moduleSelectors.some(sel => node.querySelector(sel))) {
+        removeElement(node, 'links-only');
+        return;
+      }
+
+      // Remove containers that house PAA pairs
+      if (node.querySelector('div.related-question-pair')) {
+        removeElement(node, 'links-only');
+        return;
+      }
+
+      // Keep if it looks like an organic result; otherwise remove
+      const candidate = node.matches('.g, [data-ved], [data-hveid]')
+        ? node
+        : node.closest('.g') || node;
+      if (!isOrganicResult(candidate)) {
+        removeElement(node, 'links-only');
+      }
+    });
+  }
+
+  function enforceLinksOnlyLayout() {
+    removeRightRailPanels();
+    removePeopleAlsoAskBlocksFully();
+    pruneNonOrganicModules();
   }
 
   function removeAiBlocksBySelector() {
@@ -1048,7 +1238,9 @@
   }
 
   function removePeopleAlsoAskEntries() {
-    const questionPairs = document.querySelectorAll('div.related-question-pair');
+    const questionPairs = document.querySelectorAll(
+      'div.related-question-pair'
+    );
 
     questionPairs.forEach(pair => {
       if (!pair || pair.hasAttribute('data-clean-search-removed')) {
@@ -1077,9 +1269,7 @@
         textParts.push(snippetText);
       }
 
-      const combinedText = textParts
-        .join(' ')
-        .toLowerCase();
+      const combinedText = textParts.join(' ').toLowerCase();
 
       const hasSgeAttribution = Array.from(
         container.querySelectorAll('[data-attrid]')
@@ -1087,6 +1277,17 @@
         const attrId = node.getAttribute('data-attrid');
         return Boolean(attrId && attrId.toLowerCase().includes('sge'));
       });
+
+      // New: explicit AI selector hits within the PAA answer area
+      let hasAiSelectorHit = false;
+      try {
+        for (const selector of filterData.aiSelectors) {
+          if (container.querySelector(selector)) {
+            hasAiSelectorHit = true;
+            break;
+          }
+        }
+      } catch {}
 
       let hasLowQualityLink = false;
       const links = container.querySelectorAll('a[href^="http"]');
@@ -1130,6 +1331,7 @@
 
       const hasAiSignals =
         hasSgeAttribution ||
+        hasAiSelectorHit ||
         containsAiIndicator(combinedText) ||
         containsAiOverviewHeading(combinedText);
 
@@ -1152,17 +1354,32 @@
         return;
       }
 
-      const containers = [
-        heading.closest('.g, .yf, [data-ved]'),
-        heading.closest('[data-hveid]'),
-        heading.closest('div[jscontroller]'),
-        heading.closest('g-section-with-header'),
-        heading.closest('div.cUnQKe'),
-        heading.parentElement?.parentElement?.parentElement
-      ];
+      // Prefer the nearest ancestor matching explicit AI selectors
+      let container = null;
+      try {
+        for (const selector of filterData.aiSelectors) {
+          const candidate = heading.closest(selector);
+          if (candidate && !candidate.hasAttribute('data-removed')) {
+            container = candidate;
+            break;
+          }
+        }
+      } catch {}
 
-      const container = containers.find(el => el && !el.hasAttribute('data-removed'));
-      if (container) {
+      // Conservative fallbacks
+      if (!container) {
+        const candidates = [
+          heading.closest('g-section-with-header'),
+          heading.closest('[data-hveid]'),
+          heading.closest('div[jscontroller]'),
+          heading.closest('.g, .yf, [data-ved]'),
+          heading.closest('div.cUnQKe')
+        ];
+        container =
+          candidates.find(el => el && !el.hasAttribute('data-removed')) || null;
+      }
+
+      if (container && !isDangerousContainer(container)) {
         Logger.debug('Found AI content via heading detection', { text });
         removeElement(container, 'ai');
       }
@@ -1170,13 +1387,17 @@
   }
 
   function removeAiResultsByContent() {
-    const searchResults = document.querySelectorAll('.g, [data-sokoban-feature]');
+    const searchResults = document.querySelectorAll(
+      '.g, [data-sokoban-feature]'
+    );
     searchResults.forEach(result => {
       if (result.hasAttribute('data-removed')) {
         return;
       }
 
-      const headingText = (result.querySelector('h3')?.innerText || '').toLowerCase();
+      const headingText = (
+        result.querySelector('h3')?.innerText || ''
+      ).toLowerCase();
       const descriptionText = collectSnippetText(result).toLowerCase();
       const ariaLabel = (result.getAttribute('aria-label') || '').toLowerCase();
 
@@ -1250,7 +1471,9 @@
         }
       });
 
-      const adIndicators = document.querySelectorAll('.g, [data-text-ad], [data-sokoban-feature]');
+      const adIndicators = document.querySelectorAll(
+        '.g, [data-text-ad], [data-sokoban-feature]'
+      );
       adIndicators.forEach(result => {
         if (result.hasAttribute('data-removed')) {
           return;
@@ -1372,10 +1595,14 @@
             ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
             result => {
               if (result.cleanSearchEnabled !== undefined) {
-                extensionEnabled = result.cleanSearchEnabled && extensionEnabled;
+                extensionEnabled =
+                  result.cleanSearchEnabled && extensionEnabled;
               }
               if (result.filterSettings) {
-                filterSettings = { ...filterSettings, ...result.filterSettings };
+                filterSettings = {
+                  ...filterSettings,
+                  ...result.filterSettings
+                };
               }
 
               if (typeof result.loggingEnabled !== 'undefined') {
@@ -1444,9 +1671,13 @@
           },
           updateSettings: newSettings => {
             const oldMinimalistMode = filterSettings.minimalistMode;
+            const oldLinksOnlyMode = filterSettings.linksOnlyMode;
             filterSettings = { ...filterSettings, ...newSettings };
 
-            if (newSettings && typeof newSettings.loggingEnabled !== 'undefined') {
+            if (
+              newSettings &&
+              typeof newSettings.loggingEnabled !== 'undefined'
+            ) {
               loggingEnabled = !!newSettings.loggingEnabled;
             }
 
@@ -1472,13 +1703,25 @@
               }
             }
 
+            if (oldLinksOnlyMode !== filterSettings.linksOnlyMode) {
+              // Links-only works best with comprehensive observer
+              initComprehensiveMode();
+              showNotification(
+                filterSettings.linksOnlyMode
+                  ? 'Links-only mode enabled'
+                  : 'Links-only mode disabled',
+                'success'
+              );
+            }
+
             if (typeof chrome !== 'undefined' && chrome.storage) {
               chrome.storage.local.set({ filterSettings: filterSettings });
             }
           },
           getSettings: () => filterSettings,
           isEnabled: () => extensionEnabled,
-          getMode: () => (filterSettings.minimalistMode ? 'minimalist' : 'comprehensive'),
+          getMode: () =>
+            filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
           setLogging: enabled => {
             loggingEnabled = !!enabled;
             if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -1494,7 +1737,9 @@
           switchMode: () => {
             filterSettings.minimalistMode = !filterSettings.minimalistMode;
             window.cleanSearchDebug.updateSettings(filterSettings);
-            return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
+            return filterSettings.minimalistMode
+              ? 'minimalist'
+              : 'comprehensive';
           },
 
           // Test helper function to help debug with feudalism.html test file
@@ -1507,7 +1752,9 @@
               try {
                 const elements = document.querySelectorAll(selector);
                 aiElements[selector] = elements.length;
-                Logger.info(`Selector ${selector} matches ${elements.length} elements`);
+                Logger.info(
+                  `Selector ${selector} matches ${elements.length} elements`
+                );
               } catch (e) {
                 Logger.error(`Error with selector ${selector}:`, e);
               }

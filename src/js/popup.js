@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const academicToggle = document.getElementById('academicToggle');
   const placeholdersToggle = document.getElementById('placeholdersToggle');
   const minimalistToggle = document.getElementById('minimalistToggle');
+  const linksOnlyToggle = document.getElementById('linksOnlyToggle');
   const hideAiModeToggle = document.getElementById('hideAiModeToggle');
   const scanNowBtn = document.getElementById('scanNow');
   const addToWhitelistBtn = document.getElementById('addToWhitelist');
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     removeAds: true,
     academicMode: false,
     minimalistMode: false,
+    linksOnlyMode: false,
     showReplacementPlaceholders: false,
     customWhitelist: []
   };
@@ -269,59 +271,66 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'], result => {
-      const enabled = result.cleanSearchEnabled !== false;
-      extensionToggle.checked = enabled;
+    chrome.storage.local.get(
+      ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
+      result => {
+        const enabled = result.cleanSearchEnabled !== false;
+        extensionToggle.checked = enabled;
 
-      if (result.filterSettings) {
-        filterSettings = { ...filterSettings, ...result.filterSettings };
-      }
-
-      // Update individual toggles
-      aiToggle.checked = filterSettings.removeAiOverview;
-      lowQualityToggle.checked = filterSettings.removeLowQualitySites;
-      adsToggle.checked = filterSettings.removeAds;
-      academicToggle.checked = filterSettings.academicMode;
-      minimalistToggle.checked = filterSettings.minimalistMode || false;
-      hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
-      placeholdersToggle.checked =
-        filterSettings.showReplacementPlaceholders || false;
-
-      // Update whitelist display
-      updateWhitelistDisplay();
-
-      // AI filter control should be present and styled like the other filters
-
-      // Load logging state and update UI
-      loggingEnabled = !!result.loggingEnabled;
-      updateLoggingButtonUI(loggingEnabled);
-
-      // Broadcast current logging state to active tab so content script is in sync
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (!tabs[0]) {
-          return;
+        if (result.filterSettings) {
+          filterSettings = { ...filterSettings, ...result.filterSettings };
         }
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: setLogging,
-          args: [loggingEnabled]
-        });
-      });
 
-      // If minimalist mode was stored as enabled, enforce UI state
-      if (filterSettings.minimalistMode) {
-        aiToggle.checked = true;
-        lowQualityToggle.checked = false;
-        adsToggle.checked = false;
-        placeholdersToggle.checked = false;
+        // Update individual toggles
+        aiToggle.checked = filterSettings.removeAiOverview;
+        lowQualityToggle.checked = filterSettings.removeLowQualitySites;
+        adsToggle.checked = filterSettings.removeAds;
+        academicToggle.checked = filterSettings.academicMode;
+        minimalistToggle.checked = filterSettings.minimalistMode || false;
+        linksOnlyToggle.checked = filterSettings.linksOnlyMode || false;
+        hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
+        placeholdersToggle.checked =
+          filterSettings.showReplacementPlaceholders || false;
 
-        lowQualityToggle.disabled = true;
-        adsToggle.disabled = true;
-        placeholdersToggle.disabled = true;
+        // Update whitelist display
+        updateWhitelistDisplay();
+
+        // AI filter control should be present and styled like the other filters
+
+        // Load logging state and update UI
+        loggingEnabled = !!result.loggingEnabled;
+        updateLoggingButtonUI(loggingEnabled);
+
+        // Broadcast current logging state to active tab so content script is in sync
+        chrome.tabs.query(
+          { active: true, currentWindow: true },
+          function(tabs) {
+            if (!tabs[0]) {
+              return;
+            }
+            chrome.scripting.executeScript({
+              target: { tabId: tabs[0].id },
+              function: setLogging,
+              args: [loggingEnabled]
+            });
+          }
+        );
+
+        // If minimalist mode was stored as enabled, enforce UI state
+        if (filterSettings.minimalistMode) {
+          aiToggle.checked = true;
+          lowQualityToggle.checked = false;
+          adsToggle.checked = false;
+          placeholdersToggle.checked = false;
+
+          lowQualityToggle.disabled = true;
+          adsToggle.disabled = true;
+          placeholdersToggle.disabled = true;
+        }
+
+        updateStatus(enabled);
       }
-
-      updateStatus(enabled);
-    });
+    );
   }
 
   function updateLoggingButtonUI(enabled) {
@@ -330,7 +339,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     toggleLoggingBtn.classList.toggle('enabled', enabled);
     toggleLoggingBtn.classList.toggle('disabled', !enabled);
-    toggleLoggingBtn.textContent = enabled ? 'Logging Enabled' : 'Logging Disabled';
+    toggleLoggingBtn.textContent = enabled
+      ? 'Logging Enabled'
+      : 'Logging Disabled';
   }
 
   function updateStatus(enabled) {
@@ -446,7 +457,8 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholdersToggle.disabled = true;
 
         statusDiv.className = 'status active';
-        statusDiv.textContent = 'Minimalist Mode: Lightweight AI Overview removal only';
+        statusDiv.textContent =
+          'Minimalist Mode: Lightweight AI Overview removal only';
         setTimeout(() => updateStatus(extensionToggle.checked), 3000);
       } else {
         // restore previous states
@@ -471,7 +483,8 @@ document.addEventListener('DOMContentLoaded', function() {
         aiToggle.checked = !!filterSettings.removeAiOverview;
         lowQualityToggle.checked = !!filterSettings.removeLowQualitySites;
         adsToggle.checked = !!filterSettings.removeAds;
-        placeholdersToggle.checked = !!filterSettings.showReplacementPlaceholders;
+        placeholdersToggle.checked =
+          !!filterSettings.showReplacementPlaceholders;
 
         lowQualityToggle.disabled = false;
         adsToggle.disabled = false;
@@ -483,6 +496,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       saveFilterSettings();
+    });
+
+    // Links-only mode
+    linksOnlyToggle.addEventListener('change', function() {
+      filterSettings.linksOnlyMode = linksOnlyToggle.checked;
+      saveFilterSettings();
+      statusDiv.className = 'status active';
+      statusDiv.textContent = linksOnlyToggle.checked
+        ? 'Links-only Mode: Showing plain organic links only'
+        : 'Links-only Mode disabled';
+      setTimeout(() => updateStatus(extensionToggle.checked), 2000);
     });
 
     // Logging toggle
@@ -551,14 +575,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Whitelist input field and button event listeners
     const whitelistInput = document.getElementById('whitelistInput');
-    
+
     addToWhitelistBtn.addEventListener('click', function() {
       const domain = whitelistInput.value;
       if (domain) {
         addToWhitelist(domain);
       }
     });
-    
+
     // Also add domain when pressing Enter in the input field
     whitelistInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {

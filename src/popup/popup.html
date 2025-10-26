@@ -8,7 +8,9 @@
   </head>
   <body>
     <div class="header">
-      <div class="icon"><img src="popup/images/icon-128.png" alt="SlopSlurp Icon" /></div>
+      <div class="icon">
+        <img src="popup/images/icon-128.png" alt="SlopSlurp Icon" />
+      </div>
       <h1>SlopSlurp</h1>
       <div class="subtitle">Get Better Search Results</div>
     </div>
@@ -24,7 +26,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      
+
       <div class="section-title">Content Filters</div>
 
       <div class="filter-control" id="aiFilterControl">
@@ -65,7 +67,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      
+
       <div class="filter-control">
         <div class="filter-info">
           <div class="filter-label">Hide AI Mode Button</div>
@@ -79,10 +81,10 @@
         </label>
       </div>
     </div>
-    
+
     <div class="filter-section">
       <div class="section-title">Mode Settings</div>
-      
+
       <div class="filter-control">
         <div class="filter-info">
           <div class="filter-label">Minimalist Mode</div>
@@ -95,7 +97,20 @@
           <span class="slider"></span>
         </label>
       </div>
-      
+
+      <div class="filter-control">
+        <div class="filter-info">
+          <div class="filter-label">Links-only Mode</div>
+          <div class="filter-description">
+            Strip People Also Ask and modules; keep plain link results only
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="linksOnlyToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <div class="filter-control">
         <div class="filter-info">
           <div class="filter-label">Academic Mode</div>
@@ -108,7 +123,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      
+
       <div class="filter-control">
         <div class="filter-info">
           <div class="filter-label">Show Removal Placeholders</div>
@@ -171,7 +186,11 @@
             Sites that will never be filtered
           </div>
           <div class="whitelist-input-container">
-            <input type="text" id="whitelistInput" placeholder="Enter domain (e.g., wikipedia.org)" />
+            <input
+              type="text"
+              id="whitelistInput"
+              placeholder="Enter domain (e.g., wikipedia.org)"
+            />
             <button id="addToWhitelist" class="whitelist-btn">Add</button>
           </div>
           <div id="whitelistDisplay" class="whitelist-display">
@@ -179,24 +198,29 @@
           </div>
         </div>
         <div class="whitelist-controls">
-          <button
-            id="clearWhitelist"
-            class="whitelist-btn secondary"
-          >
+          <button id="clearWhitelist" class="whitelist-btn secondary">
             Clear All
           </button>
         </div>
       </div>
       <div class="controls" style="margin-top: 16px">
-        <button id="toggleLogging" class="logging-btn disabled">Logging Disabled</button>
+        <button id="toggleLogging" class="logging-btn disabled">
+          Logging Disabled
+        </button>
       </div>
     </div>
 
     <div class="footer">
       <div>SlopSlurp v2.1 • Professional Interface</div>
       <div>
-        <a href="mailto:charliejsomons@gmail.com" id="reportIssue">Report Issue</a> •
-        <a href="mailto:charliejsomons@gmail.com" id="viewSource">Source Code</a> •
+        <a href="mailto:charliejsomons@gmail.com" id="reportIssue"
+          >Report Issue</a
+        >
+        •
+        <a href="mailto:charliejsomons@gmail.com" id="viewSource"
+          >Source Code</a
+        >
+        •
         <a href="mailto:charliejsomons@gmail.com" id="showHelp">Help</a>
       </div>
     </div>
