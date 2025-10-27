@@ -1,4 +1,5 @@
 // SlopSlurp Layout manager and such
+// I(cole) can take all the todo's in here
 // Handles notifications, banners, and placeholder management
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});

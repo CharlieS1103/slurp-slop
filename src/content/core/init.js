@@ -1,5 +1,6 @@
 // SlopSlurp Initialization & Main Entry Point
 // This is the final module that orchestrates everything and sets up the extension
+// I(cole) can take all the todo's in here
 (() => {
   'use strict';
 
