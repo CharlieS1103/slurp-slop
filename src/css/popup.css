@@ -150,34 +150,6 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-.status {
-  padding: 14px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  text-align: center;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.status.active {
-  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
-  color: #22543d;
-  border: 1px solid #9ae6b4;
-}
-
-.status.inactive {
-  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
-  color: #9c4221;
-  border: 1px solid #fdba74;
-}
-
-.status.disabled {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  color: #718096;
-  border: 1px solid #edf2f7;
-}
-
 .stats-section {
   margin-bottom: 24px;
 }

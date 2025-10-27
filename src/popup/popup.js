@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const showHelpBtn = document.getElementById('showHelp');
   const toggleLoggingBtn = document.getElementById('toggleLogging');
 
+  let hideableSection = document.getElementById('can-be-hidden');
+  const hideableSectionHTML = hideableSection.innerHTML;
+
   // Logging state for popup UI
   let loggingEnabled = false;
 
@@ -65,6 +68,18 @@ document.addEventListener('DOMContentLoaded', function () {
     adsToggle: null,
     placeholdersToggle: null
   };
+
+  // Hide every setting if master switch is off; there's no need to show everything if the extension is off. -e
+  function toggleSettingVisibility() {
+    if (!extensionToggle.checked) {
+      hideableSection.innerHTML = "";
+    }
+    else {
+      if (hideableSection.innerHTML == "") {
+        hideableSection.innerHTML = hideableSectionHTML;
+      }
+    }
+  }
 
   // Save filter settings function
   function saveFilterSettings() {
@@ -253,13 +268,14 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Initialize popup
-  function init() {
+  async function init() {
     try {
       console.log('SlopSlurp popup initializing...');
-      loadSettings();
+      await loadSettings();
       loadStats();
       checkCurrentPage();
       setupEventListeners();
+      toggleSettingVisibility();
       console.log('SlopSlurp popup initialized successfully');
     } catch (error) {
       console.error('Error initializing popup:', error);
@@ -271,77 +287,80 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function loadSettings() {
-    chrome.storage.local.get(
-      ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
-      result => {
-        const enabled = result.cleanSearchEnabled !== false;
-        extensionToggle.checked = enabled;
+    return new Promise(resolve => {
+      chrome.storage.local.get(
+        ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
+        result => {
+          const enabled = result.cleanSearchEnabled !== false;
+          extensionToggle.checked = enabled;
 
-        if (result.filterSettings) {
-          filterSettings = { ...filterSettings, ...result.filterSettings };
-        }
-
-        // Update individual toggles
-        aiToggle.checked = filterSettings.removeAiOverview;
-        lowQualityToggle.checked = filterSettings.removeLowQualitySites;
-        adsToggle.checked = filterSettings.removeAds;
-        academicToggle.checked = filterSettings.academicMode;
-        minimalistToggle.checked = filterSettings.minimalistMode || false;
-        linksOnlyToggle.checked = filterSettings.linksOnlyMode || false;
-        hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
-        placeholdersToggle.checked =
-          filterSettings.showReplacementPlaceholders || false;
-
-        // Update whitelist display
-        updateWhitelistDisplay();
-        // Set disable terms button state
-        const disableTermsBtn = document.getElementById('disableTermsToggle');
-        if (disableTermsBtn) {
-          const on = !!filterSettings.disableTermsEnabled;
-          disableTermsBtn.textContent = `Disable terms: ${on ? 'On' : 'Off'}`;
-        }
-
-        // Load logging state and update UI
-        loggingEnabled = !!result.loggingEnabled;
-        updateLoggingButtonUI(loggingEnabled);
-
-        // Broadcast current logging state to active tab
-        // i feel like the logging in it's current state could be annoying
-        // TODO: don't print logs to console when in prod, have them appended to a show logs modal or smth
-        chrome.tabs.query(
-          { active: true, currentWindow: true },
-          function (tabs) {
-            if (!tabs[0]) {
-              return;
-            }
-            chrome.scripting.executeScript({
-              target: { tabId: tabs[0].id },
-              function: setLogging,
-              args: [loggingEnabled]
-            });
+          if (result.filterSettings) {
+            filterSettings = { ...filterSettings, ...result.filterSettings };
           }
-        );
 
-        // enforce all UI rules
-        if (filterSettings.minimalistMode) {
-          aiToggle.checked = true;
-          lowQualityToggle.checked = false;
-          adsToggle.checked = false;
-          placeholdersToggle.checked = false;
+          // Update individual toggles
+          aiToggle.checked = filterSettings.removeAiOverview;
+          lowQualityToggle.checked = filterSettings.removeLowQualitySites;
+          adsToggle.checked = filterSettings.removeAds;
+          academicToggle.checked = filterSettings.academicMode;
+          minimalistToggle.checked = filterSettings.minimalistMode || false;
+          linksOnlyToggle.checked = filterSettings.linksOnlyMode || false;
+          hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
+          placeholdersToggle.checked =
+            filterSettings.showReplacementPlaceholders || false;
 
-          lowQualityToggle.disabled = true;
-          adsToggle.disabled = true;
-          placeholdersToggle.disabled = true;
+          // Update whitelist display
+          updateWhitelistDisplay();
+          // Set disable terms button state
+          const disableTermsBtn = document.getElementById('disableTermsToggle');
+          if (disableTermsBtn) {
+            const on = !!filterSettings.disableTermsEnabled;
+            disableTermsBtn.textContent = `Disable terms: ${on ? 'On' : 'Off'}`;
+          }
+
+          // Load logging state and update UI
+          loggingEnabled = !!result.loggingEnabled;
+          updateLoggingButtonUI(loggingEnabled);
+
+          // Broadcast current logging state to active tab
+          // i feel like the logging in it's current state could be annoying
+          // TODO: don't print logs to console when in prod, have them appended to a show logs modal or smth
+          chrome.tabs.query(
+            { active: true, currentWindow: true },
+            function (tabs) {
+              if (!tabs[0]) {
+                return;
+              }
+              chrome.scripting.executeScript({
+                target: { tabId: tabs[0].id },
+                function: setLogging,
+                args: [loggingEnabled]
+              });
+            }
+          );
+
+          // enforce all UI rules
+          if (filterSettings.minimalistMode) {
+            aiToggle.checked = true;
+            lowQualityToggle.checked = false;
+            adsToggle.checked = false;
+            placeholdersToggle.checked = false;
+
+            lowQualityToggle.disabled = true;
+            adsToggle.disabled = true;
+            placeholdersToggle.disabled = true;
+          }
+
+          // If links-only mode is enabled, disable placeholders toggle
+          if (filterSettings.linksOnlyMode) {
+            placeholdersToggle.disabled = true;
+          }
+
+          updateStatus(enabled);
+          resolve(result);
         }
-
-        // If links-only mode is enabled, disable placeholders toggle
-        if (filterSettings.linksOnlyMode) {
-          placeholdersToggle.disabled = true;
-        }
-
-        updateStatus(enabled);
-      }
-    );
+      );
+    });
   }
 
   function updateLoggingButtonUI(enabled) {
@@ -392,6 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const enabled = extensionToggle.checked;
       chrome.storage.local.set({ cleanSearchEnabled: enabled });
       updateStatus(enabled);
+      toggleSettingVisibility(enabled);
 
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.scripting.executeScript({
