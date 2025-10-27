@@ -2,7 +2,7 @@
    ├─ content
    │  ├─ core
    │  │  ├─ init.js
-   │  │  │  ├─ line 10: TODO : honestly might be worth moving to a more OOP based approach
+   │  │  │  ├─ line 10: TODO : honestly might be worth moving to a more OOP based approach (WIP)
    │  │  │  ├─ line 65: TODO : either switch this stuff into an array or pop them in selectors, haven't decided yet.
    │  │  │  ├─ line 109: TODO : fix all this placeholder nonsense
    │  │  │  └─ line 143: TODO : Document all the html elements we create / modify + attributes
