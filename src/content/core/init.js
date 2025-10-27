@@ -10,36 +10,40 @@
   // State variables
   // TODO: honestly might be worth moving to a more OOP based approach
   // given the shear number of variables this extension has to have
-  let extensionEnabled = true;
-  let lastQuery = '';
-  let minimalistObserver = null;
-  let comprehensiveObserver = null;
-  let loggingEnabled = false;
+  // gonna start working on creating lets and the objects into one object, then refactor throughout the code
 
-  let currentStats = {
-    aiElementsRemoved: 0,
-    lowQualitySitesRemoved: 0,
-    adsRemoved: 0,
-    totalElementsRemoved: 0,
-    scanCount: 0,
-    lastScanTime: Date.now(),
-    placeholdersCreated: 0
-  };
+  let extension = {
+    //State Variables
+    extensionEnabled: true,
+    lastQuery: '',
+    minimalistObserver: null,
+    comprehensiveObserver: null, 
+    loggingEnabled: false,
 
-  // Removed lifetime stats to simplify and stabilize per-page reporting
+    currentStats: {
+      aiElementsRemoved: 0,
+      lowQualitySitesRemoved: 0,
+      adsRemoved: 0,
+      totalElementsRemoved: 0,
+      scanCount: 0,
+      lastScanTime: Date.now(),
+      placeholdersCreated: 0
+    },
 
-  let filterSettings = {
-    removeAiOverview: true,
-    removeLowQualitySites: true,
-    removeAds: true,
-    academicMode: false,
-    minimalistMode: false,
-    linksOnlyMode: false,
-    hideAiModeButton: true,
-    showReplacementPlaceholders: false,
-    disableTermsEnabled: false,
-    customWhitelist: []
-  };
+    filterSettings: {
+      removeAiOverview: true,
+      removeLowQualitySites: true,
+      removeAds: true,
+      academicMode: false,
+      minimalistMode: false,
+      linksOnlyMode: false,
+      hideAiModeButton: true,
+      showReplacementPlaceholders: false,
+      disableTermsEnabled: false,
+      customWhitelist: []
+    }
+
+  }
 
   // Safety mechanism, added default vals in addition to config for safety, but honestly could be removed.
   let safetyCounter = 0;
@@ -99,7 +103,7 @@
 
   function removeElement(element, type = 'unknown') {
     if (
-      !extensionEnabled ||
+      !extension.extensionEnabled ||
       !element ||
       element.hasAttribute('data-slopslurp-placeholder') ||
       element.hasAttribute('data-slopslurp-wrapper') ||
@@ -177,8 +181,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const currentQuery = urlParams.get('q');
 
-    if (currentQuery !== lastQuery) {
-      lastQuery = currentQuery;
+    if (currentQuery !== extension.lastQuery) {
+      extension.lastQuery = currentQuery;
       safetyCounter = 0;
 
       // Reset current page stats, called each load
@@ -272,33 +276,35 @@
   function initMinimalistMode() {
     Logger?.info('Starting minimalist mode');
 
-    if (minimalistObserver) {
-      minimalistObserver.disconnect();
+    if (e) {
+      e.disconnect();
     }
-    if (comprehensiveObserver) {
-      comprehensiveObserver.disconnect();
+    if (extension.comprehensiveObserver) {
+      extension.comprehensiveObserver.disconnect();
     }
 
-    minimalistObserver = new MutationObserver(() => {
+    e = new MutationObserver(() => {
+      const enabled = extension.extensionEnabled;
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
-          extensionEnabled,
+          enabled,
           hideAiModeButton: filterSettings.hideAiModeButton,
           customWhitelist: filterSettings.customWhitelist
         });
       }
     });
 
-    minimalistObserver.observe(document, {
+    e.observe(document, {
       childList: true,
       subtree: true
     });
 
     setTimeout(() => {
-      minimalistObserver.takeRecords();
+      const enabled = extension.extensionEnabled;
+      e.takeRecords();
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
-          extensionEnabled,
+          enabled,
           hideAiModeButton: filterSettings.hideAiModeButton,
           customWhitelist: filterSettings.customWhitelist
         });
@@ -309,11 +315,11 @@
   function initComprehensiveMode() {
     Logger?.info('Starting comprehensive mode');
 
-    if (minimalistObserver) {
-      minimalistObserver.disconnect();
+    if (e) {
+      e.disconnect();
     }
-    if (comprehensiveObserver) {
-      comprehensiveObserver.disconnect();
+    if (extension.comprehensiveObserver) {
+      extension.comprehensiveObserver.disconnect();
     }
     // arbitrary ass numbers play around with it.
     let scanTimeout = null;
@@ -322,7 +328,7 @@
     const MIN_SCAN_INTERVAL_MS = NS.config?.CONFIG?.minScanIntervalMs || 1000;
 
     const scanWrapper = () => {
-      if (!extensionEnabled || filterSettings.minimalistMode) {
+      if (!extension.extensionEnabled || filterSettings.minimalistMode) {
         return;
       }
 
@@ -345,19 +351,20 @@
         safetyCounter = 0;
 
         if (NS.scanForContent) {
+          const enabled = extension.extensionEnabled;
           NS.scanForContent(
             removeElement,
             isDangerousContainer,
-            { ...filterSettings, extensionEnabled },
+            { ...filterSettings, enabled },
             currentStats
           );
         }
       }, SCAN_DEBOUNCE_MS);
     };
 
-    comprehensiveObserver = new MutationObserver(scanWrapper);
+    extension.comprehensiveObserver = new MutationObserver(scanWrapper);
 
-    comprehensiveObserver.observe(document.body || document.documentElement, {
+    extension.comprehensiveObserver.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true
     });
@@ -365,18 +372,20 @@
     // Initial scans and whatnot
     safetyCounter = 0;
     if (NS.scanForContent) {
+      const enabled = extension.extensionEnabled;
       NS.scanForContent(
         removeElement,
         isDangerousContainer,
-        { ...filterSettings, extensionEnabled },
+        { ...filterSettings, enabled },
         currentStats
       );
     }
 
     setTimeout(() => {
+      const enabled = extension.extensionEnabled;
       if (filterSettings.hideAiModeButton && NS.hideAiModeInTopbar) {
         NS.hideAiModeInTopbar(
-          extensionEnabled,
+          extension.extensionEnabled,
           filterSettings.hideAiModeButton
         );
       }
@@ -385,19 +394,20 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...filterSettings, extensionEnabled },
+          { ...filterSettings, enabled },
           currentStats
         );
       }
     }, 500);
 
     setTimeout(() => {
+      const enabled = extension.extensionEnabled;
       safetyCounter = 0;
       if (NS.scanForContent) {
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...filterSettings, extensionEnabled },
+          { ...filterSettings, enabled },
           currentStats
         );
       }
@@ -408,7 +418,7 @@
 
   function initialize() {
     try {
-      if (loggingEnabled) {
+      if (extension.loggingEnabled) {
         Logger?.info('Filter data loaded', getFilterData());
       }
 
@@ -420,10 +430,10 @@
       const applySettings = () => {
         // If user enabled auto-disable terms and the query matches, show banner and bail
         if (filterSettings.disableTermsEnabled && shouldAutoDisable()) {
-          extensionEnabled = false;
+          extension.extensionEnabled = false;
           if (NS.showAutoDisableBanner) {
             NS.showAutoDisableBanner(() => {
-              extensionEnabled = true;
+              extension.extensionEnabled = true;
               if (NS.showNotification) {
                 NS.showNotification('SlopSlurp re-enabled', 'success');
               }
@@ -441,12 +451,12 @@
         }
         if (NS.handlePlaceholderSettingChange) {
           NS.handlePlaceholderSettingChange(
-            extensionEnabled && !!filterSettings.showReplacementPlaceholders,
+            extension.extensionEnabled && !!filterSettings.showReplacementPlaceholders,
             filterSettings
           );
         }
 
-        if (!extensionEnabled) {
+        if (!extension.extensionEnabled) {
           return;
         }
 
@@ -462,15 +472,15 @@
           [
             'cleanSearchEnabled',
             'filterSettings',
-            'loggingEnabled',
+            'extension.loggingEnabled',
             'cleanSearchStats'
           ],
           result => {
             // Default to enabled
             // in the context of the code repo i often use cleanSearch as a technical term for the changes we make
             // saying slopslurp in variable names just feels wrong for whatever reason
-            extensionEnabled =
-              result.cleanSearchEnabled !== false && extensionEnabled;
+            extension.extensionEnabled =
+              result.cleanSearchEnabled !== false && extension.extensionEnabled;
 
             // Initialize storage on first run
             if (result.cleanSearchEnabled === undefined) {
@@ -490,10 +500,10 @@
               filterSettings = enforceSettingsRules(filterSettings);
             }
 
-            if (typeof result.loggingEnabled !== 'undefined') {
-              loggingEnabled = !!result.loggingEnabled;
+            if (typeof result.extension.loggingEnabled !== 'undefined') {
+              extension.loggingEnabled = !!result.extension.loggingEnabled;
               if (Logger && typeof Logger.setEnabled === 'function') {
-                Logger.setEnabled(loggingEnabled);
+                Logger.setEnabled(extension.loggingEnabled);
               }
             }
 
@@ -512,7 +522,7 @@
       Logger?.info('SlopSlurp initialized', {
         url: window.location.href,
         mode: filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
-        enabled: extensionEnabled
+        enabled: extension.extensionEnabled
       });
 
       // Debug API you don't have to worry about this stuff
@@ -521,16 +531,18 @@
         scan: () => {
           safetyCounter = 0;
           if (filterSettings.minimalistMode && NS.runMinimalistScan) {
+            const enabled = extension.extensionEnabled;
             NS.runMinimalistScan(removeElement, isDangerousContainer, {
-              extensionEnabled,
+              enabled,
               hideAiModeButton: filterSettings.hideAiModeButton,
               customWhitelist: filterSettings.customWhitelist
             });
           } else if (NS.scanForContent) {
+            const enabled = extension.extensionEnabled;
             NS.scanForContent(
               removeElement,
               isDangerousContainer, // dangerous containers are just for safety, don't want to gut a whole dom accidentally
-              { ...filterSettings, extensionEnabled },
+              { ...filterSettings, enabled },
               currentStats
             );
           }
@@ -551,7 +563,7 @@
           }
         },
         setEnabled: enabled => {
-          extensionEnabled = enabled;
+          extension.extensionEnabled = enabled;
           if (typeof chrome !== 'undefined' && chrome.storage) {
             chrome.storage.local.set({ cleanSearchEnabled: enabled });
           }
@@ -571,11 +583,11 @@
             if (NS.removeAllPlaceholders) {
               NS.removeAllPlaceholders();
             }
-            if (minimalistObserver) {
-              minimalistObserver.disconnect();
+            if (e) {
+              e.disconnect();
             }
-            if (comprehensiveObserver) {
-              comprehensiveObserver.disconnect();
+            if (extension.comprehensiveObserver) {
+              extension.comprehensiveObserver.disconnect();
             }
           }
         },
@@ -600,11 +612,11 @@
 
           if (
             newSettings &&
-            typeof newSettings.loggingEnabled !== 'undefined'
+            typeof newSettings.extension.loggingEnabled !== 'undefined'
           ) {
-            loggingEnabled = !!newSettings.loggingEnabled;
+            extension.loggingEnabled = !!newSettings.extension.loggingEnabled;
             if (Logger && typeof Logger.setEnabled === 'function') {
-              Logger.setEnabled(loggingEnabled);
+              Logger.setEnabled(extension.loggingEnabled);
             }
           }
 
@@ -661,24 +673,25 @@
           }
         },
         getSettings: () => filterSettings,
-        isEnabled: () => extensionEnabled,
+        isEnabled: () => extension.extensionEnabled,
         getMode: () =>
           filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
         setLogging: enabled => {
-          loggingEnabled = !!enabled;
+          const loggingEnabled = extension.loggingEnabled;
+          extension.loggingEnabled = !!enabled;
           if (typeof chrome !== 'undefined' && chrome.storage) {
             chrome.storage.local.set({ loggingEnabled: loggingEnabled });
           }
           if (Logger && typeof Logger.setEnabled === 'function') {
-            Logger.setEnabled(loggingEnabled);
+            Logger.setEnabled(extension.loggingEnabled);
           }
-          if (loggingEnabled) {
+          if (extension.loggingEnabled) {
             Logger?.info('Logging enabled');
           } else {
             console.log('[SlopSlurp] Logging disabled');
           }
         },
-        getLogging: () => loggingEnabled,
+        getLogging: () => extension.loggingEnabled,
         switchMode: () => {
           filterSettings.minimalistMode = !filterSettings.minimalistMode;
           window.cleanSearchDebug.updateSettings(filterSettings);
@@ -686,8 +699,8 @@
         },
         runDiagnostics: () => {
           Logger?.info('Running diagnostics...');
-          const wasEnabled = loggingEnabled;
-          loggingEnabled = true;
+          const wasEnabled = extension.loggingEnabled;
+          extension.loggingEnabled = true;
           if (Logger && typeof Logger.setEnabled === 'function') {
             Logger.setEnabled(true);
           }
@@ -715,7 +728,7 @@
           });
           Logger?.info(`Found ${aiModeButtons.length} AI mode buttons`);
 
-          loggingEnabled = wasEnabled;
+          extension.loggingEnabled = wasEnabled;
           if (Logger && typeof Logger.setEnabled === 'function') {
             Logger.setEnabled(wasEnabled);
           }
