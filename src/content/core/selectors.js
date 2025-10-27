@@ -4,7 +4,7 @@
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   NS.selectors = NS.selectors || {};
 
-  // Core page structure, 
+  // Core page structure,
   const PAGE = {
     mainContainer: 'div#rcnt',
     searchResults: '#rso',
@@ -58,7 +58,7 @@
     '.hgKElc',
     '[data-content-feature]',
     '[data-sncf]',
-    'div[data-attrid]' 
+    'div[data-attrid]'
   ];
 
   // Ad stuff

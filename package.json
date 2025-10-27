@@ -19,7 +19,7 @@
     "obfuscate:js": "npx javascript-obfuscator dist/js/popup.js --output dist/js/popup.js --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding base64 --transform-object-keys true && npx javascript-obfuscator dist/js/utils.js --output dist/js/utils.js --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding base64 --transform-object-keys true && npx javascript-obfuscator dist/content-script.js --output dist/content-script.js --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding base64 --transform-object-keys true",
     "lint": "npx eslint \"src/**/*.js\" --max-warnings=0",
     "lint:fix": "npx eslint \"src/**/*.js\" --fix",
-    "format": "npx prettier --write \"src/**/*.{js,css,html,json,md}\" \"tests/**/*.{html,md}\" \"*.{md,json}\" manifest.json",
+    "format": "npx prettier --write \"src/**/*.{js,css,html,json,md}\" \"*.{md,json}\" manifest.json",
     "package": "npm run build && npm run zip",
     "zip": "cd dist && zip -r ../slopslurp-v$(node -p \"require('../package.json').version\").zip . && cd ..",
     "watch": "npm run build:dev && npm run watch:files",

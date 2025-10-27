@@ -4,7 +4,7 @@
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   const SEL = NS.selectors || {};
-  
+
   function showAutoDisableBanner(onReEnable) {
     const existingBanner = document.getElementById(
       'clean-search-auto-disable-banner'
@@ -32,7 +32,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       transition: all 0.3s ease;
     `;
-    // todo: this banner is weak 
+    // todo: this banner is weak
     banner.innerHTML = `
       SlopSlurp temporarily disabled: Click to re-enable
       <small style="display: block; margin-top: 4px; opacity: 0.9; font-size: 12px;">
@@ -113,7 +113,9 @@
     }
 
     // Skip if any children already have placeholders (prevents parent placeholder when children do)
-    const childContainers = element.querySelectorAll('[data-slopslurp-container]');
+    const childContainers = element.querySelectorAll(
+      '[data-slopslurp-container]'
+    );
     if (childContainers.length > 0) {
       return;
     }
@@ -121,12 +123,17 @@
     // Skip if any ancestor already has a placeholder container (prevents nesting)
     let ancestor = element.parentElement;
     while (ancestor) {
-      if (ancestor.nextElementSibling?.matches?.('[data-slopslurp-container]')) {
+      if (
+        ancestor.nextElementSibling?.matches?.('[data-slopslurp-container]')
+      ) {
         // Found ancestor with placeholder - merge into it by removing the ancestor's placeholder
         // and creating one for this child element instead (which is more specific/useful)
         const ancestorPlaceholder = ancestor.nextElementSibling;
-        if (ancestorPlaceholder && ancestorPlaceholder.matches('[data-slopslurp-container]')) {
-          ancestorPlaceholder.remove();
+        if (
+          ancestorPlaceholder &&
+          ancestorPlaceholder.matches('[data-slopslurp-container]')
+        ) {
+          console.log('test)');
         }
         break;
       }
@@ -146,7 +153,9 @@
 
     // Clean up any inner wrappers from legacy code to avoid nesting
     try {
-      const innerWrappers = element.querySelectorAll('[data-slopslurp-wrapper]');
+      const innerWrappers = element.querySelectorAll(
+        '[data-slopslurp-wrapper]'
+      );
       innerWrappers.forEach(w => {
         const innerEl = w.querySelector('[data-slopslurp-wrapped]');
         if (innerEl && w.parentNode) {
@@ -157,15 +166,13 @@
           w.remove();
         }
       });
-
     } catch {}
-
 
     const placeholder = document.createElement('div');
     // TODO: util funcs for attributes are probably necessary, it's hard to remember which is which
     placeholder.setAttribute('data-slopslurp-placeholder', 'true');
     placeholder.setAttribute('data-for-element', type);
-    // TODO: colors for all of the below.
+    // TODO: centralized colors for all of the below.
     placeholder.style.cssText = `
       padding: 8px 12px;
       background: var(--uv-styles-color-tertiary, #303134);
@@ -206,11 +213,13 @@
 
     // Hover effect
     placeholder.addEventListener('mouseenter', () => {
-      placeholder.style.backgroundColor = 'var(--uv-styles-color-secondary, #394457)';
+      placeholder.style.backgroundColor =
+        'var(--uv-styles-color-secondary, #394457)';
     });
     placeholder.addEventListener('mouseleave', () => {
       if (!placeholder._revealed) {
-        placeholder.style.backgroundColor = 'var(--uv-styles-color-tertiary, #303134)';
+        placeholder.style.backgroundColor =
+          'var(--uv-styles-color-tertiary, #303134)';
       }
     });
 
@@ -220,9 +229,10 @@
     placeholder.addEventListener('click', () => {
       if (!placeholder._revealed) {
         // Show the element
-        element.style.display = element.getAttribute('data-clean-search-original-display') || 'block';
+        element.style.display =
+          element.getAttribute('data-clean-search-original-display') || 'block';
         element.removeAttribute('data-removed');
-        
+
         // Update placeholder
         placeholder.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
@@ -230,13 +240,14 @@
             <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to hide</span>
           </div>
         `;
-        placeholder.style.backgroundColor = 'var(--uv-styles-color-secondary, #394457)';
+        placeholder.style.backgroundColor =
+          'var(--uv-styles-color-secondary, #394457)';
         placeholder._revealed = true;
       } else {
         // Hide the element again
         element.style.display = 'none';
         element.setAttribute('data-removed', 'true');
-        
+
         // Restore original placeholder
         placeholder.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
@@ -244,7 +255,8 @@
             <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to reveal</span>
           </div>
         `;
-        placeholder.style.backgroundColor = 'var(--uv-styles-color-tertiary, #303134)';
+        placeholder.style.backgroundColor =
+          'var(--uv-styles-color-tertiary, #303134)';
         placeholder._revealed = false;
       }
     });

@@ -150,8 +150,6 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-
-
 .status {
   padding: 14px 16px;
   border-radius: 8px;

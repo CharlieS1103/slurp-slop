@@ -51,7 +51,6 @@
     } catch {}
     return null;
   }
-    
 
   // this code won't need to change ever, just the logger definitions
   let _enabled = false;
@@ -80,7 +79,6 @@
   };
 
   // filter data, KEEP EMPTY!!!!
-  
 
   function getFilterData() {
     // Filter data is set by core/data.js upon bundle, defining it here as it's a getter func thus belongs in utils
@@ -150,7 +148,6 @@
   }
 
   function isLowQualityHostname(hostname, customWhitelist = []) {
-  
     if (!hostname) {
       return false;
     }
@@ -189,7 +186,7 @@
   }
 
   // Export to namespace (only once at the end)
-  
+
   Object.assign(NS.utils, {
     Logger,
     sanitizeCaseInsensitiveArray,

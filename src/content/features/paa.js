@@ -138,7 +138,7 @@
 
       if (hasAiSignals || hasLowQualityLink) {
         const removalType = hasLowQualityLink ? 'low-quality' : 'ai';
-        
+
         // put a pin in the paa container incase it ends up being AI
         let paaContainer = null;
         for (const sel of SEL.PAA.containers) {
@@ -148,7 +148,7 @@
             break;
           }
         }
-        
+
         if (typeof removeElement === 'function') {
           removeElement(container, removalType);
         }
@@ -160,12 +160,12 @@
       if (paaContainer.hasAttribute('data-clean-search-removed')) {
         return;
       }
-      
+
       // Check if all question pairs inside are removed
       const remainingPairs = paaContainer.querySelectorAll(
         SEL.PAA.questionPair + ':not([data-clean-search-removed])'
       );
-      
+
       if (remainingPairs.length === 0) {
         Logger?.debug('Removing empty PAA container');
         if (typeof removeElement === 'function') {
@@ -173,7 +173,7 @@
         }
       }
     });
-    
+
     // If a PAA section is fully filtered and all questions have been removed, find it, and fully delete it
     const paaSectionSelector = `${SEL.PAA.section} ${SEL.PAA.sectionController}`;
     const paaSection = document.querySelector(paaSectionSelector);
@@ -182,7 +182,7 @@
       const visiblePairs = Array.from(allPairs).filter(
         pair => !pair.hasAttribute('data-clean-search-removed')
       );
-      
+
       if (allPairs.length > 0 && visiblePairs.length === 0) {
         //  remove the entire section
         const fullSection = paaSection.closest(SEL.PAA.section);

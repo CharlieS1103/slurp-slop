@@ -23,7 +23,7 @@ const outfile = resolve(root, 'dist/content-script.js');
       legalComments: 'none',
       logLevel: 'info',
       banner: {
-        js: '// this is bundled, dont edit this file directly man\n',
+        js: '// this is bundled, dont edit this file directly!!!!!!! if you do it doesn\'t really matter though\n',
       },
     });
     console.log(`Bundled -> ${outfile}`);

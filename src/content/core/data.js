@@ -80,9 +80,7 @@
     'filter google search',
     'remove ai results',
     'block ai overview',
-    'ai',
-    
-
+    'ai'
   ];
 
   const lowQualityDomains = [
@@ -91,8 +89,7 @@
     'shmoop',
     'cliffsnotes',
     'coursehero',
-    'study.com',
-
+    'study.com'
   ];
 
   // Export data to namespace, objects should exist already

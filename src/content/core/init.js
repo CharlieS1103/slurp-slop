@@ -8,7 +8,7 @@
   const { Logger, getFilterData } = NS.utils || {};
 
   // State variables
-  // TODO: honestly might be worth moving to a more OOP based approach 
+  // TODO: honestly might be worth moving to a more OOP based approach
   // given the shear number of variables this extension has to have
   let extensionEnabled = true;
   let lastQuery = '';
@@ -44,7 +44,6 @@
   // Safety mechanism, added default vals in addition to config for safety, but honestly could be removed.
   let safetyCounter = 0;
   const MAX_REMOVALS_PER_SCAN = NS.config?.CONFIG?.maxRemovalsPerScan || 25;
-
 
   // CORE FUNCTIONALITY / ELEMENT REMOVAL!!!! (from here down to the next capitalized text)
 
@@ -111,7 +110,9 @@
       (element.closest && element.closest('[data-clean-search-removed]')) ||
       // If element already has a placeholder as its next sibling, it was already processed
       // so skip it too...
-      (element.nextElementSibling && element.nextElementSibling.hasAttribute && element.nextElementSibling.hasAttribute('data-slopslurp-container')) ||
+      (element.nextElementSibling &&
+        element.nextElementSibling.hasAttribute &&
+        element.nextElementSibling.hasAttribute('data-slopslurp-container')) ||
       safetyCounter >= MAX_REMOVALS_PER_SCAN
     ) {
       // it won't work this is the most annoying part for sure
@@ -119,7 +120,6 @@
     }
 
     if (isDangerousContainer(element)) {
-
       // warn for this one of course
       Logger?.warn('Refusing to remove dangerous container', { type, element });
       return;
@@ -128,7 +128,6 @@
     safetyCounter++;
 
     try {
-
       if (!element.hasAttribute('data-clean-search-original-display')) {
         let originalDisplay = '';
         try {
@@ -172,7 +171,7 @@
     }
   }
 
-  // stats 
+  // stats
 
   function resetStats() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -181,7 +180,7 @@
     if (currentQuery !== lastQuery) {
       lastQuery = currentQuery;
       safetyCounter = 0;
-      
+
       // Reset current page stats, called each load
       currentStats = {
         aiElementsRemoved: 0,
@@ -201,12 +200,16 @@
 
   function updateStats(type, count = 1) {
     currentStats[type] += count;
-    
+
     // if you remove this if statement we'll have inflated value since it'll increment
-    if (type !== 'totalElementsRemoved' && type !== 'scanCount' && type !== 'placeholdersCreated') {
+    if (
+      type !== 'totalElementsRemoved' &&
+      type !== 'scanCount' &&
+      type !== 'placeholdersCreated'
+    ) {
       currentStats.totalElementsRemoved += count;
     }
-    
+
     currentStats.lastScanTime = Date.now();
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -237,7 +240,7 @@
   */
   function enforceSettingsRules(settings, oldSettings = {}) {
     const result = { ...settings };
-    
+
     // if minimalist no link if link no minimalist. they're exclusive.
     if (result.minimalistMode && result.linksOnlyMode) {
       // If both are being enabled go with whichever is newly enabled
@@ -247,7 +250,7 @@
         result.minimalistMode = false;
       }
     }
-    
+
     // ensure the minimalist mode reqs are true
     if (result.minimalistMode) {
       result.removeAiOverview = true;
@@ -255,12 +258,12 @@
       result.removeAds = false;
       result.showReplacementPlaceholders = false;
     }
-    
+
     // Enforce links-only mode dependencies
     if (result.linksOnlyMode) {
       result.showReplacementPlaceholders = false;
     }
-    
+
     return result;
   }
 
@@ -456,18 +459,24 @@
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(
-          ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled', 'cleanSearchStats'],
+          [
+            'cleanSearchEnabled',
+            'filterSettings',
+            'loggingEnabled',
+            'cleanSearchStats'
+          ],
           result => {
             // Default to enabled
             // in the context of the code repo i often use cleanSearch as a technical term for the changes we make
             // saying slopslurp in variable names just feels wrong for whatever reason
-            extensionEnabled = result.cleanSearchEnabled !== false && extensionEnabled;
-            
+            extensionEnabled =
+              result.cleanSearchEnabled !== false && extensionEnabled;
+
             // Initialize storage on first run
             if (result.cleanSearchEnabled === undefined) {
               chrome.storage.local.set({ cleanSearchEnabled: true });
             }
-            
+
             if (result.filterSettings) {
               filterSettings = {
                 ...filterSettings,
@@ -506,7 +515,7 @@
         enabled: extensionEnabled
       });
 
-      // Debug API you don't have to worry about this stuff 
+      // Debug API you don't have to worry about this stuff
       //if you wan't, it should be pretty helpful in console though
       window.cleanSearchDebug = {
         scan: () => {
@@ -582,10 +591,10 @@
         */
         updateSettings: newSettings => {
           const oldSettings = { ...filterSettings };
-          
+
           // Merge new settings with existing
           filterSettings = { ...filterSettings, ...newSettings };
-          
+
           // Enforce all mode rules and dependencies
           filterSettings = enforceSettingsRules(filterSettings, oldSettings);
 
