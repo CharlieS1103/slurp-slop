@@ -3,7 +3,7 @@ import js from '@eslint/js';
 
 export default [
   // Ignore build artifacts and vendor assets
-  { ignores: ['dist/**', 'node_modules/**', 'icons/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'icons/**', 'src/data/**/*.js'] },
   js.configs.recommended,
   {
     files: ['**/*.js'],
@@ -65,6 +65,13 @@ export default [
         // Additional globals for content scripts
         Node: 'readonly'
       }
+    }
+  },
+  {
+    // Allow ESM in the new bundling entry and module files
+    files: ['src/content/index.js', 'src/content/modules/**/*.js'],
+    languageOptions: {
+      sourceType: 'module'
     }
   }
 ];

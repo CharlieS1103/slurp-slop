@@ -37,12 +37,6 @@
     "*://*.google.co.in/*",
     "*://*.google.co.jp/*"
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["data/*.json"],
-      "matches": ["*://*/*"]
-    }
-  ],
   "action": {
     "default_title": "SlopSlurp",
     "default_popup": "popup.html"
