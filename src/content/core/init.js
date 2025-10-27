@@ -163,10 +163,10 @@
       updateStats(statType, 1);
 
       if (
-        filterSettings.showReplacementPlaceholders &&
+        extension.filterSettings.showReplacementPlaceholders &&
         NS.createRemovalPlaceholder
       ) {
-        NS.createRemovalPlaceholder(element, type, filterSettings);
+        NS.createRemovalPlaceholder(element, type, extension.filterSettings);
       }
 
       Logger?.info('Removed element', { type, element });
@@ -186,7 +186,7 @@
       safetyCounter = 0;
 
       // Reset current page stats, called each load
-      currentStats = {
+      extension.currentStats = {
         aiElementsRemoved: 0,
         lowQualitySitesRemoved: 0,
         adsRemoved: 0,
@@ -197,13 +197,13 @@
       };
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ cleanSearchStats: currentStats });
+        chrome.storage.local.set({ cleanSearchStats: extension.currentStats });
       }
     }
   }
 
   function updateStats(type, count = 1) {
-    currentStats[type] += count;
+    extension.currentStats[type] += count;
 
     // if you remove this if statement we'll have inflated value since it'll increment
     if (
@@ -211,13 +211,13 @@
       type !== 'scanCount' &&
       type !== 'placeholdersCreated'
     ) {
-      currentStats.totalElementsRemoved += count;
+      extension.currentStats.totalElementsRemoved += count;
     }
 
-    currentStats.lastScanTime = Date.now();
+    extension.currentStats.lastScanTime = Date.now();
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ cleanSearchStats: currentStats });
+      chrome.storage.local.set({ cleanSearchStats: extension.currentStats });
     }
   }
 
@@ -288,8 +288,8 @@
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
           enabled,
-          hideAiModeButton: filterSettings.hideAiModeButton,
-          customWhitelist: filterSettings.customWhitelist
+          hideAiModeButton: extension.filterSettings.hideAiModeButton,
+          customWhitelist: extension.filterSettings.customWhitelist
         });
       }
     });
@@ -305,8 +305,8 @@
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
           enabled,
-          hideAiModeButton: filterSettings.hideAiModeButton,
-          customWhitelist: filterSettings.customWhitelist
+          hideAiModeButton: extension.filterSettings.hideAiModeButton,
+          customWhitelist: extension.filterSettings.customWhitelist
         });
       }
     }, 100);
@@ -328,7 +328,7 @@
     const MIN_SCAN_INTERVAL_MS = NS.config?.CONFIG?.minScanIntervalMs || 1000;
 
     const scanWrapper = () => {
-      if (!extension.extensionEnabled || filterSettings.minimalistMode) {
+      if (!extension.extensionEnabled || extension.filterSettings.minimalistMode) {
         return;
       }
 
@@ -355,8 +355,8 @@
           NS.scanForContent(
             removeElement,
             isDangerousContainer,
-            { ...filterSettings, enabled },
-            currentStats
+            { ...extension.filterSettings, enabled },
+            extension.currentStats
           );
         }
       }, SCAN_DEBOUNCE_MS);
@@ -376,17 +376,17 @@
       NS.scanForContent(
         removeElement,
         isDangerousContainer,
-        { ...filterSettings, enabled },
-        currentStats
+        { ...extension.filterSettings, enabled },
+        extension.currentStats
       );
     }
 
     setTimeout(() => {
       const enabled = extension.extensionEnabled;
-      if (filterSettings.hideAiModeButton && NS.hideAiModeInTopbar) {
+      if (extension.filterSettings.hideAiModeButton && NS.hideAiModeInTopbar) {
         NS.hideAiModeInTopbar(
           extension.extensionEnabled,
-          filterSettings.hideAiModeButton
+          extension.filterSettings.hideAiModeButton
         );
       }
       safetyCounter = 0;
@@ -394,8 +394,8 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...filterSettings, enabled },
-          currentStats
+          { ...extension.filterSettings, enabled },
+          extension.currentStats
         );
       }
     }, 500);
@@ -407,8 +407,8 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...filterSettings, enabled },
-          currentStats
+          { ...extension.filterSettings, enabled },
+          extension.currentStats
         );
       }
     }, 2000);
@@ -429,7 +429,7 @@
 
       const applySettings = () => {
         // If user enabled auto-disable terms and the query matches, show banner and bail
-        if (filterSettings.disableTermsEnabled && shouldAutoDisable()) {
+        if (extension.filterSettings.disableTermsEnabled && shouldAutoDisable()) {
           extension.extensionEnabled = false;
           if (NS.showAutoDisableBanner) {
             NS.showAutoDisableBanner(() => {
@@ -438,7 +438,7 @@
                 NS.showNotification('SlopSlurp re-enabled', 'success');
               }
               setTimeout(() => {
-                if (filterSettings.minimalistMode) {
+                if (extension.filterSettings.minimalistMode) {
                   initMinimalistMode();
                 } else {
                   initComprehensiveMode();
@@ -451,8 +451,8 @@
         }
         if (NS.handlePlaceholderSettingChange) {
           NS.handlePlaceholderSettingChange(
-            extension.extensionEnabled && !!filterSettings.showReplacementPlaceholders,
-            filterSettings
+            extension.extensionEnabled && !!extension.filterSettings.showReplacementPlaceholders,
+            extension.filterSettings
           );
         }
 
@@ -460,7 +460,7 @@
           return;
         }
 
-        if (filterSettings.minimalistMode) {
+        if (extension.filterSettings.minimalistMode) {
           initMinimalistMode();
         } else {
           initComprehensiveMode();
@@ -471,7 +471,7 @@
         chrome.storage.local.get(
           [
             'cleanSearchEnabled',
-            'filterSettings',
+            'extension.filterSettings',
             'extension.loggingEnabled',
             'cleanSearchStats'
           ],
@@ -487,17 +487,17 @@
               chrome.storage.local.set({ cleanSearchEnabled: true });
             }
 
-            if (result.filterSettings) {
-              filterSettings = {
-                ...filterSettings,
-                ...result.filterSettings
+            if (result.extension.filterSettings) {
+              extension.filterSettings = {
+                ...extension.filterSettings,
+                ...result.extension.filterSettings
               };
               // Enforce rules after loading from storage
               // enforce rules after eating
               // sleeping
               // breathing.
               // enforce rules whenever changes are made to the settings.
-              filterSettings = enforceSettingsRules(filterSettings);
+              extension.filterSettings = enforceSettingsRules(extension.filterSettings);
             }
 
             if (typeof result.extension.loggingEnabled !== 'undefined') {
@@ -508,7 +508,7 @@
             }
 
             if (result.cleanSearchStats) {
-              currentStats = { ...currentStats, ...result.cleanSearchStats };
+              extension.currentStats = { ...extension.currentStats, ...result.cleanSearchStats };
             }
 
             applySettings();
@@ -521,7 +521,7 @@
 
       Logger?.info('SlopSlurp initialized', {
         url: window.location.href,
-        mode: filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
+        mode: extension.filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
         enabled: extension.extensionEnabled
       });
 
@@ -530,26 +530,26 @@
       window.cleanSearchDebug = {
         scan: () => {
           safetyCounter = 0;
-          if (filterSettings.minimalistMode && NS.runMinimalistScan) {
+          if (extension.filterSettings.minimalistMode && NS.runMinimalistScan) {
             const enabled = extension.extensionEnabled;
             NS.runMinimalistScan(removeElement, isDangerousContainer, {
               enabled,
-              hideAiModeButton: filterSettings.hideAiModeButton,
-              customWhitelist: filterSettings.customWhitelist
+              hideAiModeButton: extension.filterSettings.hideAiModeButton,
+              customWhitelist: extension.filterSettings.customWhitelist
             });
           } else if (NS.scanForContent) {
             const enabled = extension.extensionEnabled;
             NS.scanForContent(
               removeElement,
               isDangerousContainer, // dangerous containers are just for safety, don't want to gut a whole dom accidentally
-              { ...filterSettings, enabled },
-              currentStats
+              { ...extension.filterSettings, enabled },
+              extension.currentStats
             );
           }
         },
-        getStats: () => currentStats,
+        getStats: () => extension.currentStats,
         resetStats: () => {
-          currentStats = {
+          extension.currentStats = {
             aiElementsRemoved: 0,
             lowQualitySitesRemoved: 0,
             adsRemoved: 0,
@@ -559,7 +559,7 @@
             placeholdersCreated: 0
           };
           if (typeof chrome !== 'undefined' && chrome.storage) {
-            chrome.storage.local.set({ cleanSearchStats: currentStats });
+            chrome.storage.local.set({ cleanSearchStats: extension.currentStats });
           }
         },
         setEnabled: enabled => {
@@ -570,11 +570,11 @@
           if (enabled) {
             if (NS.handlePlaceholderSettingChange) {
               NS.handlePlaceholderSettingChange(
-                !!filterSettings.showReplacementPlaceholders,
-                filterSettings
+                !!extension.filterSettings.showReplacementPlaceholders,
+                extension.filterSettings
               );
             }
-            if (filterSettings.minimalistMode) {
+            if (extension.filterSettings.minimalistMode) {
               initMinimalistMode();
             } else {
               initComprehensiveMode();
@@ -602,13 +602,13 @@
         tried to centralize it in the enforceSetting rules, but just be careful particularly with minimalist mode and link
         */
         updateSettings: newSettings => {
-          const oldSettings = { ...filterSettings };
+          const oldSettings = { ...extension.filterSettings };
 
           // Merge new settings with existing
-          filterSettings = { ...filterSettings, ...newSettings };
+          extension.filterSettings = { ...extension.filterSettings, ...newSettings };
 
           // Enforce all mode rules and dependencies
-          filterSettings = enforceSettingsRules(filterSettings, oldSettings);
+          extension.filterSettings = enforceSettingsRules(extension.filterSettings, oldSettings);
 
           if (
             newSettings &&
@@ -629,8 +629,8 @@
           ) {
             if (NS.handlePlaceholderSettingChange) {
               NS.handlePlaceholderSettingChange(
-                !!filterSettings.showReplacementPlaceholders,
-                filterSettings
+                !!extension.filterSettings.showReplacementPlaceholders,
+                extension.filterSettings
               );
             }
           }
@@ -639,8 +639,8 @@
           const oldMinimalistMode = oldSettings.minimalistMode;
           const oldLinksOnlyMode = oldSettings.linksOnlyMode;
 
-          if (oldMinimalistMode !== filterSettings.minimalistMode) {
-            if (filterSettings.minimalistMode) {
+          if (oldMinimalistMode !== extension.filterSettings.minimalistMode) {
+            if (extension.filterSettings.minimalistMode) {
               initMinimalistMode();
               if (NS.showNotification) {
                 NS.showNotification('Switched to minimalist mode', 'success');
@@ -656,11 +656,11 @@
             }
           }
 
-          if (oldLinksOnlyMode !== filterSettings.linksOnlyMode) {
+          if (oldLinksOnlyMode !== extension.filterSettings.linksOnlyMode) {
             initComprehensiveMode();
             if (NS.showNotification) {
               NS.showNotification(
-                filterSettings.linksOnlyMode
+                extension.filterSettings.linksOnlyMode
                   ? 'Links-only mode enabled'
                   : 'Links-only mode disabled',
                 'success'
@@ -669,13 +669,14 @@
           }
 
           if (typeof chrome !== 'undefined' && chrome.storage) {
+            const filterSettings = extension.filterSettings
             chrome.storage.local.set({ filterSettings: filterSettings });
           }
         },
-        getSettings: () => filterSettings,
+        getSettings: () => extension.filterSettings,
         isEnabled: () => extension.extensionEnabled,
         getMode: () =>
-          filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
+          extension.filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
         setLogging: enabled => {
           const loggingEnabled = extension.loggingEnabled;
           extension.loggingEnabled = !!enabled;
@@ -693,9 +694,9 @@
         },
         getLogging: () => extension.loggingEnabled,
         switchMode: () => {
-          filterSettings.minimalistMode = !filterSettings.minimalistMode;
-          window.cleanSearchDebug.updateSettings(filterSettings);
-          return filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
+          extension.filterSettings.minimalistMode = !extension.filterSettings.minimalistMode;
+          window.cleanSearchDebug.updateSettings(extension.filterSettings);
+          return extension.filterSettings.minimalistMode ? 'minimalist' : 'comprehensive';
         },
         runDiagnostics: () => {
           Logger?.info('Running diagnostics...');
@@ -736,8 +737,8 @@
           return {
             aiElements,
             aiModeButtons: aiModeButtons.length,
-            settings: filterSettings,
-            stats: currentStats
+            settings: extension.filterSettings,
+            stats: extension.currentStats
           };
         }
       };
