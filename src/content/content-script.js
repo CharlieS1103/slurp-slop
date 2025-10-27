@@ -2,6 +2,15 @@
 // This content script removes AI Overview sections and low-quality content from Google search results
 // Now supports both comprehensive and minimalist modes
 
+/*
+ToDo: 
+-put all of the functions into different sections/files depending on their uses.
+-Organize, but keep all the objects and the variables in here (JUST ORGANIZE)
+-Put all of the variables at the top(gonna label a "TOP_VARIABLES" above all of them so I can later find them and put them at the top of the main function)
+*/ 
+
+
+// Main function
 (function() {
   'use strict';
 
@@ -38,7 +47,11 @@
     customWhitelist: []
   };
 
+  // Object of values for comparisons to web pages
   const DEFAULT_FILTER_DATA = Object.freeze({
+    //AI Removal Terms / Phrases
+    
+    // Terms to disable the slop on the website
     disableTerms: [
       'ai overview',
       'sparknotes',
@@ -48,6 +61,7 @@
       'remove ai results',
       'block ai overview'
     ],
+    // Same as above, but for other languages
     aiOverviewPatterns: [
       'übersicht mit ki',
       'ai overview',
@@ -59,6 +73,7 @@
       'vista creada con ia',
       'přehled od ai'
     ],
+    // Checks if the selected DOM elements are ai generated
     aiSelectors: [
       'g-section-with-header:has(div.lLGV5d)',
       'div.JJSijf',
@@ -74,6 +89,7 @@
       'div[data-ved][data-hveid][jscontroller="zdw0yd"]',
       'div[jscontroller="EEh6s"]'
     ],
+    // Phrases to check for AI (mainly from google)
     aiIndicatorPhrases: [
       'ai overview',
       'overview from google',
@@ -88,6 +104,9 @@
       'google generative ai',
       'generative ai answer'
     ],
+    // Low Quality Domain catches / Ad catches
+
+    // Checks for low quality domains
     lowQualityDomains: [
       'sparknotes.com',
       'www.sparknotes.com',
@@ -102,6 +121,7 @@
       'study.com',
       'www.study.com'
     ],
+    //Ad Selectors & Indicator labels
     adSelectors: [
       '[data-text-ad]',
       'div.uEierd',
@@ -127,6 +147,8 @@
     ]
   });
 
+  // SECTION BELOW THIS IS TOP_VARIABLES
+
   const DATA_FILE_PATHS = {
     disableTerms: 'data/disable_terms.json',
     aiOverviewPatterns: 'data/ai_overview_patterns.json',
@@ -146,9 +168,11 @@
   let placeholderIdCounter = 0;
   let placeholderStylesInjected = false;
 
+  // SECTION ABOVE THIS IS TOP_VARIABLES
+
   // ============ UTILITY FUNCTIONS ============
 
-  // Simple logger
+  // Simple logger used to log basic actions
   const Logger = {
     info: (msg, data) => {
       if (!loggingEnabled) {
@@ -167,6 +191,10 @@
     }
   };
 
+  // Unique, sanitizeCaseInsensitiveArray, and sanitizeSelector, cloneDefaultData, and getAssetURL all work in tandem with each other, main difference is the two sanitizers compare either case sensitive or no
+  // Mainly just making sure we're keeping only strings, getting rid of whitespace, removing blank characters, and removing duplicates
+
+  // Watches for duplicates, keeps only the first instance of specific webpages, and different types of websites are kept separate
   function unique(values) {
     return [...new Set(values)];
   }
@@ -189,6 +217,7 @@
     );
   }
 
+  // Creates a clean copy of a default filter configuration object
   function cloneDefaultData() {
     return {
       disableTerms: sanitizeCaseInsensitiveArray(
@@ -211,6 +240,7 @@
     };
   }
 
+  // Used to see if the asset URL works ts idk im mad tired man
   function getAssetUrl(relativePath) {
     if (
       typeof chrome !== 'undefined' &&
@@ -231,15 +261,21 @@
     return null;
   }
 
+  //Combining the asseturl, clone data, sanitize, and unique functions together
   async function loadFilterData() {
+    // Checks if data is loaded
     if (filterDataLoaded) {
       return filterData;
     }
 
+    // Checks if data is loading
     if (filterDataLoadingPromise) {
       return filterDataLoadingPromise;
     }
+
+    // Begin a new loading process
     filterDataLoadingPromise = (async() => {
+      // Logic for comparing the websites grabbed to the filters set up
       const data = cloneDefaultData();
 
       const fetchFn =
