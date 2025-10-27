@@ -4,11 +4,15 @@
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   NS.config = NS.config || {};
 
-  // Configuration can be added here as needed
-  // Data is now bundled directly in core/data.js
+  // Extension Configuration
+  const CONFIG = {
+    maxRemovalsPerScan: 25,
+    scanDebounceMs: 500,
+    minScanIntervalMs: 1000
+  };
 
   // Export to namespace
   Object.assign(NS.config, {
-    // Future config options go here
+    CONFIG
   });
 })();

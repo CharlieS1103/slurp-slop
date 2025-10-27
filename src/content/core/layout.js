@@ -83,8 +83,116 @@
     }, 3000);
   }
 
-  function handlePlaceholderSettingChange(_enabled, _settings) {
-    // Placeholder logic can be added here if needed
+  function createRemovalPlaceholder(element, type, settings) {
+    if (!settings.showReplacementPlaceholders) {
+      return;
+    }
+
+    // Don't create duplicate placeholders
+    const existingPlaceholder = element.parentNode?.querySelector(
+      `[data-slopslurp-placeholder][data-for-element="${element.getAttribute('data-clean-search-type')}"]`
+    );
+    if (existingPlaceholder) {
+      return;
+    }
+
+    const placeholder = document.createElement('div');
+    placeholder.setAttribute('data-slopslurp-placeholder', 'true');
+    placeholder.setAttribute('data-for-element', type);
+    placeholder.style.cssText = `
+      padding: 8px 12px;
+      margin: 8px 0;
+      background: var(--uv-styles-color-tertiary, #303134);
+      border: 1px solid var(--uv-styles-color-outline, #3c4043);
+      border-radius: 8px;
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      font-size: 13px;
+      color: var(--uv-styles-color-text-de-emphasis, #9aa0a6);
+      opacity: 0;
+      animation: slopslurpFadeIn 0.2s ease forwards;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      user-select: none;
+    `;
+
+    placeholder.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <span style="color: var(--uv-styles-color-text-de-emphasis, #9aa0a6);">Content removed</span>
+        <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to reveal</span>
+      </div>
+    `;
+
+    // Add animations if not already present
+    if (!document.querySelector('style[data-slopslurp-animations]')) {
+      const style = document.createElement('style');
+      style.setAttribute('data-slopslurp-animations', 'true');
+      style.textContent = `
+        @keyframes slopslurpFadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Hover effect
+    placeholder.addEventListener('mouseenter', () => {
+      placeholder.style.backgroundColor = 'var(--uv-styles-color-secondary, #394457)';
+    });
+    placeholder.addEventListener('mouseleave', () => {
+      if (!placeholder._revealed) {
+        placeholder.style.backgroundColor = 'var(--uv-styles-color-tertiary, #303134)';
+      }
+    });
+
+    // Click to reveal functionality
+    placeholder.addEventListener('click', () => {
+      if (!placeholder._revealed) {
+        // Show the element
+        element.style.display = element.getAttribute('data-clean-search-original-display') || 'block';
+        element.removeAttribute('data-removed');
+        
+        // Update placeholder
+        placeholder.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span style="color: var(--uv-styles-color-text-de-emphasis, #9aa0a6);">Content revealed</span>
+            <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to hide</span>
+          </div>
+        `;
+        placeholder.style.backgroundColor = 'var(--uv-styles-color-secondary, #394457)';
+        placeholder._revealed = true;
+      } else {
+        // Hide the element again
+        element.style.display = 'none';
+        element.setAttribute('data-removed', 'true');
+        
+        // Restore original placeholder
+        placeholder.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span style="color: var(--uv-styles-color-text-de-emphasis, #9aa0a6);">Content removed</span>
+            <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to reveal</span>
+          </div>
+        `;
+        placeholder.style.backgroundColor = 'var(--uv-styles-color-tertiary, #303134)';
+        placeholder._revealed = false;
+      }
+    });
+
+    // Insert placeholder after the removed element
+    if (element.parentNode) {
+      element.parentNode.insertBefore(placeholder, element.nextSibling);
+      
+      // Update stats
+      if (NS.updateStats) {
+        NS.updateStats('placeholdersCreated', 1);
+      }
+    }
+  }
+
+  function handlePlaceholderSettingChange(enabled, _settings) {
+    if (!enabled) {
+      removeAllPlaceholders();
+    }
   }
 
   function removeAllPlaceholders() {
@@ -98,6 +206,7 @@
   Object.assign(NS, {
     showAutoDisableBanner,
     showNotification,
+    createRemovalPlaceholder,
     handlePlaceholderSettingChange,
     removeAllPlaceholders
   });

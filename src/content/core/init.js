@@ -20,8 +20,13 @@
     adsRemoved: 0,
     totalElementsRemoved: 0,
     scanCount: 0,
-    lastScanTime: 0,
+    lastScanTime: Date.now(),
     placeholdersCreated: 0
+  };
+
+  let lifetimeStats = {
+    totalElementsRemoved: 0,
+    pagesProcessed: 0
   };
 
   let filterSettings = {
@@ -36,9 +41,9 @@
     customWhitelist: []
   };
 
-  // Safety mechanism
+  // Safety mechanism - use config if available
   let safetyCounter = 0;
-  const MAX_REMOVALS_PER_SCAN = 25;
+  const MAX_REMOVALS_PER_SCAN = NS.config?.CONFIG?.maxRemovalsPerScan || 25;
 
   // ============ CORE ELEMENT REMOVAL ============
 
@@ -148,6 +153,8 @@
     if (currentQuery !== lastQuery) {
       lastQuery = currentQuery;
       safetyCounter = 0;
+      
+      // Reset current page stats
       currentStats = {
         aiElementsRemoved: 0,
         lowQualitySitesRemoved: 0,
@@ -158,19 +165,34 @@
         placeholdersCreated: 0
       };
 
+      // Increment pages processed in lifetime stats
+      lifetimeStats.pagesProcessed += 1;
+
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ cleanSearchStats: currentStats });
+        chrome.storage.local.set({ 
+          cleanSearchStats: currentStats,
+          lifetimeStats: lifetimeStats
+        });
       }
     }
   }
 
   function updateStats(type, count = 1) {
     currentStats[type] += count;
-    currentStats.totalElementsRemoved += count;
+    
+    // Only increment totalElementsRemoved if we're not updating it directly
+    if (type !== 'totalElementsRemoved' && type !== 'scanCount' && type !== 'placeholdersCreated') {
+      currentStats.totalElementsRemoved += count;
+      lifetimeStats.totalElementsRemoved += count;
+    }
+    
     currentStats.lastScanTime = Date.now();
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ cleanSearchStats: currentStats });
+      chrome.storage.local.set({ 
+        cleanSearchStats: currentStats,
+        lifetimeStats: lifetimeStats
+      });
     }
   }
 
@@ -239,8 +261,8 @@
 
     let scanTimeout = null;
     let lastScanTime = 0;
-    const SCAN_DEBOUNCE_MS = 500; // Wait 500ms after last mutation
-    const MIN_SCAN_INTERVAL_MS = 1000; // Don't scan more than once per second
+    const SCAN_DEBOUNCE_MS = NS.config?.CONFIG?.scanDebounceMs || 500;
+    const MIN_SCAN_INTERVAL_MS = NS.config?.CONFIG?.minScanIntervalMs || 1000;
 
     const scanWrapper = () => {
       if (!extensionEnabled || filterSettings.minimalistMode) {
@@ -356,6 +378,9 @@
 
       resetStats();
 
+      // Export updateStats to namespace for use by other modules
+      NS.updateStats = updateStats;
+
       const applySettings = () => {
         if (NS.handlePlaceholderSettingChange) {
           NS.handlePlaceholderSettingChange(
@@ -377,11 +402,16 @@
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(
-          ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled'],
+          ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled', 'lifetimeStats', 'cleanSearchStats'],
           result => {
-            if (result.cleanSearchEnabled !== undefined) {
-              extensionEnabled = result.cleanSearchEnabled && extensionEnabled;
+            // Default to enabled if not explicitly set
+            extensionEnabled = result.cleanSearchEnabled !== false && extensionEnabled;
+            
+            // Initialize storage on first run
+            if (result.cleanSearchEnabled === undefined) {
+              chrome.storage.local.set({ cleanSearchEnabled: true });
             }
+            
             if (result.filterSettings) {
               filterSettings = {
                 ...filterSettings,
@@ -394,6 +424,14 @@
               if (Logger && typeof Logger.setEnabled === 'function') {
                 Logger.setEnabled(loggingEnabled);
               }
+            }
+
+            if (result.lifetimeStats) {
+              lifetimeStats = { ...lifetimeStats, ...result.lifetimeStats };
+            }
+
+            if (result.cleanSearchStats) {
+              currentStats = { ...currentStats, ...result.cleanSearchStats };
             }
 
             applySettings();
@@ -429,6 +467,7 @@
           }
         },
         getStats: () => currentStats,
+        getLifetimeStats: () => lifetimeStats,
         resetStats: () => {
           currentStats = {
             aiElementsRemoved: 0,

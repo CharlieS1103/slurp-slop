@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+// i'm just disabling lint rule for this file, shits mad annoying
 import { build } from 'esbuild';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

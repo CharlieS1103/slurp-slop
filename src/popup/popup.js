@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', function() {
     placeholdersCreated: 0
   };
 
+  let lifetimeStats = {
+    totalElementsRemoved: 0,
+    pagesProcessed: 0
+  };
+
   let filterSettings = {
     removeAiOverview: true,
     removeLowQualitySites: true,
@@ -164,10 +169,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Simplified stats loading
   function loadStats() {
-    // Get current page stats from storage
-    chrome.storage.local.get(['cleanSearchStats'], result => {
+    // Get current page stats and lifetime stats from storage
+    chrome.storage.local.get(['cleanSearchStats', 'lifetimeStats'], result => {
       if (result.cleanSearchStats) {
         currentStats = { ...currentStats, ...result.cleanSearchStats };
+      }
+      if (result.lifetimeStats) {
+        lifetimeStats = { ...lifetimeStats, ...result.lifetimeStats };
       }
 
       // Try to get real-time stats from active tab's content script
@@ -225,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
       adsRemovedCount.textContent = currentStats.adsRemoved || 0;
     }
     if (pagesProcessedCount) {
-      pagesProcessedCount.textContent = currentStats.pagesProcessed || 0;
+      pagesProcessedCount.textContent = lifetimeStats.pagesProcessed || 0;
     }
 
     // Update last activity
