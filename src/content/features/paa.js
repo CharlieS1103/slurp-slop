@@ -102,7 +102,8 @@
           // Ignore malformed URLs
         }
       });
-
+      // TODO: logic has to exist here for PAA section
+      // reference quality.js and utils.js for funcs used
       if (!hasLowQualityLink) {
         const attributionNodes = container.querySelectorAll(
           SEL.PAA.feedbackUrl
@@ -119,11 +120,12 @@
 
           try {
             const hostname = extractHostname(fburl);
+            // func defined in utils
             if (isLowQualityHostname(hostname, customWhitelist)) {
               hasLowQualityLink = true;
             }
           } catch {
-            // Ignore malformed URLs
+            // pass
           }
         });
       }
@@ -137,7 +139,7 @@
       if (hasAiSignals || hasLowQualityLink) {
         const removalType = hasLowQualityLink ? 'low-quality' : 'ai';
         
-        // Track the parent PAA container for later cleanup
+        // put a pin in the paa container incase it ends up being AI
         let paaContainer = null;
         for (const sel of SEL.PAA.containers) {
           paaContainer = container.closest(sel);
@@ -153,7 +155,7 @@
       }
     });
 
-    // Clean up empty PAA containers
+    // Clean up empty PAA containers, a container is an individual question
     paaContainers.forEach(paaContainer => {
       if (paaContainer.hasAttribute('data-clean-search-removed')) {
         return;
@@ -172,8 +174,7 @@
       }
     });
     
-    // Clean up entire PAA section if all entries removed
-    // Look for PAA section containers using centralized selectors
+    // If a PAA section is fully filtered and all questions have been removed, find it, and fully delete it
     const paaSectionSelector = `${SEL.PAA.section} ${SEL.PAA.sectionController}`;
     const paaSection = document.querySelector(paaSectionSelector);
     if (paaSection && !paaSection.hasAttribute('data-clean-search-removed')) {
@@ -183,7 +184,7 @@
       );
       
       if (allPairs.length > 0 && visiblePairs.length === 0) {
-        // All PAA entries were removed, remove the entire section
+        //  remove the entire section
         const fullSection = paaSection.closest(SEL.PAA.section);
         if (fullSection) {
           Logger?.debug('Removing entire empty PAA section');

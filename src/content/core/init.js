@@ -6,8 +6,9 @@
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   const { Logger, getFilterData } = NS.utils || {};
 
-  // ============ STATE VARIABLES ============
-
+  // State variables
+  // TODO: honestly might be worth moving to a more OOP based approach 
+  // given the shear number of variables this extension has to have
   let extensionEnabled = true;
   let lastQuery = '';
   let minimalistObserver = null;
@@ -24,10 +25,7 @@
     placeholdersCreated: 0
   };
 
-  let lifetimeStats = {
-    totalElementsRemoved: 0,
-    pagesProcessed: 0
-  };
+  // Removed lifetime stats to simplify and stabilize per-page reporting
 
   let filterSettings = {
     removeAiOverview: true,
@@ -38,14 +36,16 @@
     linksOnlyMode: false,
     hideAiModeButton: true,
     showReplacementPlaceholders: false,
+    disableTermsEnabled: false,
     customWhitelist: []
   };
 
-  // Safety mechanism - use config if available
+  // Safety mechanism, added default vals in addition to config for safety, but honestly could be removed.
   let safetyCounter = 0;
   const MAX_REMOVALS_PER_SCAN = NS.config?.CONFIG?.maxRemovalsPerScan || 25;
 
-  // ============ CORE ELEMENT REMOVAL ============
+
+  // CORE FUNCTIONALITY / ELEMENT REMOVAL!!!! (from here down to the next capitalized text)
 
   function isDangerousContainer(el) {
     if (!el) {
@@ -62,9 +62,14 @@
       (el.getAttribute && (el.getAttribute('role') || '').toLowerCase()) || '';
 
     if (
+      // TODO: either switch this stuff into an array or pop them in selectors, haven't decided yet.
       id === 'rcnt' ||
       id === 'search' ||
       id === 'appbar' ||
+      id === 'rso' ||
+      id === 'res' ||
+      id === 'center_col' ||
+      id === 'cnt' ||
       role === 'main'
     ) {
       return true;
@@ -72,11 +77,20 @@
 
     try {
       const main = document.querySelector('[role="main"], #search');
-      if (main && (el === main || el.contains(main))) {
-        const childCount = el.childElementCount || 0;
-        if (childCount > 5) {
-          return true;
-        }
+      const resultsRoot = document.querySelector('#rso');
+      // Protect any parent that wraps the main or the primary results container
+      if (
+        (main && (el === main || el.contains(main))) ||
+        (resultsRoot && (el === resultsRoot || el.contains(resultsRoot)))
+      ) {
+        return true;
+      }
+      // protect other large wrapper
+      if (
+        el.matches?.('#rso, #res, #center_col, #cnt, .mnr-c, .GLcBOb') ||
+        el.closest?.('#center_col') === el
+      ) {
+        return true;
       }
     } catch {}
 
@@ -87,14 +101,25 @@
     if (
       !extensionEnabled ||
       !element ||
+      element.hasAttribute('data-slopslurp-placeholder') ||
+      element.hasAttribute('data-slopslurp-wrapper') ||
       element.hasAttribute('data-removed') ||
       element.hasAttribute('data-clean-search-removed') ||
+      // If an parent was already removed, skip to avoid double placeholders, this is so annoying
+      // TODO: fix all this placeholder nonsense
+      (element.closest && element.closest('[data-clean-search-removed]')) ||
+      // If element already has a placeholder as its next sibling, it was already processed
+      // so skip it too...
+      (element.nextElementSibling && element.nextElementSibling.hasAttribute && element.nextElementSibling.hasAttribute('data-slopslurp-container')) ||
       safetyCounter >= MAX_REMOVALS_PER_SCAN
     ) {
+      // it won't work this is the most annoying part for sure
       return;
     }
 
     if (isDangerousContainer(element)) {
+
+      // warn for this one of course
       Logger?.warn('Refusing to remove dangerous container', { type, element });
       return;
     }
@@ -102,6 +127,7 @@
     safetyCounter++;
 
     try {
+
       if (!element.hasAttribute('data-clean-search-original-display')) {
         let originalDisplay = '';
         try {
@@ -114,7 +140,8 @@
           originalDisplay
         );
       }
-
+      //  TODO: Document all the html elements we create / modify + attributes
+      // it'll get out of hand eventually even though it's whatever now
       element.setAttribute('data-clean-search-type', type);
       element.setAttribute('data-removed', 'true');
       element.setAttribute('data-clean-search-removed', 'true');
@@ -144,7 +171,7 @@
     }
   }
 
-  // ============ STATS MANAGEMENT ============
+  // stats 
 
   function resetStats() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -154,7 +181,7 @@
       lastQuery = currentQuery;
       safetyCounter = 0;
       
-      // Reset current page stats
+      // Reset current page stats, called each load
       currentStats = {
         aiElementsRemoved: 0,
         lowQualitySitesRemoved: 0,
@@ -165,14 +192,8 @@
         placeholdersCreated: 0
       };
 
-      // Increment pages processed in lifetime stats
-      lifetimeStats.pagesProcessed += 1;
-
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ 
-          cleanSearchStats: currentStats,
-          lifetimeStats: lifetimeStats
-        });
+        chrome.storage.local.set({ cleanSearchStats: currentStats });
       }
     }
   }
@@ -180,23 +201,20 @@
   function updateStats(type, count = 1) {
     currentStats[type] += count;
     
-    // Only increment totalElementsRemoved if we're not updating it directly
+    // if you remove this if statement we'll have inflated value since it'll increment
     if (type !== 'totalElementsRemoved' && type !== 'scanCount' && type !== 'placeholdersCreated') {
       currentStats.totalElementsRemoved += count;
-      lifetimeStats.totalElementsRemoved += count;
     }
     
     currentStats.lastScanTime = Date.now();
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ 
-        cleanSearchStats: currentStats,
-        lifetimeStats: lifetimeStats
-      });
+      chrome.storage.local.set({ cleanSearchStats: currentStats });
     }
   }
 
-  // ============ AUTO-DISABLE LOGIC ============
+  // Disable terms, if user has that setting enabled when they search certain terms such as queries containing "AI", it will disable
+  // slop slurp !
 
   function shouldAutoDisable() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -210,7 +228,42 @@
     return filterData.disableTerms.some(term => lowerQuery.includes(term));
   }
 
-  // ============ MODE INITIALIZATION ============
+  // settings enforcement
+
+  /*IMPORTANT IMPORTANT IMPORTANT
+  this needs to be called after any settings change for one
+  also needs to mirror the UI logic in popup.js, which is annoying as hell i'm ngl
+  */
+  function enforceSettingsRules(settings, oldSettings = {}) {
+    const result = { ...settings };
+    
+    // if minimalist no link if link no minimalist. they're exclusive.
+    if (result.minimalistMode && result.linksOnlyMode) {
+      // If both are being enabled go with whichever is newly enabled
+      if (result.minimalistMode && !oldSettings.minimalistMode) {
+        result.linksOnlyMode = false;
+      } else if (result.linksOnlyMode && !oldSettings.linksOnlyMode) {
+        result.minimalistMode = false;
+      }
+    }
+    
+    // ensure the minimalist mode reqs are true
+    if (result.minimalistMode) {
+      result.removeAiOverview = true;
+      result.removeLowQualitySites = false;
+      result.removeAds = false;
+      result.showReplacementPlaceholders = false;
+    }
+    
+    // Enforce links-only mode dependencies
+    if (result.linksOnlyMode) {
+      result.showReplacementPlaceholders = false;
+    }
+    
+    return result;
+  }
+
+  // MODE INIT!!
 
   function initMinimalistMode() {
     Logger?.info('Starting minimalist mode');
@@ -258,7 +311,7 @@
     if (comprehensiveObserver) {
       comprehensiveObserver.disconnect();
     }
-
+    // arbitrary ass numbers play around with it.
     let scanTimeout = null;
     let lastScanTime = 0;
     const SCAN_DEBOUNCE_MS = NS.config?.CONFIG?.scanDebounceMs || 500;
@@ -269,17 +322,17 @@
         return;
       }
 
-      // Clear any pending scan
+      // Clear any pending scan, would just be annoying with logs otherwise, perchance a lil memory sucker??
       if (scanTimeout) {
         clearTimeout(scanTimeout);
       }
 
-      // Debounce: wait for mutations to settle
+      // Debounce, performance is so much better with it
       scanTimeout = setTimeout(() => {
         const now = Date.now();
         const timeSinceLastScan = now - lastScanTime;
 
-        // Throttle: enforce minimum interval between scans
+        // Throttle or else it goes crazy
         if (timeSinceLastScan < MIN_SCAN_INTERVAL_MS) {
           return;
         }
@@ -305,7 +358,7 @@
       subtree: true
     });
 
-    // Initial scans
+    // Initial scans and whatnot
     safetyCounter = 0;
     if (NS.scanForContent) {
       NS.scanForContent(
@@ -340,40 +393,19 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          filterSettings,
+          { ...filterSettings, extensionEnabled },
           currentStats
         );
       }
     }, 2000);
   }
 
-  // ============ INITIALIZATION ============
+  // INIT
 
   function initialize() {
     try {
       if (loggingEnabled) {
         Logger?.info('Filter data loaded', getFilterData());
-      }
-
-      if (shouldAutoDisable()) {
-        extensionEnabled = false;
-        if (NS.showAutoDisableBanner) {
-          NS.showAutoDisableBanner(() => {
-            extensionEnabled = true;
-            if (NS.showNotification) {
-              NS.showNotification('SlopSlurp re-enabled', 'success');
-            }
-            setTimeout(() => {
-              if (filterSettings.minimalistMode) {
-                initMinimalistMode();
-              } else {
-                initComprehensiveMode();
-              }
-            }, 100);
-          });
-        }
-        Logger?.info('Extension auto-disabled due to query content');
-        return;
       }
 
       resetStats();
@@ -382,6 +414,27 @@
       NS.updateStats = updateStats;
 
       const applySettings = () => {
+        // If user enabled auto-disable terms and the query matches, show banner and bail
+        if (filterSettings.disableTermsEnabled && shouldAutoDisable()) {
+          extensionEnabled = false;
+          if (NS.showAutoDisableBanner) {
+            NS.showAutoDisableBanner(() => {
+              extensionEnabled = true;
+              if (NS.showNotification) {
+                NS.showNotification('SlopSlurp re-enabled', 'success');
+              }
+              setTimeout(() => {
+                if (filterSettings.minimalistMode) {
+                  initMinimalistMode();
+                } else {
+                  initComprehensiveMode();
+                }
+              }, 100);
+            });
+          }
+          Logger?.info('Extension auto-disabled due to query content');
+          return;
+        }
         if (NS.handlePlaceholderSettingChange) {
           NS.handlePlaceholderSettingChange(
             extensionEnabled && !!filterSettings.showReplacementPlaceholders,
@@ -402,9 +455,11 @@
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(
-          ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled', 'lifetimeStats', 'cleanSearchStats'],
+          ['cleanSearchEnabled', 'filterSettings', 'loggingEnabled', 'cleanSearchStats'],
           result => {
-            // Default to enabled if not explicitly set
+            // Default to enabled
+            // in the context of the code repo i often use cleanSearch as a technical term for the changes we make
+            // saying slopslurp in variable names just feels wrong for whatever reason
             extensionEnabled = result.cleanSearchEnabled !== false && extensionEnabled;
             
             // Initialize storage on first run
@@ -417,6 +472,12 @@
                 ...filterSettings,
                 ...result.filterSettings
               };
+              // Enforce rules after loading from storage
+              // enforce rules after eating
+              // sleeping
+              // breathing.
+              // enforce rules whenever changes are made to the settings.
+              filterSettings = enforceSettingsRules(filterSettings);
             }
 
             if (typeof result.loggingEnabled !== 'undefined') {
@@ -426,15 +487,12 @@
               }
             }
 
-            if (result.lifetimeStats) {
-              lifetimeStats = { ...lifetimeStats, ...result.lifetimeStats };
-            }
-
             if (result.cleanSearchStats) {
               currentStats = { ...currentStats, ...result.cleanSearchStats };
             }
 
             applySettings();
+            // don't have to do it when applying though!
           }
         );
       } else {
@@ -447,7 +505,8 @@
         enabled: extensionEnabled
       });
 
-      // Debug API
+      // Debug API you don't have to worry about this stuff 
+      //if you wan't, it should be pretty helpful in console though
       window.cleanSearchDebug = {
         scan: () => {
           safetyCounter = 0;
@@ -460,14 +519,13 @@
           } else if (NS.scanForContent) {
             NS.scanForContent(
               removeElement,
-              isDangerousContainer,
+              isDangerousContainer, // dangerous containers are just for safety, don't want to gut a whole dom accidentally
               { ...filterSettings, extensionEnabled },
               currentStats
             );
           }
         },
         getStats: () => currentStats,
-        getLifetimeStats: () => lifetimeStats,
         resetStats: () => {
           currentStats = {
             aiElementsRemoved: 0,
@@ -511,10 +569,24 @@
             }
           }
         },
+        /*
+        IMPORTANT IMPORTANT
+        Any changes you make here should be mirrored in ../popup/popup.js, 
+        it's annoying to keep track of so i'll detail it hear, update as you update:
+        Link-only disables minimalist mode and disables + locks show placeholders
+        Minamlist mode disables link-only, and disables + locks sponsored search removal, and low quality cite removal
+        If something is not locked, it means clicking it will disable the other mode which it's incompatible with
+        i.e if user is on minimalist mode and clicks link-only, minimalist mode turns off, link only turns on.
+        tried to centralize it in the enforceSetting rules, but just be careful particularly with minimalist mode and link
+        */
         updateSettings: newSettings => {
-          const oldMinimalistMode = filterSettings.minimalistMode;
-          const oldLinksOnlyMode = filterSettings.linksOnlyMode;
+          const oldSettings = { ...filterSettings };
+          
+          // Merge new settings with existing
           filterSettings = { ...filterSettings, ...newSettings };
+          
+          // Enforce all mode rules and dependencies
+          filterSettings = enforceSettingsRules(filterSettings, oldSettings);
 
           if (
             newSettings &&
@@ -540,6 +612,10 @@
               );
             }
           }
+
+          // Handle mode transitions
+          const oldMinimalistMode = oldSettings.minimalistMode;
+          const oldLinksOnlyMode = oldSettings.linksOnlyMode;
 
           if (oldMinimalistMode !== filterSettings.minimalistMode) {
             if (filterSettings.minimalistMode) {

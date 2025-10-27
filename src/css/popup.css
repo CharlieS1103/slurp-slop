@@ -1,5 +1,5 @@
 /* SlopSlurp Extension Styles */
-
+/* TODO: standardize colors */
 body {
   width: 380px;
   min-height: 320px;
@@ -150,12 +150,7 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-/* Academic mode styling - make it match the other toggles */
-input:checked + .slider {
-  background-color: #3182ce;
-}
 
-/* Remove specific academic mode styling to match other toggles */
 
 .status {
   padding: 14px 16px;

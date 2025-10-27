@@ -1,8 +1,9 @@
-// SlopSlurp Layout & UI module
+// SlopSlurp Layout manager and such
 // Handles notifications, banners, and placeholder management
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
-
+  const SEL = NS.selectors || {};
+  
   function showAutoDisableBanner(onReEnable) {
     const existingBanner = document.getElementById(
       'clean-search-auto-disable-banner'
@@ -30,11 +31,11 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       transition: all 0.3s ease;
     `;
-
+    // todo: this banner is weak 
     banner.innerHTML = `
-      ⚠️ SlopSlurp temporarily disabled - Click to re-enable
+      SlopSlurp temporarily disabled: Click to re-enable
       <small style="display: block; margin-top: 4px; opacity: 0.9; font-size: 12px;">
-        Auto-disabled because your search might be looking for filtered content
+         Auto-disabled because your search contained a 'disabling' term, check settings to toggle.
       </small>
     `;
 
@@ -47,7 +48,7 @@
 
     document.body.appendChild(banner);
   }
-
+  // todo: standardize colors across ALL of our files, we'll need a colors.js file it'll be fine though
   function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -88,20 +89,84 @@
       return;
     }
 
-    // Don't create duplicate placeholders
-    const existingPlaceholder = element.parentNode?.querySelector(
-      `[data-slopslurp-placeholder][data-for-element="${element.getAttribute('data-clean-search-type')}"]`
-    );
-    if (existingPlaceholder) {
+    // Skip placeholders for knowledge panel tab overview, it stretches all the way down the screen
+    // messes with the whole layout
+    if (element.matches && element.matches('.kp-wp-tab-overview')) {
       return;
     }
 
+    // Skip placeholders for entire PAA sections when fully removed, otherwise it just sits there
+    if (type === 'paa-section') {
+      return;
+    }
+
+    // Skip placeholders for links-only mode removals it'd just get too messy
+    if (type === 'links-only') {
+      return;
+    }
+
+    // Don't create duplicates, if a placeholder container already follows this element just stop
+    const next = element.nextElementSibling;
+    if (next && next.matches && next.matches('[data-slopslurp-container]')) {
+      return;
+    }
+
+    // Skip if any children already have placeholders (prevents parent placeholder when children do)
+    const childContainers = element.querySelectorAll('[data-slopslurp-container]');
+    if (childContainers.length > 0) {
+      return;
+    }
+
+    // Skip if any ancestor already has a placeholder container (prevents nesting)
+    let ancestor = element.parentElement;
+    while (ancestor) {
+      if (ancestor.nextElementSibling?.matches?.('[data-slopslurp-container]')) {
+        // Found ancestor with placeholder - merge into it by removing the ancestor's placeholder
+        // and creating one for this child element instead (which is more specific/useful)
+        const ancestorPlaceholder = ancestor.nextElementSibling;
+        if (ancestorPlaceholder && ancestorPlaceholder.matches('[data-slopslurp-container]')) {
+          ancestorPlaceholder.remove();
+        }
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+
+    // Create a placeholder container as a sibling after the hidden element.
+    // This preserves the original DOM position (important for Google layout rules).
+    const container = document.createElement('div');
+    container.setAttribute('data-slopslurp-container', 'true');
+    container.style.cssText = `
+      display: block;
+      margin: 8px 0;
+      position: relative;
+      max-width: 100%;
+    `;
+
+    // Clean up any inner wrappers from legacy code to avoid nesting
+    try {
+      const innerWrappers = element.querySelectorAll('[data-slopslurp-wrapper]');
+      innerWrappers.forEach(w => {
+        const innerEl = w.querySelector('[data-slopslurp-wrapped]');
+        if (innerEl && w.parentNode) {
+          innerEl.style.display = 'none';
+          innerEl.setAttribute('data-removed', 'true');
+          w.parentNode.replaceChild(innerEl, w);
+        } else {
+          w.remove();
+        }
+      });
+
+    } catch {}
+
+
     const placeholder = document.createElement('div');
+    // TODO: util funcs for attributes are probably necessary, it's hard to remember which is which
     placeholder.setAttribute('data-slopslurp-placeholder', 'true');
     placeholder.setAttribute('data-for-element', type);
+    // TODO: colors for all of the below.
     placeholder.style.cssText = `
       padding: 8px 12px;
-      margin: 8px 0;
       background: var(--uv-styles-color-tertiary, #303134);
       border: 1px solid var(--uv-styles-color-outline, #3c4043);
       border-radius: 8px;
@@ -113,6 +178,9 @@
       cursor: pointer;
       transition: background-color 0.15s ease;
       user-select: none;
+      display: inline-block;
+      max-width: 100%;
+      flex: 0 0 auto;
     `;
 
     placeholder.innerHTML = `
@@ -144,6 +212,8 @@
         placeholder.style.backgroundColor = 'var(--uv-styles-color-tertiary, #303134)';
       }
     });
+
+    // Removed accordion hooks: placeholders now toggle content independently.
 
     // Click to reveal functionality
     placeholder.addEventListener('click', () => {
@@ -178,10 +248,12 @@
       }
     });
 
-    // Insert placeholder after the removed element
+    // Insert placeholder container after the removed element, if you don't do this DOM will just blow up
     if (element.parentNode) {
-      element.parentNode.insertBefore(placeholder, element.nextSibling);
-      
+      const parent = element.parentNode;
+      parent.insertBefore(container, element.nextSibling);
+      container.appendChild(placeholder);
+
       // Update stats
       if (NS.updateStats) {
         NS.updateStats('placeholdersCreated', 1);
@@ -196,10 +268,8 @@
   }
 
   function removeAllPlaceholders() {
-    const placeholders = document.querySelectorAll(
-      '[data-slopslurp-placeholder]'
-    );
-    placeholders.forEach(p => p.remove());
+    const containers = document.querySelectorAll('[data-slopslurp-container]');
+    containers.forEach(c => c.remove());
   }
 
   // Export to namespace

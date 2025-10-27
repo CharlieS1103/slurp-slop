@@ -1,15 +1,15 @@
 // SlopSlurp Utilities
-// Common helpers shared across modules and the transitional monolith.
+
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   NS.utils = NS.utils || {};
 
-  // Internal unique helper
+  // just helpful to aggregate our lil sanitized values for us
   function unique(values) {
     return [...new Set(values)];
   }
 
-  // Keep only strings, trim, lowercase, and drop empties; remove duplicates
+  // Keep only strings, trim, lowercase, and drop empties, remove dupes
   function sanitizeCaseInsensitiveArray(values = []) {
     return unique(
       (Array.isArray(values) ? values : [])
@@ -19,7 +19,7 @@
     );
   }
 
-  // Keep only strings, trim, and drop empties; remove duplicates
+  // Keep only strings, trim, drop empties, remove dupes
   function sanitizeSelectors(values = []) {
     return unique(
       (Array.isArray(values) ? values : [])
@@ -29,7 +29,8 @@
     );
   }
 
-  // Resolve a web-accessible asset to a fully-qualified extension URL
+  // good utility func, not used as of right now but smart to keep
+  // just for safe fetching through chrome api
   function getAssetUrl(relativePath) {
     try {
       if (
@@ -50,8 +51,9 @@
     } catch {}
     return null;
   }
+    
 
-  // Lightweight logger with an enable toggle so monolith and modules share verbosity
+  // this code won't need to change ever, just the logger definitions
   let _enabled = false;
   const Logger = {
     setEnabled(v) {
@@ -77,11 +79,11 @@
     }
   };
 
-  // ============ FILTER DATA MANAGEMENT ============
-  // Data is now bundled directly in core/data.js - no async loading needed!
+  // filter data, KEEP EMPTY!!!!
+  
 
   function getFilterData() {
-    // Filter data is set by core/data.js at load time
+    // Filter data is set by core/data.js upon bundle, defining it here as it's a getter func thus belongs in utils
     return (
       NS.filterData || {
         disableTerms: [],
@@ -95,7 +97,7 @@
     );
   }
 
-  // ============ DOMAIN & TEXT HELPERS ============
+  // Domain name handlers
 
   function extractHostname(urlString, depth = 0) {
     if (!urlString || depth > 3) {
@@ -148,6 +150,7 @@
   }
 
   function isLowQualityHostname(hostname, customWhitelist = []) {
+  
     if (!hostname) {
       return false;
     }
@@ -158,8 +161,10 @@
     }
 
     const data = getFilterData();
+    // this will return true if any word in the hostname matches any of the no no
+    // identifiers defined in data.js
     return data.lowQualityDomains.some(
-      domain => normalized === domain || normalized.endsWith(`.${domain}`)
+      domain => normalized === domain || normalized.includes(`.${domain}`)
     );
   }
 
@@ -184,6 +189,7 @@
   }
 
   // Export to namespace (only once at the end)
+  
   Object.assign(NS.utils, {
     Logger,
     sanitizeCaseInsensitiveArray,

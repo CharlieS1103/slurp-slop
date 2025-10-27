@@ -23,10 +23,7 @@
     'div[aria-label="Ads results"]',
     'div[aria-label="Sponsored"]',
     'div[class*="commercial-unit-desktop"]',
-    'div[class*="commercial-unit-mobile"]',
-    'div[jscontroller="sYACre"]',
-    'div[jscontroller="CnRgdd"]',
-    'div[jscontroller="Elkdbc"]'
+    'div[class*="commercial-unit-mobile"]'
   ];
 
   const aiIndicatorPhrases = [
@@ -69,7 +66,10 @@
     'g-card',
     'div[data-md*="structured_snippet"]',
     'div[data-ved][data-hveid][jscontroller="zdw0yd"]',
-    'div[jscontroller="EEh6s"]'
+    'div[jscontroller="EEh6s"]',
+    'div[jscontroller="sYACre"]',
+    'div[jscontroller="CnRgdd"]',
+    'div[jscontroller="Elkdbc"]'
   ];
 
   const disableTerms = [
@@ -79,25 +79,23 @@
     'content farms',
     'filter google search',
     'remove ai results',
-    'block ai overview'
+    'block ai overview',
+    'ai',
+    
+
   ];
 
   const lowQualityDomains = [
-    'sparknotes.com',
-    'www.sparknotes.com',
-    'litcharts.com',
-    'www.litcharts.com',
-    'shmoop.com',
-    'www.shmoop.com',
-    'cliffsnotes.com',
-    'www.cliffsnotes.com',
-    'coursehero.com',
-    'www.coursehero.com',
+    'sparknotes',
+    'litcharts',
+    'shmoop',
+    'cliffsnotes',
+    'coursehero',
     'study.com',
-    'www.study.com'
+
   ];
 
-  // Export data to namespace - always available, no async loading needed
+  // Export data to namespace, objects should exist already
   Object.assign(NS, {
     filterData: {
       adIndicatorLabels,

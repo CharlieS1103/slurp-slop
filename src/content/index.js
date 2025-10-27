@@ -15,7 +15,7 @@ import './features/ai.js';
 import './features/ads.js';
 import './features/quality.js';
 
-// Mode orchestration
+// Mode setup
 import './modes/index.js';
 
 // Initialization (must be last)

@@ -4,7 +4,8 @@
   const { Logger, getFilterData } = NS.utils || {};
   const { collectSnippetText } = NS;
   const SEL = NS.selectors;
-
+  // this stuff is pretty cut and dry, honestly idk if it's even worth it but it removes sponsored results
+  // pretty consistently
   function removeAdvertisements(removeElement) {
     const filterData = getFilterData();
     Logger?.debug('Removing advertisements', {
@@ -38,7 +39,7 @@
         ]
           .join(' ')
           .toLowerCase();
-
+        // returns true if the combined text has any of our ad labels
         const matches = filterData.adIndicatorLabels.some(label =>
           combinedText.includes(label)
         );
@@ -68,6 +69,7 @@
     }
 
     const fallbacks = SEL.ADS.fallbackContainers;
+    // this is old code but things break if i delete it
     for (const sel of fallbacks) {
       const fallback = element.closest(sel);
       if (fallback && !fallback.hasAttribute('data-removed')) {

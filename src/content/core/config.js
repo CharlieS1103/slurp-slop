@@ -1,5 +1,7 @@
 // SlopSlurp Config
-// Central place for static configuration constants used by modules.
+// Central place for static configuration constants used by modules
+// ex of import (unused)
+
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   NS.config = NS.config || {};

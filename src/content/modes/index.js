@@ -88,7 +88,7 @@
     pruneNonOrganicModules(removeElement);
   }
 
-  // ============ MINIMALIST MODE ============
+  // MINIMALIST MODE!!!
 
   function runMinimalistScan(
     removeElement,
@@ -160,7 +160,7 @@
     }
   }
 
-  // ============ COMPREHENSIVE MODE ============
+  // COMPREHENSIVE MODE!!
 
   function scanForContent(
     removeElement,

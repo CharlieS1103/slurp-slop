@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'lowQualityRemovedCount'
   );
   const adsRemovedCount = document.getElementById('adsRemovedCount');
-  const pagesProcessedCount = document.getElementById('pagesProcessedCount');
+
   const lastActivity = document.getElementById('lastActivity');
 
   let currentStats = {
@@ -46,10 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
     placeholdersCreated: 0
   };
 
-  let lifetimeStats = {
-    totalElementsRemoved: 0,
-    pagesProcessed: 0
-  };
 
   let filterSettings = {
     removeAiOverview: true,
@@ -59,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     minimalistMode: false,
     linksOnlyMode: false,
     showReplacementPlaceholders: false,
+    disableTermsEnabled: false,
     customWhitelist: []
   };
 
@@ -86,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Whitelist management functions
+  // TODO: this feels clunky idk if there's a better way though
   function updateWhitelistDisplay() {
     const whitelist = filterSettings.customWhitelist || [];
 
@@ -167,15 +165,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Simplified stats loading
+  // Stats loading, we can make these better but this is a simple start
   function loadStats() {
-    // Get current page stats and lifetime stats from storage
-    chrome.storage.local.get(['cleanSearchStats', 'lifetimeStats'], result => {
+    // Get current page stats from storage
+    chrome.storage.local.get(['cleanSearchStats'], result => {
       if (result.cleanSearchStats) {
         currentStats = { ...currentStats, ...result.cleanSearchStats };
-      }
-      if (result.lifetimeStats) {
-        lifetimeStats = { ...lifetimeStats, ...result.lifetimeStats };
       }
 
       // Try to get real-time stats from active tab's content script
@@ -208,10 +203,11 @@ document.addEventListener('DOMContentLoaded', function() {
               }
             );
           } catch (error) {
-            console.log('Error accessing content script:', error);
+            console.log('Error grabbing stats data:', error);
             updateStatsDisplay();
           }
         } else {
+          // can you tell i want these damn stats to update??
           updateStatsDisplay();
         }
       });
@@ -232,16 +228,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (adsRemovedCount) {
       adsRemovedCount.textContent = currentStats.adsRemoved || 0;
     }
-    if (pagesProcessedCount) {
-      pagesProcessedCount.textContent = lifetimeStats.pagesProcessed || 0;
-    }
+    
 
     // Update last activity
     if (lastActivity && currentStats.lastScanTime) {
       const lastTime = new Date(currentStats.lastScanTime);
       const now = new Date();
       const diffMinutes = Math.floor((now - lastTime) / 60000);
-
+    
       if (diffMinutes < 1) {
         lastActivity.textContent = 'Last activity: Just now';
       } else if (diffMinutes < 60) {
@@ -302,14 +296,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update whitelist display
         updateWhitelistDisplay();
+        // Set disable terms button state
+        const disableTermsBtn = document.getElementById('disableTermsToggle');
+        if (disableTermsBtn) {
+          const on = !!filterSettings.disableTermsEnabled;
+          disableTermsBtn.textContent = `Disable terms: ${on ? 'On' : 'Off'}`;
+        }
 
-        // AI filter control should be present and styled like the other filters
 
         // Load logging state and update UI
         loggingEnabled = !!result.loggingEnabled;
         updateLoggingButtonUI(loggingEnabled);
 
-        // Broadcast current logging state to active tab so content script is in sync
+        // Broadcast current logging state to active tab 
+        // i feel like the logging in it's current state could be annoying
+        // TODO: don't print logs to console when in prod, have them appended to a show logs modal or smth
         chrome.tabs.query(
           { active: true, currentWindow: true },
           function(tabs) {
@@ -324,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         );
 
-        // If minimalist mode was stored as enabled, enforce UI state
+        // enforce all UI rules 
         if (filterSettings.minimalistMode) {
           aiToggle.checked = true;
           lowQualityToggle.checked = false;
@@ -333,6 +334,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
           lowQualityToggle.disabled = true;
           adsToggle.disabled = true;
+          placeholdersToggle.disabled = true;
+        }
+        
+        // If links-only mode is enabled, disable placeholders toggle
+        if (filterSettings.linksOnlyMode) {
           placeholdersToggle.disabled = true;
         }
 
@@ -423,24 +429,20 @@ document.addEventListener('DOMContentLoaded', function() {
     placeholdersToggle.addEventListener('change', function() {
       filterSettings.showReplacementPlaceholders = placeholdersToggle.checked;
       saveFilterSettings();
-
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          func: show => {
-            if (window.cleanSearchDebug) {
-              window.cleanSearchDebug.showPlaceholders(show);
-            }
-          },
-          args: [filterSettings.showReplacementPlaceholders]
-        });
-      });
+      // TODO: prompt user to reload on placeholder toggle, give them a banner to click
+      // you guys got this
     });
 
     minimalistToggle.addEventListener('change', function() {
       filterSettings.minimalistMode = minimalistToggle.checked;
 
-      // If minimalist mode is enabled, remember previous states and disable other filters
+      // Minimalist and links-only are mutually exclusive
+      if (filterSettings.minimalistMode && filterSettings.linksOnlyMode) {
+        filterSettings.linksOnlyMode = false;
+        linksOnlyToggle.checked = false;
+      }
+
+      // Minimalist mode needs to disable other filters
       if (filterSettings.minimalistMode) {
         // save previous states
         _prevToggleState.aiToggle = aiToggle.checked;
@@ -496,7 +498,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         lowQualityToggle.disabled = false;
         adsToggle.disabled = false;
-        placeholdersToggle.disabled = false;
+        // Only re-enable placeholders if links-only is not active
+        placeholdersToggle.disabled = filterSettings.linksOnlyMode;
 
         statusDiv.className = 'status active';
         statusDiv.textContent = 'Minimalist Mode disabled';
@@ -509,10 +512,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Links-only mode
     linksOnlyToggle.addEventListener('change', function() {
       filterSettings.linksOnlyMode = linksOnlyToggle.checked;
+      
+      // Minimalist and links-only are mutually exclusive
+      if (filterSettings.linksOnlyMode && filterSettings.minimalistMode) {
+        filterSettings.minimalistMode = false;
+        minimalistToggle.checked = false;
+        
+        // Re-enable the toggles that minimalist mode disabled
+        lowQualityToggle.disabled = false;
+        adsToggle.disabled = false;
+      }
+      
+      // When links-only mode is enabled, disable placeholders toggle
+      if (filterSettings.linksOnlyMode) {
+        placeholdersToggle.checked = false;
+        placeholdersToggle.disabled = true;
+        filterSettings.showReplacementPlaceholders = false;
+      } else if (!filterSettings.minimalistMode) {
+        // Only re-enable if not in minimalist mode
+        placeholdersToggle.disabled = false;
+      }
+      
       saveFilterSettings();
       statusDiv.className = 'status active';
       statusDiv.textContent = linksOnlyToggle.checked
-        ? 'Links-only Mode: Showing plain organic links only'
+        ? 'Links-only Mode: Showing links only'
         : 'Links-only Mode disabled';
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
     });
@@ -546,6 +570,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Scan current page button
+    // honestly this isn't needed, it's kind of stupid
+   
     scanNowBtn.addEventListener('click', function() {
       scanNowBtn.disabled = true;
       const originalText = scanNowBtn.textContent;
@@ -605,9 +631,25 @@ document.addEventListener('DOMContentLoaded', function() {
       clearWhitelist();
     });
 
-    // Reset stats button removed as requested
+    // Disable terms toggle button, seemed smart but not sure if necessary
+    const disableTermsBtn = document.getElementById('disableTermsToggle');
+    if (disableTermsBtn) {
+      disableTermsBtn.addEventListener('click', function() {
+        filterSettings.disableTermsEnabled = !filterSettings.disableTermsEnabled;
+        saveFilterSettings();
+        disableTermsBtn.textContent = `Disable terms: ${filterSettings.disableTermsEnabled ? 'On' : 'Off'}`;
+        statusDiv.className = 'status active';
+        statusDiv.textContent = filterSettings.disableTermsEnabled
+          ? 'Query-based disable terms enabled'
+          : 'Query-based disable terms disabled';
+        setTimeout(() => updateStatus(extensionToggle.checked), 1500);
+      });
+    }
 
-    // Report issue button -> open email
+
+
+    // Report issue button -> open email to me,
+    // TODO: we should do something else, i don't want to be mailed
     reportIssueBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
@@ -621,19 +663,22 @@ document.addEventListener('DOMContentLoaded', function() {
     showHelpBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
+    // we're lying to our userbase, i'm not helping with jackshit
 
-    // Add event listener for AI Mode button toggle
+
+    // AI Mode button toggle
     hideAiModeToggle.addEventListener('change', function() {
       filterSettings.hideAiModeButton = hideAiModeToggle.checked;
       saveFilterSettings();
     });
   }
 
-  // Initialize the popup
+
   init();
 });
 
 // Functions to inject into the current page
+
 function updateExtensionState(enabled) {
   if (window.cleanSearchDebug && window.cleanSearchDebug.setEnabled) {
     window.cleanSearchDebug.setEnabled(enabled);
@@ -667,6 +712,7 @@ function getStats() {
   }
   return null;
 }
+// smart to keep
 /*
 function resetStats() {
   if (window.cleanSearchDebug && window.cleanSearchDebug.resetStats) {

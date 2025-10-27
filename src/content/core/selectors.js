@@ -1,10 +1,10 @@
 // SlopSlurp DOM Selectors
-// Centralized selector definitions for Google Search DOM elements
+// try to keep this file neat and organized, it's super easy to let it get out of hand (trust me)
 (() => {
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
   NS.selectors = NS.selectors || {};
 
-  // Core page structure
+  // Core page structure, 
   const PAGE = {
     mainContainer: 'div#rcnt',
     searchResults: '#rso',
@@ -58,10 +58,10 @@
     '.hgKElc',
     '[data-content-feature]',
     '[data-sncf]',
-    'div[data-attrid]' // fallback
+    'div[data-attrid]' 
   ];
 
-  // Ad-related
+  // Ad stuff
   const ADS = {
     indicators: '.g, [data-text-ad], [data-sokoban-feature]',
     fallbackContainers: [
@@ -72,7 +72,7 @@
     ]
   };
 
-  // Links-only mode: non-organic content to remove
+  // Links-only mode selectors, luckily google links are kept organic in DOM so it's easy as hell
   const NON_ORGANIC = {
     modules: [
       'g-scrolling-carousel',

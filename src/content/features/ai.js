@@ -42,9 +42,24 @@
       try {
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
+          // Skip if already removed
           if (element.hasAttribute('data-removed')) {
             return;
           }
+          
+          // Skip if this element is a child of a removed ele
+          if (element.closest && element.closest('[data-removed]')) {
+            return;
+          }
+          
+          // Skip if this element already has a placeholder (means it was already processed)
+          if (element.nextElementSibling && 
+              element.nextElementSibling.hasAttribute && 
+              element.nextElementSibling.hasAttribute('data-slopslurp-container')) {
+            return;
+          }
+          // TODO: any of the code that has to do with placeholders is unfortunately infinitely irritating to deal with, i need 
+          // some input to make it more consistent
           const text = element.textContent || '';
           if (containsAiOverviewHeading(text) || containsAiIndicator(text)) {
             Logger?.debug('Found AI element with selector', { selector });
