@@ -96,6 +96,7 @@
     settings = {}
   ) {
     if (!settings.extensionEnabled) {
+      Logger?.warn("Minimalist scan aborted: extension not enabled");
       return;
     }
 

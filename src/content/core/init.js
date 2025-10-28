@@ -5,7 +5,9 @@
   'use strict';
 
   const NS = (window.SlopSlurp = window.SlopSlurp || {});
-  const { Logger, getFilterData } = NS.utils || {};
+  //const { Logger, getFilterData } = NS.utils || {};
+  const Logger = NS.utils?.Logger;
+  const getFilterData = NS.utils?.getFilterData;
 
   // State variables
   // TODO: honestly might be worth moving to a more OOP based approach
@@ -274,37 +276,38 @@
   // MODE INIT!!
 
   function initMinimalistMode() {
-    Logger?.info('Starting minimalist mode');
+    Logger?.info("Starting minimalist mode");
 
-    if (e) {
-      e.disconnect();
+    if (extension.minimalistObserver) {
+      extension.minimalistObserver.disconnect();
     }
     if (extension.comprehensiveObserver) {
       extension.comprehensiveObserver.disconnect();
     }
 
-    e = new MutationObserver(() => {
+    extension.minimalistObserver = new MutationObserver(() => {
       const enabled = extension.extensionEnabled;
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
-          enabled,
+          extensionEnabled: enabled, // FIX: Pass as extensionEnabled
           hideAiModeButton: extension.filterSettings.hideAiModeButton,
           customWhitelist: extension.filterSettings.customWhitelist
         });
       }
     });
 
-    e.observe(document, {
+    extension.minimalistObserver.observe(document, {
       childList: true,
       subtree: true
     });
 
     setTimeout(() => {
       const enabled = extension.extensionEnabled;
-      e.takeRecords();
+      // FIX: Changed from 'e' to 'extension.minimalistObserver'
+      extension.minimalistObserver.takeRecords();
       if (NS.runMinimalistScan) {
         NS.runMinimalistScan(removeElement, isDangerousContainer, {
-          enabled,
+          extensionEnabled: enabled, // FIX: Pass as extensionEnabled
           hideAiModeButton: extension.filterSettings.hideAiModeButton,
           customWhitelist: extension.filterSettings.customWhitelist
         });
@@ -315,8 +318,8 @@
   function initComprehensiveMode() {
     Logger?.info('Starting comprehensive mode');
 
-    if (e) {
-      e.disconnect();
+    if (extension.minimalistObserver) {
+      extension.minimalistObserver.disconnect();
     }
     if (extension.comprehensiveObserver) {
       extension.comprehensiveObserver.disconnect();
@@ -351,11 +354,10 @@
         safetyCounter = 0;
 
         if (NS.scanForContent) {
-          const enabled = extension.extensionEnabled;
           NS.scanForContent(
             removeElement,
             isDangerousContainer,
-            { ...extension.filterSettings, enabled },
+            { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
             extension.currentStats
           );
         }
@@ -372,11 +374,10 @@
     // Initial scans and whatnot
     safetyCounter = 0;
     if (NS.scanForContent) {
-      const enabled = extension.extensionEnabled;
       NS.scanForContent(
         removeElement,
         isDangerousContainer,
-        { ...extension.filterSettings, enabled },
+        { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
         extension.currentStats
       );
     }
@@ -394,7 +395,7 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...extension.filterSettings, enabled },
+          { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
           extension.currentStats
         );
       }
@@ -407,7 +408,7 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...extension.filterSettings, enabled },
+          { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
           extension.currentStats
         );
       }
@@ -416,7 +417,18 @@
 
   // INIT
 
-  function initialize() {
+  async function initialize() {
+    if (typeof getFilterData === 'function') {
+      await getFilterData();
+    } else {
+      Logger?.warn('getFilterData() not available at initialize time')
+    }
+    Logger?.info('Init check', {
+      extensionEnabled: extension.extensionEnabled,
+      filterSettings: extension.filterSettings,
+      getFilterDataType: typeof getFilterData,
+      utilsPresent: !!NS.utils
+    });
     try {
       if (extension.loggingEnabled) {
         Logger?.info('Filter data loaded', getFilterData());
@@ -471,48 +483,45 @@
         chrome.storage.local.get(
           [
             'cleanSearchEnabled',
-            'extension.filterSettings',
-            'extension.loggingEnabled',
+            'filterSettings',
+            'loggingEnabled',
             'cleanSearchStats'
           ],
-          result => {
-            // Default to enabled
-            // in the context of the code repo i often use cleanSearch as a technical term for the changes we make
-            // saying slopslurp in variable names just feels wrong for whatever reason
-            extension.extensionEnabled =
-              result.cleanSearchEnabled !== false && extension.extensionEnabled;
-
-            // Initialize storage on first run
+          (result) => {
+            // FIX: Default to true if undefined, and log the value
             if (result.cleanSearchEnabled === undefined) {
+              extension.extensionEnabled = true;
               chrome.storage.local.set({ cleanSearchEnabled: true });
+              Logger?.info("Set cleanSearchEnabled to true (was undefined)");
+            } else {
+              extension.extensionEnabled = result.cleanSearchEnabled;
+              Logger?.info("Loaded cleanSearchEnabled from storage:", result.cleanSearchEnabled);
             }
 
-            if (result.extension.filterSettings) {
+            if (result.filterSettings) {
               extension.filterSettings = {
                 ...extension.filterSettings,
-                ...result.extension.filterSettings
+                ...result.filterSettings
               };
-              // Enforce rules after loading from storage
-              // enforce rules after eating
-              // sleeping
-              // breathing.
-              // enforce rules whenever changes are made to the settings.
               extension.filterSettings = enforceSettingsRules(extension.filterSettings);
             }
 
-            if (typeof result.extension.loggingEnabled !== 'undefined') {
-              extension.loggingEnabled = !!result.extension.loggingEnabled;
-              if (Logger && typeof Logger.setEnabled === 'function') {
+            if (typeof result.loggingEnabled !== "undefined") {
+              extension.loggingEnabled = !!result.loggingEnabled;
+              if (Logger && typeof Logger.setEnabled === "function") {
                 Logger.setEnabled(extension.loggingEnabled);
               }
             }
 
             if (result.cleanSearchStats) {
-              extension.currentStats = { ...extension.currentStats, ...result.cleanSearchStats };
+              extension.currentStats = {
+                ...extension.currentStats,
+                ...result.cleanSearchStats
+              };
             }
 
+            // Call applySettings() AFTER storage is loaded
             applySettings();
-            // don't have to do it when applying though!
           }
         );
       } else {
@@ -531,9 +540,8 @@
         scan: () => {
           safetyCounter = 0;
           if (extension.filterSettings.minimalistMode && NS.runMinimalistScan) {
-            const enabled = extension.extensionEnabled;
             NS.runMinimalistScan(removeElement, isDangerousContainer, {
-              enabled,
+              extensionEnabled: extension.extensionEnabled,
               hideAiModeButton: extension.filterSettings.hideAiModeButton,
               customWhitelist: extension.filterSettings.customWhitelist
             });
@@ -583,8 +591,8 @@
             if (NS.removeAllPlaceholders) {
               NS.removeAllPlaceholders();
             }
-            if (e) {
-              e.disconnect();
+            if (extension.minimalistObserver) {
+              extension.minimalistObserver.disconnect();
             }
             if (extension.comprehensiveObserver) {
               extension.comprehensiveObserver.disconnect();
@@ -610,15 +618,35 @@
           // Enforce all mode rules and dependencies
           extension.filterSettings = enforceSettingsRules(extension.filterSettings, oldSettings);
 
-          if (
-            newSettings &&
-            typeof newSettings.extension.loggingEnabled !== 'undefined'
-          ) {
-            extension.loggingEnabled = !!newSettings.extension.loggingEnabled;
-            if (Logger && typeof Logger.setEnabled === 'function') {
-              Logger.setEnabled(extension.loggingEnabled);
+          // if (
+          //   newSettings &&
+          //   typeof newSettings.extension.loggingEnabled !== 'undefined'
+          // ) {
+          //   extension.loggingEnabled = !!newSettings.extension.loggingEnabled;
+          //   if (Logger && typeof Logger.setEnabled === 'function') {
+          //     Logger.setEnabled(extension.loggingEnabled);
+          //   }
+          // }
+
+          if (newSettings) {
+            if (typeof newSettings.loggingEnabled !== 'undefined') {
+              // Case: called with { loggingEnabled: true }
+              extension.loggingEnabled = !!newSettings.loggingEnabled;
+              if (Logger && typeof Logger.setEnabled === 'function') {
+                Logger.setEnabled(extension.loggingEnabled);
+              }
+            } else if (
+              newSettings.extension &&
+              typeof newSettings.extension.loggingEnabled !== 'undefined'
+            ) {
+              // Case: called with { extension: { loggingEnabled: true } }
+              extension.loggingEnabled = !!newSettings.extension.loggingEnabled;
+              if (Logger && typeof Logger.setEnabled === 'function') {
+                Logger.setEnabled(extension.loggingEnabled);
+              }
             }
           }
+
 
           if (
             newSettings &&
