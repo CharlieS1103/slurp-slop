@@ -2,7 +2,7 @@
 // SlopSlurp Extension Popup (source)
 // Handles user interface interactions and extension state management
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   // UI Elements
   const statusDiv = document.getElementById('status');
   const extensionToggle = document.getElementById('extensionToggle');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const showHelpBtn = document.getElementById('showHelp');
   const toggleLoggingBtn = document.getElementById('toggleLogging');
 
-  let hideableSection = document.getElementById('can-be-hidden');
+  const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
 
   // Logging state for popup UI
@@ -72,10 +72,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // Hide every setting if master switch is off; there's no need to show everything if the extension is off. -e
   function toggleSettingVisibility() {
     if (!extensionToggle.checked) {
-      hideableSection.innerHTML = "";
-    }
-    else {
-      if (hideableSection.innerHTML == "") {
+      hideableSection.innerHTML = '';
+    } else {
+      if (hideableSection.innerHTML == '') {
         hideableSection.innerHTML = hideableSectionHTML;
       }
     }
@@ -87,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.local.set(filterData);
 
     // Broadcast to all tabs
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
         function: updateFilterSettings,
@@ -188,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       // Try to get real-time stats from active tab's content script
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         if (
           tabs[0] &&
           tabs[0].url &&
@@ -327,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // TODO: don't print logs to console when in prod, have them appended to a show logs modal or smth
           chrome.tabs.query(
             { active: true, currentWindow: true },
-            function (tabs) {
+            function(tabs) {
               if (!tabs[0]) {
                 return;
               }
@@ -375,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateStatus(enabled) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       const currentTab = tabs[0];
       const isGoogleSearch =
         currentTab.url &&
@@ -400,20 +399,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function checkCurrentPage() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(_tabs) {
       updateStatus(extensionToggle.checked);
     });
   }
 
   function setupEventListeners() {
     // Master extension toggle
-    extensionToggle.addEventListener('change', function () {
+    extensionToggle.addEventListener('change', function() {
       const enabled = extensionToggle.checked;
       chrome.storage.local.set({ cleanSearchEnabled: enabled });
       updateStatus(enabled);
       toggleSettingVisibility(enabled);
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: updateExtensionState,
@@ -423,34 +422,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Individual filter toggles
-    aiToggle.addEventListener('change', function () {
+    aiToggle.addEventListener('change', function() {
       filterSettings.removeAiOverview = aiToggle.checked;
       saveFilterSettings();
     });
 
-    lowQualityToggle.addEventListener('change', function () {
+    lowQualityToggle.addEventListener('change', function() {
       filterSettings.removeLowQualitySites = lowQualityToggle.checked;
       saveFilterSettings();
     });
 
-    adsToggle.addEventListener('change', function () {
+    adsToggle.addEventListener('change', function() {
       filterSettings.removeAds = adsToggle.checked;
       saveFilterSettings();
     });
 
-    academicToggle.addEventListener('change', function () {
+    academicToggle.addEventListener('change', function() {
       filterSettings.academicMode = academicToggle.checked;
       saveFilterSettings();
     });
 
-    placeholdersToggle.addEventListener('change', function () {
+    placeholdersToggle.addEventListener('change', function() {
       filterSettings.showReplacementPlaceholders = placeholdersToggle.checked;
       saveFilterSettings();
       // TODO: prompt user to reload on placeholder toggle, give them a banner to click
       // you guys got this
     });
 
-    minimalistToggle.addEventListener('change', function () {
+    minimalistToggle.addEventListener('change', function() {
       filterSettings.minimalistMode = minimalistToggle.checked;
 
       // Minimalist and links-only are mutually exclusive
@@ -527,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Links-only mode
-    linksOnlyToggle.addEventListener('change', function () {
+    linksOnlyToggle.addEventListener('change', function() {
       filterSettings.linksOnlyMode = linksOnlyToggle.checked;
 
       // Minimalist and links-only are mutually exclusive
@@ -559,13 +558,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Logging toggle
-    toggleLoggingBtn.addEventListener('click', function () {
+    toggleLoggingBtn.addEventListener('click', function() {
       loggingEnabled = !loggingEnabled;
       chrome.storage.local.set({ loggingEnabled });
 
       updateLoggingButtonUI(loggingEnabled);
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: setLogging,
@@ -577,7 +576,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function saveFilterSettings() {
       chrome.storage.local.set({ filterSettings: filterSettings });
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: updateFilterSettings,
@@ -589,18 +588,18 @@ document.addEventListener('DOMContentLoaded', function () {
     // Scan current page button
     // honestly this isn't needed, it's kind of stupid
 
-    scanNowBtn.addEventListener('click', function () {
+    scanNowBtn.addEventListener('click', function() {
       scanNowBtn.disabled = true;
       const originalText = scanNowBtn.textContent;
       scanNowBtn.textContent = 'Scanning Page...';
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript(
           {
             target: { tabId: tabs[0].id },
             function: triggerScan
           },
-          function (_results) {
+          function(_results) {
             if (chrome.runtime.lastError) {
               console.error(
                 'Script injection failed:',
@@ -627,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Whitelist input field and button event listeners
     const whitelistInput = document.getElementById('whitelistInput');
 
-    addToWhitelistBtn.addEventListener('click', function () {
+    addToWhitelistBtn.addEventListener('click', function() {
       const domain = whitelistInput.value;
       if (domain) {
         addToWhitelist(domain);
@@ -635,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Also add domain when pressing Enter in the input field
-    whitelistInput.addEventListener('keypress', function (e) {
+    whitelistInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         const domain = whitelistInput.value;
         if (domain) {
@@ -644,14 +643,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    clearWhitelistBtn.addEventListener('click', function () {
+    clearWhitelistBtn.addEventListener('click', function() {
       clearWhitelist();
     });
 
     // Disable terms toggle button, seemed smart but not sure if necessary
     const disableTermsBtn = document.getElementById('disableTermsToggle');
     if (disableTermsBtn) {
-      disableTermsBtn.addEventListener('click', function () {
+      disableTermsBtn.addEventListener('click', function() {
         filterSettings.disableTermsEnabled =
           !filterSettings.disableTermsEnabled;
         saveFilterSettings();
@@ -666,23 +665,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Report issue button -> open email to me,
     // TODO: we should do something else, i don't want to be mailed
-    reportIssueBtn.addEventListener('click', function () {
+    reportIssueBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
     // View source button -> open email
-    viewSourceBtn.addEventListener('click', function () {
+    viewSourceBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
     // Show help -> open email
-    showHelpBtn.addEventListener('click', function () {
+    showHelpBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
     // we're lying to our userbase, i'm not helping with jackshit
 
     // AI Mode button toggle
-    hideAiModeToggle.addEventListener('change', function () {
+    hideAiModeToggle.addEventListener('change', function() {
       filterSettings.hideAiModeButton = hideAiModeToggle.checked;
       saveFilterSettings();
     });

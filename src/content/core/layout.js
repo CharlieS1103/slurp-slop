@@ -133,7 +133,7 @@
           ancestorPlaceholder &&
           ancestorPlaceholder.matches('[data-slopslurp-container]')
         ) {
-          console.log('test)');
+          ancestorPlaceholder.remove();
         }
         break;
       }
@@ -172,7 +172,7 @@
     // TODO: util funcs for attributes are probably necessary, it's hard to remember which is which
     placeholder.setAttribute('data-slopslurp-placeholder', 'true');
     placeholder.setAttribute('data-for-element', type);
-    // TODO: centralized colors for all of the below.
+    // TODO: colors for all of the below.
     placeholder.style.cssText = `
       padding: 8px 12px;
       background: var(--uv-styles-color-tertiary, #303134);
@@ -227,6 +227,26 @@
 
     // Click to reveal functionality
     placeholder.addEventListener('click', () => {
+      setTimeout(() => {
+        if (placeholder._revealed) {
+          // TODO: should probs get this logic modular so don't have to repeat it
+          // Hide the element again
+          element.style.display = 'none';
+          element.setAttribute('data-removed', 'true');
+
+          // Restore original placeholder
+          placeholder.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span style="color: var(--uv-styles-color-text-de-emphasis, #9aa0a6);">Content removed</span>
+            <span style="font-size: 12px; color: var(--uv-styles-color-text-primary, #8ab4f8);">Click to reveal</span>
+          </div>
+        `;
+          placeholder.style.backgroundColor =
+            'var(--uv-styles-color-tertiary, #303134)';
+          placeholder._revealed = false;
+        }
+      }, 10000);
+
       if (!placeholder._revealed) {
         // Show the element
         element.style.display =
