@@ -17,9 +17,11 @@
    ├─ css
    │  └─ popup.css
    │     └─ line 2: TODO : standardize colors
-   └─ popup
-      └─ popup.js
-         ├─ line 86: TODO : this feels clunky idk if there's a better way though
-         ├─ line 313: TODO : don't print logs to console when in prod, have them appended to a show logs modal or smth
-         ├─ line 432: TODO : prompt user to reload on placeholder toggle, give them a banner to click
-         └─ line 652: TODO : we should do something else, i don't want to be mailed
+   ├─ popup
+   │  └─ popup.js
+   │     ├─ line 86: TODO : this feels clunky idk if there's a better way though
+   │     ├─ line 313: TODO : don't print logs to console when in prod, have them appended to a show logs modal or smth
+   │     ├─ line 432: TODO : prompt user to reload on placeholder toggle, give them a banner to click
+   │     └─ line 652: TODO : we should do something else, i don't want to be mailed
+   └─ README.md
+      └─ line 15: TODO: not a super high priority, just add the link to install via chrome web store when we get to that point
