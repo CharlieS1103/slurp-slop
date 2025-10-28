@@ -6,7 +6,7 @@
     NS.utils || {};
   const SEL = NS.selectors;
 
-  // ============ LINKS-ONLY MODE ============
+  // links-only mode
 
   function removeRightRailPanels(removeElement, isDangerousContainer) {
     const rhs = document.querySelector(SEL.PAGE.rightRail);
