@@ -9,14 +9,14 @@ line ~20 'popup.js'
 :root,
 body[data-theme="default"] {
   --primary: #007bff;
-  --border-dark: #274dad;
+  --border-dark: #000000;
   --border-light: #d62121;
-  --stats: rgba(5, 150, 105, 0.15);
+  --stats: whitesmoke;
   --surface-dark: ;
   --border-danger: #cf1717;
   --surface-medium: #381d1d;
-  --text-danger:#942828;
-  --text-primary: #020000;
+  --text-danger:#c37e7e;
+  --text-primary: whitesmoke;
   --primary-dark: #3e1c1c;
   --accent: #430101;
   --surface-light: #423333;
@@ -34,7 +34,7 @@ body {
   font-family: 'Times New Roman', Times, serif;
   font-size: 14px;
   line-height: 1.5;
-  background: white;
+  background: rgb(79, 78, 78);
   color: var(--surface-medium);
 
   
@@ -42,7 +42,7 @@ body {
 
 .header {
   margin-bottom: 20px;
-  border-bottom: 2px solid var(--border-danger);
+  border-bottom: 5px solid var(--border-danger);
   padding: 24px 24px 20px;
   background: var(--surface-medium);
   position: relative;
@@ -83,7 +83,7 @@ h1 {
 }
 
 .subtitle {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-danger);
   margin-top: 6px;
   font-style: italic;
@@ -154,7 +154,7 @@ h1 {
   padding: 12px 14px;
   background: var(--surface-medium);
   border-radius: 2px;
-  border: 1px solid var(--border-dark);
+  border: 3px solid var(--border-dark);
   transition: all 0.2s ease;
   position: relative;
 }
@@ -247,7 +247,7 @@ input:checked + .slider:before {
   padding: 14px 12px;
   border-radius: 2px;
   text-align: center;
-  border: 1px solid rgba(20, 184, 166, 0.3);
+  border: 3px solid rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
@@ -271,7 +271,7 @@ input:checked + .slider:before {
 
 .detailed-stats {
   background: var(--surface-medium);
-  border: 1px solid var(--border-dark);
+  border: 3px solid var(--border-dark);
   border-radius: 2px;
   padding: 12px;
   margin-top: 12px;
@@ -290,7 +290,7 @@ input:checked + .slider:before {
 }
 
 .stat-row .label {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.5px;
@@ -365,7 +365,7 @@ button:disabled {
 }
 
 .secondary:hover:not(:disabled) {
-  background:  var(--secondary-dark)
+  background:  var(--secondary-dark);
   border-color: var(--text-muted) !important;
   color: var(--text-primary) !important;
 }
