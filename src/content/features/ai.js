@@ -1,12 +1,12 @@
-// SlopSlurp AI content detection & removal module
+// SLURPSLOP AI content detection & removal module
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   const {
     Logger,
     getFilterData,
     containsAiIndicator,
     containsAiOverviewHeading
-  } = NS.utils || {};
+  } = NS.utils;
   const { collectSnippetText } = NS;
   const SEL = NS.selectors;
 
@@ -43,12 +43,12 @@
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
           // Skip if already removed
-          if (element.hasAttribute('data-removed')) {
+          if (element.hasAttribute('data-slurpslop-removed')) {
             return;
           }
 
-          // Skip if this element is a child of a removed ele
-          if (element.closest && element.closest('[data-removed]')) {
+          // Skip if this element is a child of a removed element
+          if (element.closest && element.closest('[data-slurpslop-removed]')) {
             return;
           }
 
@@ -56,7 +56,7 @@
           if (
             element.nextElementSibling &&
             element.nextElementSibling.hasAttribute &&
-            element.nextElementSibling.hasAttribute('data-slopslurp-container')
+            element.nextElementSibling.hasAttribute('data-slurpslop-container')
           ) {
             return;
           }
@@ -103,7 +103,7 @@
 
       // Conservative fallbacks
       if (!container) {
-        const candidates = (SEL.AI?.containers || []).map(sel =>
+        const candidates = SEL.AI.containers.map(sel =>
           heading.closest(sel)
         );
         container =
@@ -127,7 +127,7 @@
       }
 
       const headingText = (
-        result.querySelector(SEL.RESULTS.heading)?.innerText || ''
+        result.querySelector(SEL.RESULTS.heading) ? result.querySelector(SEL.RESULTS.heading).innerText : ''
       ).toLowerCase();
       const descriptionText = (
         collectSnippetText ? collectSnippetText(result) : ''

@@ -1,15 +1,15 @@
-// ESLint configuration for SlopSlurp Chrome Extension
+// ESLint configuration for SLURPSLOP Chrome Extension
 import js from '@eslint/js';
 
 export default [
   // Ignore build artifacts and vendor assets
-  { ignores: ['dist/**', 'node_modules/**', 'icons/**', 'src/data/**/*.js'] },
+  { ignores: ['dist/**', 'node_modules/**', 'icons/**'] },
   js.configs.recommended,
   {
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'script',
+      sourceType: 'module',
       globals: {
         chrome: 'readonly',
         browser: 'readonly',

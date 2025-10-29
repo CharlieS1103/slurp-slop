@@ -1,4 +1,4 @@
-// SlopSlurp Extension Utilities
+// SLURPSLOP Extension Utilities
 /* eslint-disable no-unused-vars */
 
 // Settings management
@@ -33,6 +33,35 @@ const Settings = {
     }
   }
 };
+
+// Centralized popup-side rules enforcement to mirror content rules
+/* make sure you change these as you change rules inside of content*/
+function enforceSettingsRules(settings, oldSettings = {}) {
+  const result = { ...Settings.defaults, ...settings };
+
+  if (result.minimalistMode && result.linksOnlyMode) {
+    if (result.minimalistMode && !oldSettings.minimalistMode) {
+      result.linksOnlyMode = false;
+    } else if (result.linksOnlyMode && !oldSettings.linksOnlyMode) {
+      result.minimalistMode = false;
+    } else {
+      result.linksOnlyMode = false;
+    }
+  }
+
+  if (result.minimalistMode) {
+    result.removeAiOverview = true;
+    result.removeLowQualitySites = false;
+    result.removeAds = false;
+    result.showReplacementPlaceholders = false;
+  }
+
+  if (result.linksOnlyMode) {
+    result.showReplacementPlaceholders = false;
+  }
+
+  return result;
+}
 
 // Statistics management
 const Stats = {
@@ -123,7 +152,7 @@ const ContentScript = {
         function: func,
         args
       });
-      return result?.[0]?.result;
+      return result[0].result;
     } catch (error) {
       console.error('Content script execution failed:', error);
       return null;
@@ -132,12 +161,13 @@ const ContentScript = {
 
   async getCurrentTabId() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    return tabs[0]?.id;
+    return tabs[0].id;
   },
 
+  // TODO: Ensure we use this to not scan on webpages, need to integrate for 'Scan Current Page' as well.
   async isGoogleSearchTab() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tabs[0]?.url;
+    const url = tabs[0].url;
     return (
       url &&
       (url.includes('google.com/search') ||

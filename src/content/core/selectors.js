@@ -1,7 +1,7 @@
-// SlopSlurp DOM Selectors
+// SLURPSLOP DOM Selectors
 // try to keep this file neat and organized, it's super easy to let it get out of hand (trust me)
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.selectors = NS.selectors || {};
 
   // Core page structure,
@@ -72,6 +72,13 @@
     ]
   };
 
+  // Protected containers we should never remove (for safety)
+  const PROTECTED = {
+    ids: ['rcnt', 'search', 'appbar', 'rso', 'res', 'center_col', 'cnt'],
+    roles: ['main'],
+    matchSelectors: ['#rso, #res, #center_col, #cnt, .mnr-c, .GLcBOb']
+  };
+
   // Links-only mode selectors, luckily google links are kept organic in DOM so it's easy as hell
   const NON_ORGANIC = {
     modules: [
@@ -92,6 +99,7 @@
     PAA,
     SNIPPETS,
     ADS,
+    PROTECTED,
     NON_ORGANIC
   });
 })();

@@ -1,6 +1,6 @@
-// SlopSlurp Namespace bootstrap
+// SLURPSLOP Namespace bootstrap
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.version = NS.version || '2.x-dev';
   /*
   // If you want shared mutable values, you need to define them here first

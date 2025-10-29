@@ -1,7 +1,7 @@
-// SlopSlurp Ads removal module
+// SLURPSLOP Ads removal module
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
-  const { Logger, getFilterData } = NS.utils || {};
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
+  const { Logger, getFilterData } = NS.utils;
   const { collectSnippetText } = NS;
   const SEL = NS.selectors;
   // this stuff is pretty cut and dry, honestly idk if it's even worth it but it removes sponsored results
@@ -28,12 +28,12 @@
 
       const adIndicators = document.querySelectorAll(SEL.ADS.indicators);
       adIndicators.forEach(result => {
-        if (result.hasAttribute('data-removed')) {
+        if (result.hasAttribute('data-slurpslop-removed')) {
           return;
         }
 
         const combinedText = [
-          result.querySelector(SEL.RESULTS.heading)?.innerText || '',
+          result.querySelector(SEL.RESULTS.heading) ? result.querySelector(SEL.RESULTS.heading).innerText : '',
           collectSnippetText ? collectSnippetText(result) : '',
           result.getAttribute('aria-label') || ''
         ]
@@ -63,16 +63,15 @@
 
     for (const selector of filterData.adSelectors) {
       const match = element.closest(selector);
-      if (match && !match.hasAttribute('data-removed')) {
+      if (match && !match.hasAttribute('data-slurpslop-removed')) {
         return match;
       }
     }
 
     const fallbacks = SEL.ADS.fallbackContainers;
-    // this is old code but things break if i delete it
     for (const sel of fallbacks) {
       const fallback = element.closest(sel);
-      if (fallback && !fallback.hasAttribute('data-removed')) {
+      if (fallback && !fallback.hasAttribute('data-slurpslop-removed')) {
         return fallback;
       }
     }

@@ -1,7 +1,7 @@
-// SlopSlurp Utilities
+// SLURPSLOP Utilities
 
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.utils = NS.utils || {};
 
   // just helpful to aggregate our lil sanitized values for us
@@ -62,19 +62,19 @@
       if (!_enabled) {
         return;
       }
-      console.log(`[SlopSlurp] INFO: ${msg}`, data || '');
+      console.log(`[SlurpSlop] INFO: ${msg}`, data || '');
     },
     debug(msg, data) {
       if (!_enabled) {
         return;
       }
-      console.log(`[SlopSlurp] DEBUG: ${msg}`, data || '');
+      console.log(`[SlurpSlop] DEBUG: ${msg}`, data || '');
     },
     warn(msg, data) {
-      console.warn(`[SlopSlurp] WARN: ${msg}`, data || '');
+      console.warn(`[SlurpSlop] WARN: ${msg}`, data || '');
     },
     error(msg, data) {
-      console.error(`[SlopSlurp] ERROR: ${msg}`, data || '');
+      console.error(`[SlurpSlop] ERROR: ${msg}`, data || '');
     }
   };
 
@@ -93,6 +93,28 @@
         adSelectors: []
       }
     );
+  }
+
+  // Collect snippet/description text from a result container using shared selectors
+  function collectSnippetText(result) {
+    try {
+      const SEL = NS.selectors;
+      if (!result || !SEL || !Array.isArray(SEL.SNIPPETS)) {
+        return '';
+      }
+      const snippets = [];
+      SEL.SNIPPETS.forEach(selector => {
+        result.querySelectorAll(selector).forEach(node => {
+          const text = node.textContent || '';
+          if (text) {
+            snippets.push(text);
+          }
+        });
+      });
+      return snippets.join(' ');
+    } catch {
+      return '';
+    }
   }
 
   // Domain name handlers
@@ -199,4 +221,9 @@
     containsAiOverviewHeading,
     containsAiIndicator
   });
+
+  // Backwards-compatible export: some modules read from NS.collectSnippetText
+  if (!NS.collectSnippetText) {
+    NS.collectSnippetText = collectSnippetText;
+  }
 })();

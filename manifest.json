@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "SlopSlurp",
+  "name": "SlurpSlop",
   "version": "2.1.0",
   "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.",
   "permissions": ["scripting", "activeTab", "storage"],
@@ -38,7 +38,7 @@
     "*://*.google.co.jp/*"
   ],
   "action": {
-    "default_title": "SlopSlurp",
+    "default_title": "SlurpSlop",
     "default_popup": "popup.html"
   },
   "icons": {

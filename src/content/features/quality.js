@@ -1,7 +1,7 @@
-// SlopSlurp Low-quality filtering module
+// SLURPSLOP Low-quality filtering module
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
-  const { Logger, isLowQualityHostname } = NS.utils || {};
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
+  const { Logger, isLowQualityHostname } = NS.utils;
   const SEL = NS.selectors;
 
   function isLowQualitySite(result, customWhitelist = []) {
@@ -26,7 +26,7 @@
     });
     searchResults.forEach(result => {
       if (
-        !result.hasAttribute('data-removed') &&
+        !result.hasAttribute('data-slurpslop-removed') &&
         isLowQualitySite(result, customWhitelist)
       ) {
         if (typeof removeElement === 'function') {

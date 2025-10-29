@@ -1,5 +1,6 @@
-// Copied canonical popup script into src/ for refactor
-// SlopSlurp Extension Popup (source)
+/* global enforceSettingsRules */
+
+// SLURPSLOP Extension Popup (source)
 // Handles user interface interactions and extension state management
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -26,10 +27,42 @@ document.addEventListener('DOMContentLoaded', function() {
   const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
 
+  // Theme switching
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  
+  
+  // Load saved theme
+  chrome.storage.sync.get(['theme',], (result) => {
+    const rawTheme = result.theme || 'default';
+
+    const savedTheme = rawTheme;
+    if (savedTheme !== rawTheme) {
+      chrome.storage.sync.set({ theme: savedTheme });
+    }
+    
+    document.body.setAttribute('data-theme', savedTheme);
+    themeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+    });
+
+  });
+  
+  // Theme button handlers
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme;
+      document.body.setAttribute('data-theme', theme);
+      chrome.storage.sync.set({ theme });
+      themeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  
+
   // Logging state for popup UI
   let loggingEnabled = false;
 
-  // Stat elements - simplified
+  // Stat elements 
   const totalRemovedCount = document.getElementById('totalRemovedCount');
   const aiRemovedCount = document.getElementById('aiRemovedCount');
   const lowQualityRemovedCount = document.getElementById(
@@ -74,19 +107,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!extensionToggle.checked) {
       hideableSection.innerHTML = '';
     } else {
-      if (hideableSection.innerHTML == '') {
+      if (hideableSection.innerHTML === '') {
         hideableSection.innerHTML = hideableSectionHTML;
       }
     }
   }
 
-  // Save filter settings function
+  // Save filter settings function (enforces rules before persisting)
   function saveFilterSettings() {
+    try {
+      const prev = { ...filterSettings };
+      // enforce central rules if available
+      if (typeof enforceSettingsRules === 'function') {
+        filterSettings = enforceSettingsRules(filterSettings, prev);
+      }
+    } catch {}
+
     const filterData = { filterSettings };
     chrome.storage.local.set(filterData);
 
     // Broadcast to all tabs
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (!tabs[0]) {
+        return;
+      }
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
         function: updateFilterSettings,
@@ -269,13 +313,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize popup
   async function init() {
     try {
-      console.log('SlopSlurp popup initializing...');
+      console.log('SlurpSlop popup initializing...');
       await loadSettings();
       loadStats();
       checkCurrentPage();
       setupEventListeners();
       toggleSettingVisibility();
-      console.log('SlopSlurp popup initialized successfully');
+      console.log('SlurpSlop popup initialized successfully');
     } catch (error) {
       console.error('Error initializing popup:', error);
       if (statusDiv) {
@@ -295,6 +339,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (result.filterSettings) {
             filterSettings = { ...filterSettings, ...result.filterSettings };
+          }
+          // enforce central rules if available
+          if (typeof enforceSettingsRules === 'function') {
+            filterSettings = enforceSettingsRules(filterSettings);
           }
 
           // Update individual toggles
@@ -573,18 +621,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
-    function saveFilterSettings() {
-      chrome.storage.local.set({ filterSettings: filterSettings });
-
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: updateFilterSettings,
-          args: [filterSettings]
-        });
-      });
-    }
-
     // Scan current page button
     // honestly this isn't needed, it's kind of stupid
 
@@ -696,7 +732,7 @@ function updateExtensionState(enabled) {
   if (window.cleanSearchDebug && window.cleanSearchDebug.setEnabled) {
     window.cleanSearchDebug.setEnabled(enabled);
     console.log(
-      `SlopSlurp extension ${enabled ? 'enabled' : 'disabled'} via popup`
+      `SlurpSlop extension ${enabled ? 'enabled' : 'disabled'} via popup`
     );
   }
 }
@@ -714,7 +750,7 @@ function triggerScan() {
     console.log('Manual scan triggered by extension popup');
     return true;
   } else {
-    console.log('SlopSlurp not found on page');
+    console.log('SlurpSlop not found on page');
     return false;
   }
 }

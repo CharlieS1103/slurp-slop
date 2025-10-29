@@ -1,6 +1,6 @@
-// SlopSlurp PAA (People Also Ask) module
+// SlurpSlop PAA (People Also Ask) module
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   const {
     Logger,
     getFilterData,
@@ -8,21 +8,11 @@
     isLowQualityHostname,
     containsAiIndicator,
     containsAiOverviewHeading
-  } = NS.utils || {};
+  } = NS.utils;
   const SEL = NS.selectors;
 
-  function collectSnippetText(result) {
-    const snippets = [];
-    SEL.SNIPPETS.forEach(selector => {
-      result.querySelectorAll(selector).forEach(node => {
-        const text = node.textContent || '';
-        if (text) {
-          snippets.push(text);
-        }
-      });
-    });
-    return snippets.join(' ');
-  }
+  // Use centralized helper from utils via NS.collectSnippetText
+  const collectSnippetText = NS.collectSnippetText;
 
   function removePeopleAlsoAskEntries(removeElement, customWhitelist = []) {
     const filterData = getFilterData();
@@ -33,13 +23,13 @@
     const paaContainers = new Set();
 
     questionPairs.forEach(pair => {
-      if (!pair || pair.hasAttribute('data-clean-search-removed')) {
+      if (!pair || pair.hasAttribute('data-slurpslop-removed')) {
         return;
       }
 
       // Try to find container using centralized selectors
       let container = null;
-      if (SEL.PAA?.containers) {
+      if (SEL.PAA.containers) {
         for (const sel of SEL.PAA.containers) {
           container = pair.closest(sel);
           if (container) {
@@ -51,7 +41,7 @@
         container = pair;
       }
 
-      if (container.hasAttribute('data-clean-search-removed')) {
+      if (container.hasAttribute('data-slurpslop-removed')) {
         return;
       }
 
@@ -157,13 +147,13 @@
 
     // Clean up empty PAA containers, a container is an individual question
     paaContainers.forEach(paaContainer => {
-      if (paaContainer.hasAttribute('data-clean-search-removed')) {
+      if (paaContainer.hasAttribute('data-slurpslop-removed')) {
         return;
       }
 
       // Check if all question pairs inside are removed
       const remainingPairs = paaContainer.querySelectorAll(
-        SEL.PAA.questionPair + ':not([data-clean-search-removed])'
+        `${SEL.PAA.questionPair}:not([data-slurpslop-removed])`
       );
 
       if (remainingPairs.length === 0) {
@@ -177,10 +167,10 @@
     // If a PAA section is fully filtered and all questions have been removed, find it, and fully delete it
     const paaSectionSelector = `${SEL.PAA.section} ${SEL.PAA.sectionController}`;
     const paaSection = document.querySelector(paaSectionSelector);
-    if (paaSection && !paaSection.hasAttribute('data-clean-search-removed')) {
+    if (paaSection && !paaSection.hasAttribute('data-slurpslop-removed')) {
       const allPairs = paaSection.querySelectorAll(SEL.PAA.questionPair);
       const visiblePairs = Array.from(allPairs).filter(
-        pair => !pair.hasAttribute('data-clean-search-removed')
+        pair => !pair.hasAttribute('data-slurpslop-removed')
       );
 
       if (allPairs.length > 0 && visiblePairs.length === 0) {

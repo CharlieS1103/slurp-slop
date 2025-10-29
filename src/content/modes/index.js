@@ -1,9 +1,9 @@
-// SlopSlurp Modes module
+// SLURPSLOP Modes module
 // Handles minimalist, comprehensive, and links-only mode logic
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
   const { Logger, getFilterData, extractHostname, containsAiOverviewHeading } =
-    NS.utils || {};
+    NS.utils;
   const SEL = NS.selectors;
 
   // links-only mode
@@ -12,7 +12,7 @@
     const rhs = document.querySelector(SEL.PAGE.rightRail);
     if (
       rhs &&
-      !rhs.hasAttribute('data-clean-search-removed') &&
+      !rhs.hasAttribute('data-slurpslop-removed') &&
       !isDangerousContainer(rhs)
     ) {
       if (typeof removeElement === 'function') {
@@ -24,7 +24,7 @@
   function isOrganicResult(el) {
     try {
       const anchor = el.querySelector(SEL.RESULTS.organicLink);
-      const hasH3 = !!el.querySelector(SEL.RESULTS?.heading || 'h3');
+      const hasH3 = !!el.querySelector(SEL.RESULTS.heading);
       if (!anchor || !hasH3) {
         return false;
       }
@@ -46,7 +46,7 @@
 
     const children = Array.from(rso.children);
     children.forEach(node => {
-      if (node.hasAttribute('data-clean-search-removed')) {
+      if (node.hasAttribute('data-slurpslop-removed')) {
         return;
       }
 
@@ -68,7 +68,7 @@
       const resultPattern = SEL.NON_ORGANIC.resultContainers;
       const candidate = node.matches(resultPattern)
         ? node
-        : node.closest(SEL.RESULTS?.generic || '.g') || node;
+        : node.closest(SEL.RESULTS.generic) || node;
       if (!isOrganicResult(candidate)) {
         if (typeof removeElement === 'function') {
           removeElement(node, 'links-only');
@@ -96,7 +96,7 @@
     settings = {}
   ) {
     if (!settings.extensionEnabled) {
-      Logger?.warn("Minimalist scan aborted: extension not enabled");
+      Logger?.warn('Minimalist scan aborted: extension not enabled');
       return;
     }
 
@@ -109,10 +109,10 @@
 
     const mainBody = document.querySelector(SEL.PAGE.mainContainer);
     const headings = Array.from(
-      mainBody?.querySelectorAll(SEL.RESULTS.allHeadings) || []
+      mainBody ? mainBody.querySelectorAll(SEL.RESULTS.allHeadings) : []
     );
     const aiHeading = headings.find(heading =>
-      containsAiOverviewHeading(heading?.innerText || heading?.textContent)
+      containsAiOverviewHeading(heading.innerText || heading.textContent)
     );
 
     if (aiHeading) {

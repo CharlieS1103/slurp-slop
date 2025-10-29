@@ -1,7 +1,7 @@
-// SlopSlurp Data module
+// SLURPSLOP Data module
 // All filter data bundled directly in the script
 (() => {
-  const NS = (window.SlopSlurp = window.SlopSlurp || {});
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
 
   const adIndicatorLabels = [
     'sponsored',
