@@ -63,12 +63,10 @@
 
   // Ad stuff
   const ADS = {
-    indicators: '.g, [data-text-ad], [data-sokoban-feature]',
+    indicators: ' [data-text-ad], [data-sokoban-feature]',
     fallbackContainers: [
-      '.g',
       '[data-ved]',
-      '[role="complementary"]',
-      'div[jscontroller]'
+      '[role="complementary"]'
     ]
   };
 
