@@ -422,6 +422,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateStatus(enabled) {
+    if (!statusDiv) {
+      return;
+    }
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       const currentTab = tabs[0];
       const isGoogleSearch =
