@@ -88,8 +88,7 @@
     'shmoop',
     'cliffsnotes',
     'coursehero',
-    'study.com',
-    
+    'study.com'
   ];
 
   // Export data to namespace, objects should exist already

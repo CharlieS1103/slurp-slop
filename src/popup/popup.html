@@ -179,7 +179,17 @@
       <div class="settings-section">
         <div class="section-title">Quick Actions</div>
         <div class="controls">
-          <button id="scanNow" class="primary">Scan Current Page</button>
+          <button
+            id="disableTermsToggle"
+            class="primary"
+            title="Toggle query-based auto-disable terms"
+          >
+            Disable terms: Off
+          </button>
+          <div id="disable-description" class="filter-description">
+            Automatically disable extension if the query contains 'AI' or
+            similar terms
+          </div>
         </div>
       </div>
 
@@ -205,13 +215,6 @@
           <div class="whitelist-controls">
             <button id="clearWhitelist" class="whitelist-btn secondary">
               Clear All
-            </button>
-            <button
-              id="disableTermsToggle"
-              class="whitelist-btn secondary"
-              title="Toggle query-based auto-disable terms"
-            >
-              Disable terms: Off
             </button>
           </div>
         </div>

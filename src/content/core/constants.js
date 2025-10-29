@@ -10,10 +10,10 @@
   const THEMES = {
     default: {
       primary: '#007bff',
-      primaryDark:'#3e1c1c',
+      primaryDark: '#3e1c1c',
       textMuted: '#c38080',
       textPrimary: '#f5f5f5',
-      danger:'#e61b1b',
+      danger: '#e61b1b',
       textSecondary: '#2e2525',
       accent: '#430101',
       success: '#2db43d',

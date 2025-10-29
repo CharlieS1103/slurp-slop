@@ -164,7 +164,7 @@ const ContentScript = {
     return tabs[0].id;
   },
 
-  // TODO: Ensure we use this to not scan on webpages, need to integrate for 'Scan Current Page' as well.
+  // TODO: Ensure we use this to not scan on webpages
   async isGoogleSearchTab() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tabs[0].url;
