@@ -237,7 +237,7 @@
     // 'maim' shouldn't disable 'm ai m' should
     return lowerQuery
       .split(' ')
-      .some(term => filterData.disableTerms.contains(term));
+      .some(term => filterData.disableTerms.includes(term));
   }
 
   // MODE INIT!!
