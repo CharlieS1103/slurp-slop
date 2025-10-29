@@ -1,6 +1,5 @@
 // SlopSlurp Initialization & Main Entry Point
 // This is the final module that orchestrates everything and sets up the extension
-// I(cole) can take all the todo's in here
 (() => {
   'use strict';
 
@@ -10,7 +9,6 @@
   const getFilterData = NS.utils?.getFilterData;
 
   // State variables
-  // TODO: honestly might be worth moving to a more OOP based approach
   // given the shear number of variables this extension has to have
   // gonna start working on creating lets and the objects into one object, then refactor throughout the code
 
