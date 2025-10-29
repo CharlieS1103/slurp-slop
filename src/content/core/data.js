@@ -36,7 +36,6 @@
     'ai-generated content',
     'ai-generated summary',
     'ai summary',
-    'google\'s ai summary',
     'google generative ai',
     'generative ai answer'
   ];
@@ -89,7 +88,8 @@
     'shmoop',
     'cliffsnotes',
     'coursehero',
-    'study.com'
+    'study.com',
+    
   ];
 
   // Export data to namespace, objects should exist already

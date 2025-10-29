@@ -48,7 +48,11 @@
     // Avoid stacking if an ancestor already has a placeholder
     let ancestor = element.parentElement;
     while (ancestor) {
-      if (ancestor.nextElementSibling && ancestor.nextElementSibling.matches && ancestor.nextElementSibling.matches(`[${ATTR.container}]`)) {
+      if (
+        ancestor.nextElementSibling &&
+        ancestor.nextElementSibling.matches &&
+        ancestor.nextElementSibling.matches(`[${ATTR.container}]`)
+      ) {
         const ancestorPlaceholder = ancestor.nextElementSibling;
         if (ancestorPlaceholder && ancestorPlaceholder.remove) {
           ancestorPlaceholder.remove();

@@ -103,9 +103,7 @@
 
       // Conservative fallbacks
       if (!container) {
-        const candidates = SEL.AI.containers.map(sel =>
-          heading.closest(sel)
-        );
+        const candidates = SEL.AI.containers.map(sel => heading.closest(sel));
         container =
           candidates.find(el => el && !el.hasAttribute('data-removed')) || null;
       }
@@ -127,7 +125,9 @@
       }
 
       const headingText = (
-        result.querySelector(SEL.RESULTS.heading) ? result.querySelector(SEL.RESULTS.heading).innerText : ''
+        result.querySelector(SEL.RESULTS.heading)
+          ? result.querySelector(SEL.RESULTS.heading).innerText
+          : ''
       ).toLowerCase();
       const descriptionText = (
         collectSnippetText ? collectSnippetText(result) : ''

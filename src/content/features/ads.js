@@ -33,7 +33,9 @@
         }
 
         const combinedText = [
-          result.querySelector(SEL.RESULTS.heading) ? result.querySelector(SEL.RESULTS.heading).innerText : '',
+          result.querySelector(SEL.RESULTS.heading)
+            ? result.querySelector(SEL.RESULTS.heading).innerText
+            : '',
           collectSnippetText ? collectSnippetText(result) : '',
           result.getAttribute('aria-label') || ''
         ]

@@ -27,7 +27,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
-
     "clean-css-cli": "^5.6.3",
     "esbuild": "^0.21.5",
     "eslint": "^9.0.0",
@@ -38,7 +37,6 @@
     "terser": "^5.31.0",
     "webpack-bundle-analyzer": "^4.10.1"
   },
-  
   "repository": {
     "type": "git",
     "url": "https://github.com/CharlieS1103/slurp-slop.git"

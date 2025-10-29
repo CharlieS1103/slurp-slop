@@ -21,7 +21,7 @@
     extensionEnabled: true,
     lastQuery: '',
     minimalistObserver: null,
-    comprehensiveObserver: null, 
+    comprehensiveObserver: null,
     loggingEnabled: false,
 
     currentStats: {
@@ -46,7 +46,6 @@
       disableTermsEnabled: false,
       customWhitelist: []
     }
-
   };
 
   let filterSettings = {
@@ -82,10 +81,7 @@
     const role =
       (el.getAttribute && (el.getAttribute('role') || '').toLowerCase()) || '';
 
-    if (
-      SEL.PROTECTED.ids.includes(id) ||
-      SEL.PROTECTED.roles.includes(role)
-    ) {
+    if (SEL.PROTECTED.ids.includes(id) || SEL.PROTECTED.roles.includes(role)) {
       return true;
     }
 
@@ -146,7 +142,10 @@
         } catch {
           originalDisplay = '';
         }
-        element.setAttribute('data-slurpslop-original-display', originalDisplay);
+        element.setAttribute(
+          'data-slurpslop-original-display',
+          originalDisplay
+        );
       }
       element.setAttribute('data-slurpslop-type', type);
       element.setAttribute('data-slurpslop-removed', 'true');
@@ -232,9 +231,13 @@
       return false;
     }
 
-    const lowerQuery = query.toLowerCase();
+    let lowerQuery = query.toLowerCase();
     const filterData = getFilterData();
-    return filterData.disableTerms.some(term => lowerQuery.includes(term));
+    // ensure proper spacing
+    // 'maim' shouldn't disable 'm ai m' should
+    return lowerQuery
+      .split(' ')
+      .some(term => filterData.disableTerms.contains(term));
   }
 
   // MODE INIT!!
@@ -295,7 +298,10 @@
     const MIN_SCAN_INTERVAL_MS = NS.config.CONFIG.minScanIntervalMs;
 
     const scanWrapper = () => {
-      if (!extension.extensionEnabled || extension.filterSettings.minimalistMode) {
+      if (
+        !extension.extensionEnabled ||
+        extension.filterSettings.minimalistMode
+      ) {
         return;
       }
 
@@ -321,7 +327,10 @@
           NS.scanForContent(
             removeElement,
             isDangerousContainer,
-            { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
+            {
+              ...extension.filterSettings,
+              extensionEnabled: extension.extensionEnabled
+            },
             extension.currentStats
           );
         }
@@ -330,10 +339,13 @@
 
     extension.comprehensiveObserver = new MutationObserver(scanWrapper);
 
-    extension.comprehensiveObserver.observe(document.body || document.documentElement, {
-      childList: true,
-      subtree: true
-    });
+    extension.comprehensiveObserver.observe(
+      document.body || document.documentElement,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
 
     // Initial scans and whatnot
     safetyCounter = 0;
@@ -341,7 +353,10 @@
       NS.scanForContent(
         removeElement,
         isDangerousContainer,
-        { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
+        {
+          ...extension.filterSettings,
+          extensionEnabled: extension.extensionEnabled
+        },
         extension.currentStats
       );
     }
@@ -359,7 +374,10 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
+          {
+            ...extension.filterSettings,
+            extensionEnabled: extension.extensionEnabled
+          },
           extension.currentStats
         );
       }
@@ -372,7 +390,10 @@
         NS.scanForContent(
           removeElement,
           isDangerousContainer,
-          { ...extension.filterSettings, extensionEnabled: extension.extensionEnabled },
+          {
+            ...extension.filterSettings,
+            extensionEnabled: extension.extensionEnabled
+          },
           extension.currentStats
         );
       }
@@ -405,7 +426,10 @@
 
       const applySettings = () => {
         // If user enabled auto-disable terms and the query matches, show banner and bail
-        if (extension.filterSettings.disableTermsEnabled && shouldAutoDisable()) {
+        if (
+          extension.filterSettings.disableTermsEnabled &&
+          shouldAutoDisable()
+        ) {
           extension.extensionEnabled = false;
           if (NS.showAutoDisableBanner) {
             NS.showAutoDisableBanner(() => {
@@ -427,7 +451,8 @@
         }
         if (NS.handlePlaceholderSettingChange) {
           NS.handlePlaceholderSettingChange(
-            extension.extensionEnabled && !!extension.filterSettings.showReplacementPlaceholders,
+            extension.extensionEnabled &&
+              !!extension.filterSettings.showReplacementPlaceholders,
             extension.filterSettings
           );
         }
@@ -464,7 +489,10 @@
               Logger?.info('Set cleanSearchEnabled to true (was undefined)');
             } else {
               extension.extensionEnabled = result.cleanSearchEnabled;
-              Logger?.info('Loaded cleanSearchEnabled from storage:', result.cleanSearchEnabled);
+              Logger?.info(
+                'Loaded cleanSearchEnabled from storage:',
+                result.cleanSearchEnabled
+              );
             }
 
             if (result.filterSettings) {
@@ -473,7 +501,9 @@
                 ...result.filterSettings
               };
               // Enforce rules after loading from storage
-              extension.filterSettings = enforceSettingsRulesCore(extension.filterSettings);
+              extension.filterSettings = enforceSettingsRulesCore(
+                extension.filterSettings
+              );
             }
 
             if (typeof result.loggingEnabled !== 'undefined') {
@@ -500,10 +530,11 @@
 
       Logger?.info('SlurpSlop initialized', {
         url: window.location.href,
-        mode: extension.filterSettings.minimalistMode ? 'minimalist' : 'comprehensive',
+        mode: extension.filterSettings.minimalistMode
+          ? 'minimalist'
+          : 'comprehensive',
         enabled: extension.extensionEnabled
       });
-
     } catch (error) {
       Logger?.error('Failed to initialize SlurpSlop', error);
     }

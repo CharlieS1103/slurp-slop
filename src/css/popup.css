@@ -1,21 +1,18 @@
 /* SLURPSLOP Extension Styles - Theme System */
 
 /*
-vars needed for a theme listed below
-we're making the themes them though so they're all just kinda values i randomly drag and dropped
-to define a theme you also need to define it in popup.html, should be pretty obvious when you click in the file
-line ~20 'popup.js'
+DEFINE THEME VARS IN CONSTANTS.JS AS WELL
 */
 :root,
-body[data-theme="default"] {
+body[data-theme='default'] {
   --primary: #007bff;
   --border-dark: #000000;
   --border-light: #d62121;
-  --stats: whitesmoke;
+  --stats: #f5f5f5;
   --surface-dark: ;
   --border-danger: #cf1717;
   --surface-medium: #381d1d;
-  --text-danger:#c37e7e;
+  --text-danger: #c37e7e;
   --text-primary: whitesmoke;
   --primary-dark: #3e1c1c;
   --accent: #430101;
@@ -36,8 +33,6 @@ body {
   line-height: 1.5;
   background: rgb(79, 78, 78);
   color: var(--surface-medium);
-
-  
 }
 
 .header {
@@ -53,7 +48,7 @@ body {
   width: 56px;
   text-shadow: none;
   margin: 0 auto 16px;
- 
+
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -126,7 +121,6 @@ h1 {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-
 }
 
 .filter-section {
@@ -223,7 +217,6 @@ h1 {
 
 input:checked + .slider {
   border-color: var(--primary);
-
 }
 
 input:checked + .slider:before {
@@ -328,13 +321,11 @@ button {
 button:hover {
   background: var(--surface-light);
   border-color: var(--border-danger);
-
 }
 
 button:active {
   background: var(--surface-dark);
   transform: translateY(1px);
-
 }
 
 button:disabled {
@@ -348,14 +339,11 @@ button:disabled {
   color: white !important;
   border-color: var(--primary) !important;
   font-weight: 700 !important;
-
-
 }
 
 .primary:hover:not(:disabled) {
   background: var(--primary);
   border-color: var(--primary-dark) !important;
-
 }
 
 .secondary {
@@ -365,7 +353,7 @@ button:disabled {
 }
 
 .secondary:hover:not(:disabled) {
-  background:  var(--secondary-dark);
+  background: var(--secondary-dark);
   border-color: var(--text-muted) !important;
   color: var(--text-primary) !important;
 }
@@ -416,13 +404,11 @@ button:disabled {
   color: var(--teal);
   cursor: pointer;
   transition: all 0.2s ease;
-
 }
 
 .whitelist-site:hover {
   background: rgba(20, 184, 166, 0.25);
   border-color: var(--teal);
-
 }
 
 .whitelist-site::after {
@@ -446,13 +432,11 @@ button:disabled {
   font-family: 'Courier New', monospace;
   background: var(--surface-dark);
   color: var(--text-primary);
-
 }
 
 #whitelistInput:focus {
   outline: none;
   border-color: var(--primary);
-
 }
 
 .whitelist-controls {
@@ -512,7 +496,6 @@ button:disabled {
 
 .footer a:hover {
   text-decoration: underline;
-
 }
 
 .last-activity {
@@ -542,11 +525,10 @@ button:disabled {
 }
 
 .logging-btn.enabled {
-  background:  var(--success);
+  background: var(--success);
   border-color: var(--success);
   color: var(--text-primary);
   font-weight: 700;
-
 }
 
 .logging-btn.disabled {
@@ -554,7 +536,6 @@ button:disabled {
   border-color: var(--danger);
   color: var(--text-primary);
   font-weight: 700;
-
 }
 
 .logging-btn:hover:not(:disabled) {
