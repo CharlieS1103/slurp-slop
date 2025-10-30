@@ -1,4 +1,5 @@
 // Slurp slop AI removal before it even has the chance to generate. glorified cock blocker
+// This blocks out any and all network requests towards gemini, and also blocks the fetch requests towards gemini
 (() => {
     const neutralizeAI = () => {
         document.querySelectorAll('[data-async-context*="ai_overview"]').forEach(e => {
@@ -9,14 +10,15 @@
         });
     };
 
-    // Run once at script load
+    // Run at script load
     neutralizeAI();
 
     // Run again whenever DOM mutates (SPA reloads)
     new MutationObserver(neutralizeAI)
         .observe(document.documentElement, { childList: true, subtree: true });
 
-        // Monitoring fetch requests
+    // Monitoring fetch requests
+
     // Intercept fetch() calls
     const origFetch = window.fetch;
     window.fetch = async (...args) => {
@@ -34,6 +36,8 @@
         }
         return origOpen.apply(this, args);
     };
+
+    // Double check beneath - also completely nukes DOM elements
 
     const removeGeminiInstantly = () => {
         // Remove AI Overview containers as soon as possible
