@@ -8,7 +8,7 @@
     "build:dev": "npm run clean && npm run copy && npm run generate:icons",
     "clean": "rm -rf dist/",
     "copy": "npm run copy:static && npm run copy:popup && npm run copy:js && npm run copy:css",
-    "copy:static": "mkdir -p dist && cp manifest.json src/popup/popup.html dist/ && cp -r icons dist/",
+    "copy:static": "mkdir -p dist && cp manifest.json rules.json src/popup/popup.html dist/ && cp -r icons dist/",
     "copy:popup": "mkdir -p dist/popup/images && cp -r src/popup/images/* dist/popup/images/ || true",
     "copy:js": "mkdir -p dist/js && cp src/popup/*.js dist/js/ && node scripts/bundle-content.mjs",
     "copy:css": "mkdir -p dist/css && cp src/css/*.css dist/css/",
