@@ -31,9 +31,9 @@
     "esbuild": "^0.21.5",
     "eslint": "^9.0.0",
     "javascript-obfuscator": "^4.0.2",
-    "sharp": "^0.33.4",
     "nodemon": "^3.0.3",
     "prettier": "^3.2.5",
+    "sharp": "^0.33.4",
     "terser": "^5.31.0",
     "webpack-bundle-analyzer": "^4.10.1"
   },
