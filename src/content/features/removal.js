@@ -1,5 +1,5 @@
 // Slurp slop AI removal before it even has the chance to generate. glorified cock blocker
-// This blocks out any and all network requests towards gemini, and also blocks the fetch requests towards gemini
+// This blocks out any and all network requests towards gemini, and also blocks the fetch requests towards gemini. still cant believe i managed to do it (cole)
 (() => {
     const neutralizeAI = () => {
         document.querySelectorAll('[data-async-context*="ai_overview"]').forEach(e => {
