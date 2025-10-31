@@ -5,7 +5,7 @@
   "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.",
   "permissions": [
     "scripting",
-    "activeTab", 
+    "activeTab",
     "storage",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
@@ -28,7 +28,9 @@
         "*://*.google.co.jp/*",
         "*://google.com/search*"
       ],
-      "js": ["content-script.js"],
+      "js": [
+        "content-script.js"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }
@@ -46,6 +48,10 @@
     "*://*.google.co.in/*",
     "*://*.google.co.jp/*"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }, 
   "declarative_net_request": {
     "rule_resources": [
       {
