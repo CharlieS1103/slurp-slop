@@ -1,247 +1,153 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SlurpSlop</title>
-    <link rel="stylesheet" href="css/popup.css" />
-  </head>
+<!DOCTYPE html>
+<html lang="en">
 
-  <body>
-    <div class="header">
-      <div class="icon">
-        <img src="icons/icon.svg" alt="SlurpSlop Icon" />
-      </div>
-      <h1>SLURPSLOP</h1>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlurpSlop</title>
+  <link rel="stylesheet" href="../css/popup.css" </head>
 
-      <div class="subtitle">Get Better Search Results</div>
-      <div id="status" class="status inactive"></div>
-
-      <div class="theme-selector" id="themeSelector">
-        <button class="theme-btn" data-theme="Default">Default</button>
-      </div>
+<body>
+  <!-- Name, icon, slogan -->
+  <div id="header">
+    <div class="flex align-center">
+      <img src="/icons/icon.svg" alt="SlopSlurp Icon">
+      <h1>SlurpSlop</h1>
     </div>
+    <p>Get better search results.</p>
+  </div>
 
-    <div class="filter-section">
-      <div class="filter-control" id="master-switch">
-        <div class="filter-info">
-          <div class="filter-label">Master Switch</div>
-          <div class="filter-description">Enable/disable entire extension</div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="extensionToggle" checked />
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
+  <!-- Master switch -->
+  <div class="section" id="master-switch">
+    <label class="input-container" id="master-container">
+      <input type="checkbox" id="extension-toggle" class="button" checked />
+      <span class="slider" id="master-slider"></span>
+    </label>
+    <p>Extension is <span id="status">enabled.</span></p>
+  </div>
 
-    <section id="can-be-hidden">
-      <div class="filter-section">
-        <div class="section-title">Content Filters</div>
 
-        <div class="filter-control" id="aiFilterControl">
-          <div class="filter-info">
-            <div class="filter-label">AI Overview</div>
-            <div class="filter-description">
-              Remove Google AI generated summaries
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="aiToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Low-Quality Sites</div>
-            <div class="filter-description">
-              SparkNotes, LitCharts, content farms
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="lowQualityToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Advertisements</div>
-            <div class="filter-description">
-              Sponsored results and shopping ads
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="adsToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Hide AI Mode Button</div>
-            <div class="filter-description">
-              Hide AI Mode button in Google Search topbar
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="hideAiModeToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="filter-section">
-        <div class="section-title">Mode Settings</div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Minimalist Mode</div>
-            <div class="filter-description">
-              Lightweight AI Overview removal only
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="minimalistToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Links-only Mode</div>
-            <div class="filter-description">
-              Strip People Also Ask and modules; keep plain link results only
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="linksOnlyToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Academic Mode</div>
-            <div class="filter-description">
-              Enhance searches for scholarly research
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="academicToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Show Removal Placeholders</div>
-            <div class="filter-description">
-              Display placeholders for removed content (disabled in links-only
-              mode)
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="placeholdersToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="stats-section">
-        <div class="section-title">Current Page Performance</div>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <span id="totalRemovedCount" class="stat-number">0</span>
-            <div class="stat-label">Total Removed</div>
-          </div>
-        </div>
-
-        <div class="detailed-stats">
-          <div class="stat-row">
-            <span class="label">AI Overview:</span>
-            <span class="value" id="aiRemovedCount">0</span>
-          </div>
-          <div class="stat-row">
-            <span class="label">Low-Quality Sites:</span>
-            <span class="value" id="lowQualityRemovedCount">0</span>
-          </div>
-          <div class="stat-row">
-            <span class="label">Advertisements:</span>
-            <span class="value" id="adsRemovedCount">0</span>
-          </div>
-        </div>
-
-        <div id="lastActivity" class="last-activity">Last activity: Never</div>
-      </div>
-
-      <div class="settings-section">
-        <div class="section-title">Quick Actions</div>
-        <div class="controls">
-          <button
-            id="disableTermsToggle"
-            class="primary"
-            title="Toggle query-based auto-disable terms"
-          >
-            Disable terms: Off
-          </button>
-          <div id="disable-description" class="filter-description">
-            Automatically disable extension if the query contains 'AI' or
-            similar terms
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="section-title">Site Whitelist</div>
-        <div class="whitelist-container">
-          <div class="whitelist-info">
-            <div style="font-size: 12px; color: #718096; margin-bottom: 8px">
-              Sites that will never be filtered
-            </div>
-            <div class="whitelist-input-container">
-              <input
-                type="text"
-                id="whitelistInput"
-                placeholder="Enter domain (e.g., wikipedia.org)"
-              />
-              <button id="addToWhitelist" class="whitelist-btn">Add</button>
-            </div>
-            <div id="whitelistDisplay" class="whitelist-display">
-              No whitelisted sites
-            </div>
-          </div>
-          <div class="whitelist-controls">
-            <button id="clearWhitelist" class="whitelist-btn secondary">
-              Clear All
-            </button>
-          </div>
-        </div>
-        <div class="controls" style="margin-top: 16px">
-          <button id="toggleLogging" class="logging-btn disabled">
-            Logging Disabled
-          </button>
-        </div>
-      </div>
-    </section>
-<!--TODO: WE NEED TO CHANGE THIS I DON'T WANT PEOPLE EMAILING ME!!!-->
-    <div class="footer">
-      <div>SlurpSlop v2.1 • Professional Interface</div>
+  <section id="can-be-hidden">
+    <!-- Extension stats -->
+    <div class="section">
       <div>
-        <a href="mailto:charliejsomons@gmail.com" id="reportIssue"
-          >Report Issue</a
-        >
-        •
-          You've reached the end
-        •
-        <a href="mailto:charliejsomons@gmail.com" id="showHelp">Help</a>
+        <p><span id="total-removed-count">0</span></p>
+        <p>total removed</p>
+      </div>
+      <div>
+        <div>
+          <p><span>AI Overview</span></p>
+          <p><span id="ai-removed-count">0</span></p>
+        </div>
+        <div>
+          <p><span>Low-Quality Websites</span></p>
+          <p><span id="low-quality-removed-count">0</span></p>
+        </div>
+        <div>
+          <p><span>Advertisements</span></p>
+          <p><span id="ads-removed-count">0</span></p>
+        </div>
       </div>
     </div>
 
-    
+    <!-- Options -->
+    <div class="section">
+      <div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="ai-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>AI Overview</p>
+        </div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="low-quality-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>Low-Quality Websites</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="ads-toggle" class="button" checked />
+            <span class="slider"></span>
 
-    <script src="js/utils.js"></script>
-    <script src="js/popup.js"></script>
-  </body>
+          </label>
+          <p>Advertisements</p>
+        </div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="hide-ai-mode-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>AI Mode Button</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modes -->
+    <div class="section">
+      <div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="minimalist-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>Minimalist</p>
+        </div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="links-only-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>Links-Only</p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="academic-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>Academic</p>
+        </div>
+        <div>
+          <label class="input-container">
+            <input type="checkbox" id="placeholders-toggle" class="button" checked />
+            <span class="slider"></span>
+          </label>
+          <p>Placeholders</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Website whitelist -->
+    <!-- TODO: i aint tryna do alla this so one of yall can handle this lmao -e -->
+    <div>
+      <label>
+        <input type="text" id="whitelist-input">
+      </label>
+      <div id="whitelist-display"></div>
+      <div id="add-to-whitelist"></div>
+      <div id="clear-whitelist"></div>
+    </div>
+
+
+    <!-- Misc -->
+    <!-- TODO: same with this stuff lmao -->
+    <div>
+      <div id="report-issue"></div>
+      <div id="view-source"></div>
+      <div id="show-help"></div>
+      <div id="toggle-logging"></div>
+    </div>
+  </section>
+
+
+  <script src="js/popup.js"></script>
+
+</body>
+
 </html>
