@@ -1,68 +1,223 @@
-// Slurp slop AI removal before it even has the chance to generate. glorified cock blocker
-// This blocks out any and all network requests towards gemini, and also blocks the fetch requests towards gemini. still cant believe i managed to do it (cole)
+// Aggressive AI overview neutralization. Converts the historic standalone
+// script into a toggleable feature that can be switched on/off like other
+// modes.
 (() => {
+  const NS = (window.SlurpSlop = window.SlurpSlop || {});
+  const logger = NS.utils?.Logger;
+
+  const state = {
+    active: false,
+    observers: [],
+    domContentHandler: null,
+    originalFetch: null,
+    originalXhrOpen: null,
+    fetchWrapped: false,
+    xhrWrapped: false
+  };
+
+  const removedElements = new WeakSet();
+
+  const removeWithStats = element => {
+    if (!element || removedElements.has(element)) {
+      return;
+    }
+
+    if (element.hasAttribute?.('data-slurpslop-removed')) {
+      removedElements.add(element);
+      return;
+    }
+
+    removedElements.add(element);
+
+    if (typeof NS.removeElement === 'function') {
+      NS.removeElement(element, 'ai');
+      return;
+    }
+
+    if (element.remove) {
+      element.remove();
+    } else {
+      try {
+        element.style.display = 'none';
+      } catch {}
+    }
+
+    if (typeof NS.updateStats === 'function') {
+      NS.updateStats('aiElementsRemoved', 1);
+    }
+  };
+  
+  const containsAIGemini = value =>
+    typeof value === 'string' &&
+    (value.includes('ai_overview') || value.includes('gemini'));
+
   const neutralizeAI = () => {
+    if (!state.active) {
+      return;
+    }
+
     document
       .querySelectorAll('[data-async-context*="ai_overview"]')
-      .forEach(e => {
-        e.setAttribute(
-          'data-async-context',
-          e.getAttribute('data-async-context').replace('ai_overview:true', '')
-        );
+      .forEach(element => {
+        const attr = element.getAttribute('data-async-context') || '';
+        if (attr.includes('ai_overview:true')) {
+          element.setAttribute(
+            'data-async-context',
+            attr.replace('ai_overview:true', '')
+          );
+        }
       });
   };
 
-  // Run at script load
-  neutralizeAI();
-
-  // Run again whenever DOM mutates (SPA reloads)
-  new MutationObserver(neutralizeAI).observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
-
-  // Monitoring fetch requests
-
-  // Intercept fetch() calls
-  const origFetch = window.fetch;
-  window.fetch = async(...args) => {
-    if (args[0].includes('ai_overview') || args[0].includes('gemini')) {
-      console.log('Gemini fetch attempt:', args[0]);
-    }
-    return origFetch(...args);
-  };
-
-  // Intercept XHRs
-  const origOpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function(...args) {
-    if (args[1].includes('ai_overview') || args[1].includes('gemini')) {
-      console.log('Gemini XHR attempt:', args[1]);
-    }
-    return origOpen.apply(this, args);
-  };
-
-  // Double check beneath - also completely nukes DOM elements
-
   const removeGeminiInstantly = () => {
-    // Remove AI Overview containers as soon as possible
+    if (!state.active) {
+      return;
+    }
+
     document
       .querySelectorAll(
         '[data-async-context*="ai_overview"], [data-async-context*="gemini"]'
       )
-      .forEach(e => e.remove());
+      .forEach(removeWithStats);
   };
 
-  removeGeminiInstantly();
-
-  // Run again during DOM mutations
-  new MutationObserver(removeGeminiInstantly).observe(
-    document.documentElement,
-    {
-      childList: true,
-      subtree: true
+  const wrapFetch = () => {
+    if (state.fetchWrapped || typeof window.fetch !== 'function') {
+      return;
     }
-  );
 
-  // Also neutralize async loading attributes
-  document.addEventListener('DOMContentLoaded', removeGeminiInstantly);
+    state.originalFetch = window.fetch;
+    window.fetch = async function wrappedFetch(...args) {
+      const target = args[0];
+      const url =
+        typeof target === 'string'
+          ? target
+          : target && typeof target === 'object' && 'url' in target
+            ? target.url
+            : '';
+
+      if (containsAIGemini(url)) {
+        logger?.info('Gemini fetch attempt blocked', { url });
+      }
+
+      return state.originalFetch.apply(this, args);
+    };
+    state.fetchWrapped = true;
+  };
+
+  const unwrapFetch = () => {
+    if (!state.fetchWrapped || !state.originalFetch) {
+      return;
+    }
+
+    window.fetch = state.originalFetch;
+    state.fetchWrapped = false;
+    state.originalFetch = null;
+  };
+
+  const wrapXhr = () => {
+    if (state.xhrWrapped) {
+      return;
+    }
+
+    // eslint-disable-next-line no-undef
+    state.originalXhrOpen = XMLHttpRequest.prototype.open;
+    // eslint-disable-next-line no-undef
+    XMLHttpRequest.prototype.open = function wrappedOpen(...args) {
+      const url = args[1] || '';
+      if (containsAIGemini(url)) {
+        logger?.info('Gemini XHR attempt blocked', { url });
+      }
+      return state.originalXhrOpen.apply(this, args);
+    };
+    state.xhrWrapped = true;
+  };
+
+  const unwrapXhr = () => {
+    if (!state.xhrWrapped || !state.originalXhrOpen) {
+      return;
+    }
+
+    // eslint-disable-next-line no-undef
+    XMLHttpRequest.prototype.open = state.originalXhrOpen;
+    state.xhrWrapped = false;
+    state.originalXhrOpen = null;
+  };
+
+  const disconnectObservers = () => {
+    state.observers.forEach(observer => observer.disconnect());
+    state.observers = [];
+  };
+
+  const attachObservers = () => {
+    const docEl = document.documentElement;
+    if (!docEl) {
+      return;
+    }
+
+    const neutralizeObserver = new MutationObserver(neutralizeAI);
+    neutralizeObserver.observe(docEl, { childList: true, subtree: true });
+    state.observers.push(neutralizeObserver);
+
+    const removalObserver = new MutationObserver(removeGeminiInstantly);
+    removalObserver.observe(docEl, { childList: true, subtree: true });
+    state.observers.push(removalObserver);
+  };
+
+  const addDomContentListener = () => {
+    const handler = () => removeGeminiInstantly();
+    document.addEventListener('DOMContentLoaded', handler);
+    state.domContentHandler = handler;
+  };
+
+  const removeDomContentListener = () => {
+    if (state.domContentHandler) {
+      document.removeEventListener('DOMContentLoaded', state.domContentHandler);
+      state.domContentHandler = null;
+    }
+  };
+
+  const enableAggressiveRemoval = () => {
+    // if already enabled exit
+    if (state.active) {
+      return;
+    }
+
+    state.active = true;
+    wrapFetch();
+    wrapXhr();
+    attachObservers();
+    addDomContentListener();
+    neutralizeAI();
+    removeGeminiInstantly();
+    logger?.info('Aggressive AI removal enabled');
+  };
+
+  const disableAggressiveRemoval = () => {
+    // if already disabled exit
+    if (!state.active) {
+      return;
+    }
+
+    state.active = false;
+    disconnectObservers();
+    removeDomContentListener();
+    unwrapFetch();
+    unwrapXhr();
+    logger?.info('Aggressive AI removal disabled');
+  };
+
+  const setAggressiveRemovalEnabled = enabled => {
+    if (enabled) {
+      enableAggressiveRemoval();
+    } else {
+      disableAggressiveRemoval();
+    }
+  };
+
+  Object.assign(NS, {
+    enableAggressiveRemoval,
+    disableAggressiveRemoval,
+    setAggressiveRemovalEnabled
+  });
 })();

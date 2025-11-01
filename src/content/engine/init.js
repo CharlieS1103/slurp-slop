@@ -37,9 +37,9 @@
       removeAiOverview: true,
       removeLowQualitySites: true,
       removeAds: true,
-      academicMode: false,
       minimalistMode: false,
       linksOnlyMode: false,
+      aggressiveMode: false,
       hideAiModeButton: true,
       showReplacementPlaceholders: false,
       disableTermsEnabled: false,
@@ -51,14 +51,16 @@
     removeAiOverview: true,
     removeLowQualitySites: true,
     removeAds: true,
-    academicMode: false,
     minimalistMode: false,
     linksOnlyMode: false,
+    aggressiveMode: false,
     hideAiModeButton: true,
     showReplacementPlaceholders: false,
     disableTermsEnabled: false,
     customWhitelist: []
   };
+
+  let storageListenerRegistered = false;
 
   // Safety mechanism
   let safetyCounter = 0;
@@ -399,6 +401,107 @@
     }, 2000);
   }
 
+  function applySettings() {
+    // If user enabled auto-disable terms and the query matches, show banner and bail
+    if (extension.filterSettings.disableTermsEnabled && shouldAutoDisable()) {
+      extension.extensionEnabled = false;
+      if (NS.showAutoDisableBanner) {
+        NS.showAutoDisableBanner(() => {
+          extension.extensionEnabled = true;
+          if (NS.showNotification) {
+            NS.showNotification('SlurpSlop re-enabled', 'success');
+          }
+          setTimeout(() => {
+            if (extension.filterSettings.minimalistMode) {
+              initMinimalistMode();
+            } else {
+              initComprehensiveMode();
+            }
+          }, 100);
+        });
+      }
+      Logger?.info('Extension auto-disabled due to query content');
+      if (NS.setAggressiveRemovalEnabled) {
+        NS.setAggressiveRemovalEnabled(false);
+      }
+      return;
+    }
+
+    if (NS.handlePlaceholderSettingChange) {
+      NS.handlePlaceholderSettingChange(
+        extension.extensionEnabled &&
+          !!extension.filterSettings.showReplacementPlaceholders,
+        extension.filterSettings
+      );
+    }
+
+    if (NS.setAggressiveRemovalEnabled) {
+      NS.setAggressiveRemovalEnabled(
+        extension.extensionEnabled && !!extension.filterSettings.aggressiveMode
+      );
+    }
+
+    if (!extension.extensionEnabled) {
+      return;
+    }
+
+    if (extension.filterSettings.minimalistMode) {
+      initMinimalistMode();
+    } else {
+      initComprehensiveMode();
+    }
+  }
+
+  function registerStorageListener() {
+    if (
+      storageListenerRegistered ||
+      typeof chrome === 'undefined' ||
+      !chrome.storage ||
+      !chrome.storage.onChanged
+    ) {
+      return;
+    }
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== 'local') {
+        return;
+      }
+
+      let shouldReapply = false;
+
+      if (Object.prototype.hasOwnProperty.call(changes, 'cleanSearchEnabled')) {
+        extension.extensionEnabled = changes.cleanSearchEnabled.newValue !== false;
+        shouldReapply = true;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(changes, 'filterSettings')) {
+        const nextSettings = changes.filterSettings.newValue || {};
+        const merged = {
+          ...extension.filterSettings,
+          ...nextSettings
+        };
+        extension.filterSettings = enforceSettingsRulesCore(
+          merged,
+          extension.filterSettings
+        );
+        shouldReapply = true;
+      }
+
+      if (shouldReapply) {
+        applySettings();
+      }
+
+      if (Object.prototype.hasOwnProperty.call(changes, 'loggingEnabled')) {
+        extension.loggingEnabled = !!changes.loggingEnabled.newValue;
+        if (Logger && typeof Logger.setEnabled === 'function') {
+          Logger.setEnabled(extension.loggingEnabled);
+        }
+      }
+    });
+
+    storageListenerRegistered = true;
+  }
+
   // INIT
 
   async function initialize() {
@@ -422,50 +525,7 @@
 
       // Export updateStats to namespace for use by other modules
       NS.updateStats = updateStats;
-
-      const applySettings = () => {
-        // If user enabled auto-disable terms and the query matches, show banner and bail
-        if (
-          extension.filterSettings.disableTermsEnabled &&
-          shouldAutoDisable()
-        ) {
-          extension.extensionEnabled = false;
-          if (NS.showAutoDisableBanner) {
-            NS.showAutoDisableBanner(() => {
-              extension.extensionEnabled = true;
-              if (NS.showNotification) {
-                NS.showNotification('SlurpSlop re-enabled', 'success');
-              }
-              setTimeout(() => {
-                if (extension.filterSettings.minimalistMode) {
-                  initMinimalistMode();
-                } else {
-                  initComprehensiveMode();
-                }
-              }, 100);
-            });
-          }
-          Logger?.info('Extension auto-disabled due to query content');
-          return;
-        }
-        if (NS.handlePlaceholderSettingChange) {
-          NS.handlePlaceholderSettingChange(
-            extension.extensionEnabled &&
-              !!extension.filterSettings.showReplacementPlaceholders,
-            extension.filterSettings
-          );
-        }
-
-        if (!extension.extensionEnabled) {
-          return;
-        }
-
-        if (extension.filterSettings.minimalistMode) {
-          initMinimalistMode();
-        } else {
-          initComprehensiveMode();
-        }
-      };
+      NS.removeElement = removeElement;
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(
@@ -521,6 +581,7 @@
 
             // Call applySettings() AFTER storage is loaded
             applySettings();
+            registerStorageListener();
           }
         );
       } else {

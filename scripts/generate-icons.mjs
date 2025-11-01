@@ -3,6 +3,7 @@ import path from 'path';
 import sharp from 'sharp';
 
 const sizes = [16, 32, 48, 128];
+// eslint-disable-next-line no-undef
 const root = process.cwd();
 const srcSvg = path.resolve(root, 'icons', 'icon.svg');
 const outDir = path.resolve(root, 'dist', 'icons');
@@ -31,9 +32,12 @@ async function generate() {
     });
 
     const results = await Promise.all(tasks);
+    // eslint-disable-next-line no-undef
     console.log('[icons] Generated PNGs from SVG:', results.map(p => path.basename(p)).join(', '));
   } catch (err) {
+    // eslint-disable-next-line no-undef
     console.error('[icons] Failed to generate icons from SVG:', err.message);
+    // eslint-disable-next-line no-undef
     process.exitCode = 1;
   }
 }

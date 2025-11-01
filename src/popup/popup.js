@@ -2,7 +2,7 @@
 
 // SLURPSLOP Extension Popup (source)
 // Handles user interface interactions and extension state management
-
+// TODO: BREAK UP THIS FILE
 document.addEventListener('DOMContentLoaded', function() {
   // UI Elements
   const statusDiv = document.getElementById('status');
@@ -10,17 +10,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const aiToggle = document.getElementById('aiToggle');
   const lowQualityToggle = document.getElementById('lowQualityToggle');
   const adsToggle = document.getElementById('adsToggle');
-  const academicToggle = document.getElementById('academicToggle');
   const placeholdersToggle = document.getElementById('placeholdersToggle');
   const minimalistToggle = document.getElementById('minimalistToggle');
   const linksOnlyToggle = document.getElementById('linksOnlyToggle');
+  const aggressiveToggle = document.getElementById('aggressiveToggle');
   const hideAiModeToggle = document.getElementById('hideAiModeToggle');
   //const scanNowBtn = document.getElementById('scanNow');
   const addToWhitelistBtn = document.getElementById('addToWhitelist');
   const clearWhitelistBtn = document.getElementById('clearWhitelist');
   const whitelistDisplay = document.getElementById('whitelistDisplay');
   const reportIssueBtn = document.getElementById('reportIssue');
-  const viewSourceBtn = document.getElementById('viewSource');
   const showHelpBtn = document.getElementById('showHelp');
   const toggleLoggingBtn = document.getElementById('toggleLogging');
 
@@ -83,9 +82,10 @@ document.addEventListener('DOMContentLoaded', function() {
     removeAiOverview: true,
     removeLowQualitySites: true,
     removeAds: true,
-    academicMode: false,
     minimalistMode: false,
     linksOnlyMode: false,
+    aggressiveMode: false,
+    hideAiModeButton: true,
     showReplacementPlaceholders: false,
     disableTermsEnabled: false,
     customWhitelist: []
@@ -98,6 +98,26 @@ document.addEventListener('DOMContentLoaded', function() {
     adsToggle: null,
     placeholdersToggle: null
   };
+
+  function updatePlaceholdersToggleState() {
+    if (!placeholdersToggle) {
+      return;
+    }
+
+    const shouldDisable =
+      filterSettings.minimalistMode ||
+      filterSettings.linksOnlyMode ||
+      filterSettings.aggressiveMode;
+
+    placeholdersToggle.disabled = shouldDisable;
+
+    if (shouldDisable) {
+      placeholdersToggle.checked = false;
+    } else {
+      placeholdersToggle.checked =
+        !!filterSettings.showReplacementPlaceholders;
+    }
+  }
 
   // Hide every setting if master switch is off; there's no need to show everything if the extension is off. -e
   function toggleSettingVisibility() {
@@ -119,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
         filterSettings = enforceSettingsRules(filterSettings, prev);
       }
     } catch {}
+
+    updatePlaceholdersToggleState();
 
     const filterData = { filterSettings };
     chrome.storage.local.set(filterData);
@@ -346,9 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
           aiToggle.checked = filterSettings.removeAiOverview;
           lowQualityToggle.checked = filterSettings.removeLowQualitySites;
           adsToggle.checked = filterSettings.removeAds;
-          academicToggle.checked = filterSettings.academicMode;
           minimalistToggle.checked = filterSettings.minimalistMode || false;
           linksOnlyToggle.checked = filterSettings.linksOnlyMode || false;
+          aggressiveToggle.checked = filterSettings.aggressiveMode || false;
           hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
           placeholdersToggle.checked =
             filterSettings.showReplacementPlaceholders || false;
@@ -392,13 +414,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             lowQualityToggle.disabled = true;
             adsToggle.disabled = true;
-            placeholdersToggle.disabled = true;
+            filterSettings.showReplacementPlaceholders = false;
           }
 
           // If links-only mode is enabled, disable placeholders toggle
           if (filterSettings.linksOnlyMode) {
-            placeholdersToggle.disabled = true;
+            filterSettings.showReplacementPlaceholders = false;
           }
+
+          if (filterSettings.aggressiveMode) {
+            filterSettings.showReplacementPlaceholders = false;
+          }
+
+          updatePlaceholdersToggleState();
 
           updateStatus(enabled);
           resolve(result);
@@ -485,11 +513,6 @@ document.addEventListener('DOMContentLoaded', function() {
       saveFilterSettings();
     });
 
-    academicToggle.addEventListener('change', function() {
-      filterSettings.academicMode = academicToggle.checked;
-      saveFilterSettings();
-    });
-
     placeholdersToggle.addEventListener('change', function() {
       filterSettings.showReplacementPlaceholders = placeholdersToggle.checked;
       saveFilterSettings();
@@ -524,11 +547,10 @@ document.addEventListener('DOMContentLoaded', function() {
         aiToggle.checked = filterSettings.removeAiOverview;
         lowQualityToggle.checked = false;
         adsToggle.checked = false;
-        placeholdersToggle.checked = false;
 
         lowQualityToggle.disabled = true;
         adsToggle.disabled = true;
-        placeholdersToggle.disabled = true;
+        updatePlaceholdersToggleState();
 
         statusDiv.className = 'status active';
         statusDiv.textContent =
@@ -557,13 +579,10 @@ document.addEventListener('DOMContentLoaded', function() {
         aiToggle.checked = !!filterSettings.removeAiOverview;
         lowQualityToggle.checked = !!filterSettings.removeLowQualitySites;
         adsToggle.checked = !!filterSettings.removeAds;
-        placeholdersToggle.checked =
-          !!filterSettings.showReplacementPlaceholders;
 
         lowQualityToggle.disabled = false;
         adsToggle.disabled = false;
-        // Only re-enable placeholders if links-only is not active
-        placeholdersToggle.disabled = filterSettings.linksOnlyMode;
+        updatePlaceholdersToggleState();
 
         statusDiv.className = 'status active';
         statusDiv.textContent = 'Minimalist Mode disabled';
@@ -589,19 +608,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // When links-only mode is enabled, disable placeholders toggle
       if (filterSettings.linksOnlyMode) {
-        placeholdersToggle.checked = false;
-        placeholdersToggle.disabled = true;
         filterSettings.showReplacementPlaceholders = false;
-      } else if (!filterSettings.minimalistMode) {
-        // Only re-enable if not in minimalist mode
-        placeholdersToggle.disabled = false;
       }
+
+      updatePlaceholdersToggleState();
 
       saveFilterSettings();
       statusDiv.className = 'status active';
       statusDiv.textContent = linksOnlyToggle.checked
         ? 'Links-only Mode: Showing links only'
         : 'Links-only Mode disabled';
+      setTimeout(() => updateStatus(extensionToggle.checked), 2000);
+    });
+
+    aggressiveToggle.addEventListener('change', function() {
+      filterSettings.aggressiveMode = aggressiveToggle.checked;
+
+      if (filterSettings.aggressiveMode) {
+        if (filterSettings.minimalistMode) {
+          minimalistToggle.checked = false;
+          minimalistToggle.dispatchEvent(new Event('change'));
+        }
+
+        filterSettings.showReplacementPlaceholders = false;
+        updatePlaceholdersToggleState();
+
+        statusDiv.className = 'status active';
+        statusDiv.textContent =
+          'Aggressive Mode active';
+      } else {
+        updatePlaceholdersToggleState();
+        statusDiv.className = 'status active';
+        statusDiv.textContent = 'Aggressive Mode disabled';
+      }
+
+      saveFilterSettings();
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
     });
 
@@ -705,10 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-    // View source button -> open email
-    viewSourceBtn.addEventListener('click', function() {
-      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
-    });
+
 
     // Show help -> open email
     showHelpBtn.addEventListener('click', function() {

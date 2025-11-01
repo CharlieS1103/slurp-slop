@@ -1,27 +1,16 @@
 └─ slurp-slop
    ├─ content
-   │  ├─ core
-   │  │  ├─ init.js
-   │  │  │  ├─ 
-   │  │  │  ├─ line 65: TODO : either switch this stuff into an array or pop them in selectors, haven't decided yet.
-   │  │  │  ├─ line 109: TODO : fix all this placeholder nonsense
-   │  │  │  └─ line 143: TODO : Document all the html elements we create / modify + attributes
-   │  │  └─ layout.js
-   │  │     ├─ line 164: TODO : util funcs for attributes are probably necessary, it's hard to remember which is which
-   │  │     └─ line 167: TODO : colors for all of the below.
-   │  └─ features
-   │     ├─ ai.js
-   │     │  └─ line 61: TODO : any of the code that has to do with placeholders is unfortunately infinitely irritating to deal with, i need
-   │     └─ paa.js
-   │        └─ line 105: TODO : logic has to exist here for PAA section
-   ├─ css
-   │  └─ popup.css
-   │     └─ line 2: TODO : standardize colors
-   ├─ popup
-   │  └─ popup.js
-   │     ├─ line 86: TODO : this feels clunky idk if there's a better way though
-   │     ├─ line 313: TODO : don't print logs to console when in prod, have them appended to a show logs modal or smth
-   │     ├─ line 432: TODO : prompt user to reload on placeholder toggle, give them a banner to click
-   │     └─ line 652: TODO : we should do something else, i don't want to be mailed
-   └─ README.md
-      └─ line 15: TODO: not a super high priority, just add the link to install via chrome web store when we get to that point
+   │  ├─ ai.js
+   │  │  └─ line 63: TODO : any of the code that has to do with placeholders is unfortunately infinitely irritating to deal with, i need
+   │  └─ paa.js
+   │     └─ line 95: TODO : logic has to exist here for PAA section
+   └─ popup
+      ├─ popup.html
+      │  └─ line 228: TODO : WE NEED TO CHANGE THIS I DON'T WANT PEOPLE EMAILING ME!!!
+      ├─ popup.js
+      │  ├─ line 140: TODO : this feels clunky idk if there's a better way though
+      │  ├─ line 371: TODO : don't print logs to console when in prod, have them appended to a show logs modal or smth
+      │  ├─ line 496: TODO : prompt user to reload on placeholder toggle, give them a banner to click
+      │  └─ line 703: TODO : we should do something else, i don't want to be mailed
+      └─ utils.js
+         └─ line 167: TODO : Ensure we use this to not scan on webpages
