@@ -1,82 +1,66 @@
 [
-    {
-        "id": 1,
-        "priority": 1,
-        "action": {
-            "type": "redirect",
-            "redirect": {
-                "url": "https://example.com/blank.gif"
-            }
-        },
-        "condition": {
-            "urlFilter": "ai_overview",
-            "resourceTypes": [
-                "xmlhttprequest",
-                "sub_frame",
-                "script"
-            ]
-        }
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://example.com/blank.gif"
+      }
     },
-    {
-        "id": 2,
-        "priority": 1,
-        "action": {
-            "type": "redirect",
-            "redirect": {
-                "url": "https://example.com/blank.gif"
-            }
-        },
-        "condition": {
-            "urlFilter": "gemini",
-            "resourceTypes": [
-                "xmlhttprequest",
-                "sub_frame",
-                "script"
-            ]
-        }
-    },
-    {
-        "id": 3,
-        "priority": 1,
-        "action": {
-            "type": "redirect",
-            "redirect": {
-                "url": "https://example.com/blank.gif"
-            }
-        },
-        "condition": {
-            "urlFilter": "async=",
-            "resourceTypes": [
-                "xmlhttprequest"
-            ]
-        }
-    },
-    {
-        "id": 4,
-        "priority": 1,
-        "action": {
-            "type": "block"
-        },
-        "condition": {
-            "urlFilter": "lr_search_gemini",
-            "resourceTypes": [
-                "xmlhttprequest",
-                "sub_frame",
-                "script"
-            ]
-        }
-    },
-    {
-        "id": 5,
-        "priority": 1,
-        "action": {
-            "type": "block"
-        },
-        "condition": {
-            "urlFilter": "/async/lr_",
-            "resourceTypes": [
-                "xmlhttprequest"
-            ]
-        }
+    "condition": {
+      "urlFilter": "ai_overview",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://example.com/blank.gif"
+      }
+    },
+    "condition": {
+      "urlFilter": "gemini",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://example.com/blank.gif"
+      }
+    },
+    "condition": {
+      "urlFilter": "async=",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "lr_search_gemini",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "/async/lr_",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
 ]

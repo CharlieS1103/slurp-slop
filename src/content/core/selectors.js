@@ -64,10 +64,7 @@
   // Ad stuff
   const ADS = {
     indicators: ' [data-text-ad], [data-sokoban-feature]',
-    fallbackContainers: [
-      '[data-ved]',
-      '[role="complementary"]'
-    ]
+    fallbackContainers: ['[data-ved]', '[role="complementary"]']
   };
 
   // Protected containers we should never remove (for safety)

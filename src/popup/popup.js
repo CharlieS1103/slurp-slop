@@ -443,7 +443,6 @@ document.addEventListener('DOMContentLoaded', function() {
         statusDiv.textContent = 'Extension Active & Monitoring';
         // scanNowBtn.disabled = false;
       }
-      
     });
   }
 
