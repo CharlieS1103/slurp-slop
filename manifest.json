@@ -3,7 +3,15 @@
   "name": "SlurpSlop",
   "version": "2.1.0",
   "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.",
-  "permissions": ["scripting", "activeTab", "storage"],
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "scripting"
+  ],
   "content_scripts": [
     {
       "matches": [
@@ -17,9 +25,12 @@
         "*://*.google.es/*",
         "*://*.google.com.au/*",
         "*://*.google.co.in/*",
-        "*://*.google.co.jp/*"
+        "*://*.google.co.jp/*",
+        "*://google.com/search*"
       ],
-      "js": ["content-script.js"],
+      "js": [
+        "content-script.js"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }
@@ -37,6 +48,19 @@
     "*://*.google.co.in/*",
     "*://*.google.co.jp/*"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }, 
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "action": {
     "default_title": "SlurpSlop",
     "default_popup": "popup.html"
