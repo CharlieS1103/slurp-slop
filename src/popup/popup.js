@@ -6,22 +6,24 @@
 document.addEventListener('DOMContentLoaded', function() {
   // UI Elements
   const statusDiv = document.getElementById('status');
-  const extensionToggle = document.getElementById('extensionToggle');
-  const aiToggle = document.getElementById('aiToggle');
-  const lowQualityToggle = document.getElementById('lowQualityToggle');
-  const adsToggle = document.getElementById('adsToggle');
-  const placeholdersToggle = document.getElementById('placeholdersToggle');
-  const minimalistToggle = document.getElementById('minimalistToggle');
-  const linksOnlyToggle = document.getElementById('linksOnlyToggle');
-  const aggressiveToggle = document.getElementById('aggressiveToggle');
-  const hideAiModeToggle = document.getElementById('hideAiModeToggle');
+  const extensionToggle = document.getElementById('extension-toggle');
+  const aiToggle = document.getElementById('ai-toggle');
+  const lowQualityToggle = document.getElementById('low-quality-toggle');
+  const adsToggle = document.getElementById('ads-toggle');
+  const academicToggle = document.getElementById('academic-toggle');
+  const placeholdersToggle = document.getElementById('placeholders-toggle');
+  const minimalistToggle = document.getElementById('minimalist-toggle');
+  const linksOnlyToggle = document.getElementById('links-only-toggle');
+  const hideAiModeToggle = document.getElementById('hide-ai-mode-toggle');
   //const scanNowBtn = document.getElementById('scanNow');
-  const addToWhitelistBtn = document.getElementById('addToWhitelist');
-  const clearWhitelistBtn = document.getElementById('clearWhitelist');
-  const whitelistDisplay = document.getElementById('whitelistDisplay');
-  const reportIssueBtn = document.getElementById('reportIssue');
-  const showHelpBtn = document.getElementById('showHelp');
-  const toggleLoggingBtn = document.getElementById('toggleLogging');
+  const addToWhitelistBtn = document.getElementById('add-to-whitelist');
+  const clearWhitelistBtn = document.getElementById('clear-whitelist');
+  const whitelistDisplay = document.getElementById('whitelist-display');
+  const whitelistInput = document.getElementById('whitelist-input');
+  const reportIssueBtn = document.getElementById('report-issue');
+  const viewSourceBtn = document.getElementById('view-source');
+  const showHelpBtn = document.getElementById('show-help');
+  const toggleLoggingBtn = document.getElementById('toggle-logging');
 
   const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
@@ -59,14 +61,14 @@ document.addEventListener('DOMContentLoaded', function() {
   let loggingEnabled = false;
 
   // Stat elements
-  const totalRemovedCount = document.getElementById('totalRemovedCount');
-  const aiRemovedCount = document.getElementById('aiRemovedCount');
+  const totalRemovedCount = document.getElementById('total-removed-count');
+  const aiRemovedCount = document.getElementById('ai-removed-count');
   const lowQualityRemovedCount = document.getElementById(
-    'lowQualityRemovedCount'
+    'low-quality-removed-count'
   );
-  const adsRemovedCount = document.getElementById('adsRemovedCount');
+  const adsRemovedCount = document.getElementById('ads-removed-count');
 
-  const lastActivity = document.getElementById('lastActivity');
+  const lastActivity = document.getElementById('last-activity');
 
   let currentStats = {
     aiElementsRemoved: 0,
@@ -460,15 +462,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (!enabled) {
         statusDiv.className = 'status disabled';
-        statusDiv.textContent = 'Extension Disabled';
+        statusDiv.textContent = 'disabled.';
         // scanNowBtn.disabled = true;
       } else if (!isGoogleSearch) {
         statusDiv.className = 'status inactive';
-        statusDiv.textContent = 'Navigate to Google Search';
+        statusDiv.textContent = 'enabled.';
         // scanNowBtn.disabled = true;
       } else {
         statusDiv.className = 'status active';
-        statusDiv.textContent = 'Extension Active & Monitoring';
+        statusDiv.textContent = 'enabled and monitoring.';
         // scanNowBtn.disabled = false;
       }
     });
@@ -701,7 +703,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 */
     // Whitelist input field and button event listeners
-    const whitelistInput = document.getElementById('whitelistInput');
 
     addToWhitelistBtn.addEventListener('click', function() {
       const domain = whitelistInput.value;
