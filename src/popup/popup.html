@@ -97,16 +97,6 @@
           </label>
           <p>Minimalist</p>
         </div>
-
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Aggressive Mode</div>
-            <div class="filter-description">
-              Asyncronously remove elements before generation
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="aggressiveToggle" />
         <div class="option">
           <label class="input-container">
             <input type="checkbox" id="links-only-toggle" class="button" checked />
@@ -115,23 +105,14 @@
           <p>Links-Only</p>
         </div>
 
-        <div class="filter-control">
-          <div class="filter-info">
-            <div class="filter-label">Links-only Mode</div>
-            <div class="filter-description">
-              Strip People Also Ask and modules; keep plain link results only
-            </div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="linksOnlyToggle" />
       </div>
       <div class="options-div">
         <div class="option">
           <label class="input-container">
-            <input type="checkbox" id="academic-toggle" class="button" checked />
+            <input type="checkbox" id="aggressive-toggle" class="button" checked />
             <span class="slider"></span>
           </label>
-          <p>Academic</p>
+          <p>Aggressive</p>
         </div>
         <div class="option">
           <label class="input-container">
@@ -144,78 +125,44 @@
     </div>
 
     <!-- Website whitelist -->
-    <!-- TODO: i aint tryna do alla this so one of yall can handle this lmao -e -->
-    <div>
-      <label>
-        <input type="text" id="whitelist-input">
-      </label>
-      <div id="whitelist-display"></div>
-      <div id="add-to-whitelist"></div>
-      <div id="clear-whitelist"></div>
+    <div id="whitelist-section" class="section flex-col">
+      <div id="whitelist-header" class="flex justify-center align-center">
+        <h2>Site Whitelist</h2>
+        <button id="clear-whitelist">
+          <p>clear</p>
+        </button>
+      </div>
+
+      <div id="whitelist-display">
+        <p>No whitelisted sites</p>
+      </div>
+
+      <div id="whitelist-input-div">
+        <label>
+          <input type="text" id="whitelist-input" placeholder="Enter domain (e.g. wikipedia.org)">
+        </label>
+        <button id="add-to-whitelist">
+          <p>+</p>
+        </button>
+      </div>
     </div>
 
+    <button id="toggle-logging"><p>Logging Disabled</p></button>
 
     <!-- Misc -->
-    <!-- TODO: same with this stuff lmao -->
-    <div>
-      <div id="report-issue"></div>
-      <div id="view-source"></div>
-      <div id="show-help"></div>
-      <div id="toggle-logging"></div>
+    <div id="misc">
+      <p>SlurpSlop v2.1 • Professional Interface</p>
+      <div id="misc-links">
+        <p><a href="mailto:charliejsomons@gmail.com" id="report-issue">Report Issue</a> • You've reached the end •
+        <a href="mailto:charliejsomons@gmail.com" id="show-help">Help</a></p>
+      </div>
     </div>
   </section>
 
+  <p> </p>
 
-      <div class="settings-section">
-        <div class="section-title">Site Whitelist</div>
-        <div class="whitelist-container">
-          <div class="whitelist-info">
-            <div style="font-size: 12px; color: #718096; margin-bottom: 8px">
-              Sites that will never be filtered
-            </div>
-            <div class="whitelist-input-container">
-              <input
-                type="text"
-                id="whitelistInput"
-                placeholder="Enter domain (e.g., wikipedia.org)"
-              />
-              <button id="addToWhitelist" class="whitelist-btn">Add</button>
-            </div>
-            <div id="whitelistDisplay" class="whitelist-display">
-              No whitelisted sites
-            </div>
-          </div>
-          <div class="whitelist-controls">
-            <button id="clearWhitelist" class="whitelist-btn secondary">
-              Clear All
-            </button>
-          </div>
-        </div>
-        <div class="controls" style="margin-top: 16px">
-          <button id="toggleLogging" class="logging-btn disabled">
-            Logging Disabled
-          </button>
-        </div>
-      </div>
-    </section>
-    <!--TODO: WE NEED TO CHANGE THIS I DON'T WANT PEOPLE EMAILING ME!!!-->
-    <div class="footer">
-      <div>SlurpSlop v2.1 • Professional Interface</div>
-      <div>
-        <a href="mailto:charliejsomons@gmail.com" id="reportIssue"
-          >Report Issue</a
-        >
-        • You've reached the end •
-        <a href="mailto:charliejsomons@gmail.com" id="showHelp">Help</a>
-      </div>
-    </div>
-
-    <script src="js/utils.js"></script>
-    <script src="js/popup.js"></script>
-  </body>
-</html>
+  <script src="js/utils.js"></script>
   <script src="js/popup.js"></script>
-
 </body>
 
 </html>

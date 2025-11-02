@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const aiToggle = document.getElementById('ai-toggle');
   const lowQualityToggle = document.getElementById('low-quality-toggle');
   const adsToggle = document.getElementById('ads-toggle');
-  const academicToggle = document.getElementById('academic-toggle');
+  const aggressiveToggle = document.getElementById('aggressive-toggle');
   const placeholdersToggle = document.getElementById('placeholders-toggle');
   const minimalistToggle = document.getElementById('minimalist-toggle');
   const linksOnlyToggle = document.getElementById('links-only-toggle');
@@ -166,14 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const whitelist = filterSettings.customWhitelist || [];
 
     if (whitelist.length === 0) {
-      whitelistDisplay.innerHTML = 'No whitelisted sites';
+      whitelistDisplay.innerHTML = '<p>No whitelisted sites</p>';
       whitelistDisplay.className = 'whitelist-display empty';
     } else {
       whitelistDisplay.className = 'whitelist-display';
       whitelistDisplay.innerHTML = whitelist
         .map(
           site =>
-            `<span class="whitelist-site" data-site="${site}">${site}</span>`
+            `<span class="whitelist-site" data-site="${site}"><p>${site}</p></span>`
         )
         .join('');
 
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
       updateWhitelistDisplay();
 
       // Clear the input field after adding
-      const whitelistInput = document.getElementById('whitelistInput');
+      const whitelistInput = document.getElementById('whitelist-input');
       if (whitelistInput) {
         whitelistInput.value = '';
       }
@@ -443,9 +443,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     toggleLoggingBtn.classList.toggle('enabled', enabled);
     toggleLoggingBtn.classList.toggle('disabled', !enabled);
-    toggleLoggingBtn.textContent = enabled
-      ? 'Logging Enabled'
-      : 'Logging Disabled';
+    toggleLoggingBtn.innerHTML = enabled
+      ? '<p>Logging Enabled</p>'
+      : '<p>Logging Disabled</p>';
   }
 
   function updateStatus(enabled) {

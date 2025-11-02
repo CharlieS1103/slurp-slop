@@ -36,10 +36,23 @@ body[data-theme='default'] {
   --danger: #e61b1b; */
 
   --primary-color: rgb(32, 32, 43);
+  --secondary-color: rgb(233, 226, 191);
   --background-color: rgb(243, 241, 220);
+
+  --active: #2db43d;
+  --deactive: #d21515;
+
+  --whitelisted-website-border-color: rgb(194, 168, 144);
+  --whitelisted-website-background-color: rgb(234, 229, 214);
+  --whitelisted-website-hover-color: rgb(245, 179, 179);
 }
 
-body, #can-be-hidden {
+::-webkit-scrollbar {
+  display: none;
+}
+
+body,
+#can-be-hidden {
   background-color: var(--background-color);
   margin: 0;
   width: 500px;
@@ -49,8 +62,15 @@ body, #can-be-hidden {
   align-items: center;
 }
 
-h1, p, #total-removed-count {
-  font-family:'Courier New', Courier, monospace;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+#total-removed-count {
+  font-family: 'Courier New', Courier, monospace;
   margin: 0;
   color: var(--primary-color);
 }
@@ -89,29 +109,29 @@ p {
 .slider {
   position: absolute;
   inset: 0;
-  background: #d21515;
+  background: var(--deactive);
   border-radius: 9999px;
-  transition: background-color 0.3s
+  transition: background-color 0.3s;
 }
 
 .slider::before {
   content: "";
   position: absolute;
-  left: 2px;
-  top: 2px;
+  left: 2.5px;
+  top: 2.5px;
   width: 45px;
   height: 45px;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 0 3px rgba(0,0,0,0.3);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s;
 }
 
-.button:checked + .slider {
-  background-color: #2db43d;
+.button:checked+.slider {
+  background-color: var(--active);
 }
 
-.button:checked + .slider::before {
+.button:checked+.slider::before {
   transform: translateX(50px);
 }
 
@@ -122,15 +142,9 @@ p {
   height: 67px;
 }
 
-.button:checked + #master-slider {
-  background-color: #2db43d;
-}
-
-.button:checked + #master-slider::before {
+.button:checked+#master-slider::before {
   transform: translateX(75px);
 }
-
-
 
 
 .section {
@@ -146,14 +160,12 @@ p {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-
 #header {
   background-color: var(--background-color);
   width: 100%;
   height: 100px;
   display: flex;
   align-items: center;
-  padding: 10px;
   justify-content: space-around;
 }
 
@@ -186,7 +198,6 @@ p {
 .options-div {
   display: flex;
   width: 50%;
-  height: 100%;
   margin: 0;
   flex-direction: column;
   gap: 10%;
@@ -197,12 +208,121 @@ p {
   text-align: center;
 }
 
+#whitelist-section {
+  gap: 5%;
+}
+
+#whitelist-header {
+  width: 100%;
+  gap: 25%
+}
+
+#whitelist-display {
+  display: inline-block;
+  flex-wrap: wrap;
+  width: 75%;
+  height: 50%;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+#whitelist-display.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.whitelist-site {
+  display: inline-flex;
+  align-items: center;
+  padding: 1%;
+  gap: 0.5em;
+  padding-right: 10px;
+  width: auto;
+  height: 1xem;
+  border: 1px solid var(--whitelisted-website-border-color);
+  border-radius: 990px;
+  background-color: var(--whitelisted-website-background-color);
+  margin: 1%;
+  transition: all 0.2s ease-in-out;
+}
+
+.whitelist-site:hover {
+  background-color: var(--whitelisted-website-hover-color);
+  cursor: pointer;
+}
+
+.whitelist-site::after {
+  content: ' ×';
+}
+
+.whitelist-site p {
+  font-size: 0.8em;
+}
+
+#whitelist-input-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75%;
+  gap: 10px;
+}
+
+#whitelist-input-div label {
+  width: 90%;
+  height: 100%;
+}
+
+#whitelist-input-div label input {
+  width: 100%;
+  height: 75%;
+}
+
+#misc {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#misc p {
+  font-size: small;
+}
+
+#toggle-logging {
+  margin: 2%;
+  transform: translate(0, -12%);
+  transition: all 0.1s ease-in-out;
+  width: 50%;
+  height: 5em;
+  cursor: pointer;
+  border: 1px solid var(--primary-color);
+}
+
+#toggle-logging.enabled {
+  background-color: var(--active);
+}
+
+#toggle-logging.disabled {
+  background-color: var(--deactive);
+}
+
+#toggle-logging.enabled p {
+  color: var(--primary-color);
+}
+
+#toggle-logging.disabled p {
+  color: var(--secondary-color)
+}
+
 .flex {
   display: flex;
 }
 
 .flex-col {
-  flex-direction: col;
+  flex-direction: column;
 }
 
 .flex-row {
@@ -213,14 +333,6 @@ p {
   justify-content: center;
 }
 
-.status {
-  background: var(--primary);
-  border-color: var(--accent);
-  color: var(--text-muted);
-  font-size: 10px;
-  align-self: center;
-  justify-content: center;
-  padding: 1vw;
 .align-center {
   align-items: center;
 }
