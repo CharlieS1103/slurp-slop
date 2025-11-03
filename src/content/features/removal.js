@@ -2,6 +2,27 @@
 // script into a toggleable feature that can be switched on/off like other
 // modes.
 (() => {
+  const appendStyle = () => {
+    const style = document.createElement('style');
+    style.textContent = `
+    [data-async-context*="ai_overview"],
+    [data-async-context*="gemini"],
+    [data-ved*="ai_overview"],
+    [jsname*="ai_overview"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  `;
+    (document.head || document.documentElement).appendChild(style);
+  };
+
+  if (document.head) {
+    appendStyle();
+  } else {
+    document.addEventListener('DOMContentLoaded', appendStyle);
+  }
+
+
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   const logger = NS.utils?.Logger;
 
@@ -14,6 +35,13 @@
     fetchWrapped: false,
     xhrWrapped: false
   };
+
+  const aiSelectors = [
+    '[data-async-context*="ai_overview"]',
+    '[data-async-context*="gemini"]',
+    '[data-ved*="ai_overview"]',
+    '[jsname*="ai_overview"]'
+  ]
 
   const removedElements = new WeakSet();
 
@@ -57,13 +85,13 @@
     }
 
     document
-      .querySelectorAll('[data-async-context*="ai_overview"]')
+      .querySelectorAll('[data-async-context*="ai_overview"], [data-async-context*="gemini"], [data-ved*="ai_overview"]')
       .forEach(element => {
         const attr = element.getAttribute('data-async-context') || '';
-        if (attr.includes('ai_overview:true')) {
+        if (attr.includes('ai_overview:true') || attr.includes('gemini:true')) {
           element.setAttribute(
             'data-async-context',
-            attr.replace('ai_overview:true', '')
+            attr.replace('/(ai_overview:true|gemini:true)/', '')
           );
         }
       });
@@ -75,10 +103,7 @@
     }
 
     document
-      .querySelectorAll(
-        '[data-async-context*="ai_overview"], [data-async-context*="gemini"]'
-      )
-      .forEach(removeWithStats);
+      .querySelectorAll(aiSelectors.join(',')).forEach(removeWithStats);
   };
 
   const wrapFetch = () => {
@@ -98,6 +123,7 @@
 
       if (containsAIGemini(url)) {
         logger?.info('Gemini fetch attempt blocked', { url });
+        return Promise.reject(new Error('Blocked Gemini AI Overview request'));
       }
 
       return state.originalFetch.apply(this, args);
@@ -127,6 +153,7 @@
       const url = args[1] || '';
       if (containsAIGemini(url)) {
         logger?.info('Gemini XHR attempt blocked', { url });
+        throw new Error('Blocked Gemini AI overview request');
       }
       return state.originalXhrOpen.apply(this, args);
     };
@@ -162,6 +189,12 @@
     const removalObserver = new MutationObserver(removeGeminiInstantly);
     removalObserver.observe(docEl, { childList: true, subtree: true });
     state.observers.push(removalObserver);
+
+    const refreshObserver = new MutationObserver(() => {
+      removeGeminiInstantly();
+    });
+    refreshObserver.observe(document.body, { childList: true, subtree: true })
+    state.observers.push(refreshObserver);
   };
 
   const addDomContentListener = () => {
