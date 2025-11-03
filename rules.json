@@ -7,11 +7,7 @@
     },
     "condition": {
       "urlFilter": "ai_overview",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "sub_frame",
-        "script"
-      ]
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
   },
   {
@@ -22,11 +18,7 @@
     },
     "condition": {
       "urlFilter": "gemini",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "sub_frame",
-        "script"
-      ]
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
   },
   {
@@ -37,9 +29,7 @@
     },
     "condition": {
       "urlFilter": "async=",
-      "resourceTypes": [
-        "xmlhttprequest"
-      ]
+      "resourceTypes": ["xmlhttprequest"]
     }
   },
   {
@@ -50,11 +40,7 @@
     },
     "condition": {
       "urlFilter": "lr_search_gemini",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "sub_frame",
-        "script"
-      ]
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
   },
   {
@@ -65,9 +51,7 @@
     },
     "condition": {
       "urlFilter": "/async/lr_",
-      "resourceTypes": [
-        "xmlhttprequest"
-      ]
+      "resourceTypes": ["xmlhttprequest"]
     }
   },
   {
@@ -78,11 +62,7 @@
     },
     "condition": {
       "urlFilter": "async/*ai_overview",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "sub_frame",
-        "script"
-      ]
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
   },
   {
@@ -93,11 +73,7 @@
     },
     "condition": {
       "urlFilter": "async/*gemini",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "sub_frame",
-        "script"
-      ]
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
     }
   }
 ]

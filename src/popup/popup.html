@@ -1,168 +1,211 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SlurpSlop</title>
+    <link rel="stylesheet" href="../css/popup.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SlurpSlop</title>
-  <link rel="stylesheet" href="../css/popup.css" </head>
-
-<body>
-  <!-- Name, icon, slogan -->
-  <div id="header">
-    <div class="flex align-center">
-      <img src="/icons/icon.svg" alt="SlopSlurp Icon">
-      <h1>SlurpSlop</h1>
-    </div>
-    <p>Get better search results.</p>
-  </div>
-
-  <!-- Master switch -->
-  <div class="section" id="master-switch">
-    <label class="input-container" id="master-container">
-      <input type="checkbox" id="extension-toggle" class="button" checked />
-      <span class="slider" id="master-slider"></span>
-    </label>
-    <p>Extension is <span id="status">enabled.</span></p>
-  </div>
-
-
-  <section id="can-be-hidden">
-    <!-- Extension stats -->
-    <div class="section" id="stats">
-      <div id="removed-count-div">
-        <span id="total-removed-count">0</span>
-        <p>total removed</p>
+  <body>
+    <!-- Name, icon, slogan -->
+    <div id="header">
+      <div class="flex align-center">
+        <img
+          src="/icons/icon.svg"
+          alt="SlurpSlop Icon"
+          id="extension-icon"
+          width="40"
+          height="40"
+        />
+        <h1>SlurpSlop</h1>
       </div>
-      <div>
-        <div class="individual-stat">
-          <p>AI Overview </p>
-          <p><span id="ai-removed-count">0</span></p>
-        </div>
-        <div class="individual-stat">
-          <p>Low-Quality Websites</p>
-          <p><span id="low-quality-removed-count">0</span></p>
-        </div>
-        <div class="individual-stat">
-          <p>Advertisements</p>
-          <p><span id="ads-removed-count">0</span></p>
-        </div>
-      </div>
+      <p>Get better search results.</p>
     </div>
 
-    <!-- Options -->
-    <div class="section">
-      <div class="options-div">
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="ai-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>AI Overview</p>
-        </div>
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="low-quality-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>Low-Quality Websites</p>
-        </div>
-      </div>
-      <div class="options-div">
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="ads-toggle" class="button" checked />
-            <span class="slider"></span>
-
-          </label>
-          <p>Advertisements</p>
-        </div>
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="hide-ai-mode-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>AI Mode Button</p>
-        </div>
-      </div>
+    <!-- Master switch -->
+    <div class="section" id="master-switch">
+      <label class="input-container" id="master-container">
+        <input type="checkbox" id="extension-toggle" class="button" checked />
+        <span class="slider" id="master-slider"></span>
+      </label>
+      <p>Extension is <span id="status">enabled.</span></p>
     </div>
 
-    <!-- Modes -->
-    <div class="section">
-      <div class="options-div">
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="minimalist-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>Minimalist</p>
+    <section id="can-be-hidden">
+      <!-- Extension stats -->
+      <div class="section" id="stats">
+        <div id="removed-count-div">
+          <span id="daily-removed-count">0</span>
+          <p>removed today</p>
+          <span id="total-removed-count">0</span>
+          <p>removed from current page</p>
         </div>
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="links-only-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>Links-Only</p>
-        </div>
-
-      </div>
-      <div class="options-div">
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="aggressive-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>Aggressive</p>
-        </div>
-        <div class="option">
-          <label class="input-container">
-            <input type="checkbox" id="placeholders-toggle" class="button" checked />
-            <span class="slider"></span>
-          </label>
-          <p>Placeholders</p>
+        <div>
+          <div class="individual-stat">
+            <p>AI Overview</p>
+            <p><span id="ai-removed-count">0</span></p>
+          </div>
+          <div class="individual-stat">
+            <p>Low-Quality Websites</p>
+            <p><span id="low-quality-removed-count">0</span></p>
+          </div>
+          <div class="individual-stat">
+            <p>Advertisements</p>
+            <p><span id="ads-removed-count">0</span></p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Website whitelist -->
-    <div id="whitelist-section" class="section flex-col">
-      <div id="whitelist-header" class="flex justify-center align-center">
-        <h2>Site Whitelist</h2>
-        <button id="clear-whitelist">
-          <p>clear</p>
-        </button>
+      <!-- Options -->
+      <div class="section">
+        <div class="options-div">
+          <div class="option">
+            <label class="input-container">
+              <input type="checkbox" id="ai-toggle" class="button" checked />
+              <span class="slider"></span>
+            </label>
+            <p>AI Overview</p>
+          </div>
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="low-quality-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>Low-Quality Websites</p>
+          </div>
+        </div>
+        <div class="options-div">
+          <div class="option">
+            <label class="input-container">
+              <input type="checkbox" id="ads-toggle" class="button" checked />
+              <span class="slider"></span>
+            </label>
+            <p>Advertisements</p>
+          </div>
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="hide-ai-mode-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>AI Mode Button</p>
+          </div>
+        </div>
       </div>
 
-      <div id="whitelist-display">
-        <p>No whitelisted sites</p>
+      <!-- Modes -->
+      <div class="section">
+        <div class="options-div">
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="minimalist-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>Minimalist</p>
+          </div>
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="links-only-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>Links-Only</p>
+          </div>
+        </div>
+        <div class="options-div">
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="aggressive-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>Aggressive</p>
+          </div>
+          <div class="option">
+            <label class="input-container">
+              <input
+                type="checkbox"
+                id="placeholders-toggle"
+                class="button"
+                checked
+              />
+              <span class="slider"></span>
+            </label>
+            <p>Placeholders</p>
+          </div>
+        </div>
       </div>
 
-      <div id="whitelist-input-div">
-        <label>
-          <input type="text" id="whitelist-input" placeholder="Enter domain (e.g. wikipedia.org)">
-        </label>
-        <button id="add-to-whitelist">
-          <p>+</p>
-        </button>
+      <!-- Website whitelist -->
+      <div id="whitelist-section" class="section flex-col">
+        <div id="whitelist-header" class="flex justify-center align-center">
+          <h2>Site Whitelist</h2>
+          <button id="clear-whitelist">
+            <p>clear</p>
+          </button>
+        </div>
+
+        <div id="whitelist-display">
+          <p>No whitelisted sites</p>
+        </div>
+
+        <div id="whitelist-input-div">
+          <label>
+            <input
+              type="text"
+              id="whitelist-input"
+              placeholder="Enter domain (e.g. wikipedia.org)"
+            />
+          </label>
+          <button id="add-to-whitelist">
+            <p>+</p>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <button id="toggle-logging"><p>Logging Disabled</p></button>
+      <button id="toggle-logging"><p>Logging Disabled</p></button>
 
-    <!-- Misc -->
-    <div id="misc">
-      <p>SlurpSlop v2.1 • Professional Interface</p>
-      <div id="misc-links">
-        <p><a href="mailto:charliejsomons@gmail.com" id="report-issue">Report Issue</a> • You've reached the end •
-        <a href="mailto:charliejsomons@gmail.com" id="show-help">Help</a></p>
+      <!-- Misc -->
+      <div id="misc">
+        <p>SlurpSlop v2.1 • Professional Interface</p>
+        <div id="misc-links">
+          <p>
+            <a href="mailto:charliejsomons@gmail.com" id="report-issue"
+              >Report Issue</a
+            >
+            • You've reached the end •
+            <a href="mailto:charliejsomons@gmail.com" id="show-help">Help</a>
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <p> </p>
+    <p> </p>
 
-  <script src="js/utils.js"></script>
-  <script src="js/popup.js"></script>
-</body>
-
+    <script src="js/utils.js"></script>
+    <script src="js/popup.js"></script>
+  </body>
 </html>

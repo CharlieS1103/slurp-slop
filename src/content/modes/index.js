@@ -6,6 +6,16 @@
     NS.utils;
   const SEL = NS.selectors;
 
+  /* header search can be optimized
+  #search
+    > div
+      > div
+        > div
+
+        should theoretically get a list of possible search results 
+        they should also have a data-rpos attribute for additional verification
+        */
+
   // links-only mode
 
   function removeRightRailPanels(removeElement, isDangerousContainer) {

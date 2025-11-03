@@ -19,6 +19,7 @@
     //State Variables
     extensionEnabled: true,
     lastQuery: '',
+    lastPageSignature: '',
     minimalistObserver: null,
     comprehensiveObserver: null,
     loggingEnabled: false,
@@ -27,10 +28,13 @@
       aiElementsRemoved: 0,
       lowQualitySitesRemoved: 0,
       adsRemoved: 0,
-      totalElementsRemoved: 0,
+      currentPageRemoved: 0,
       scanCount: 0,
       lastScanTime: Date.now(),
-      placeholdersCreated: 0
+      placeholdersCreated: 0,
+      dailyRemoved: 0,
+      date: new Date().toISOString().split('T')[0],
+      pageSignature: ''
     },
 
     filterSettings: {
@@ -45,19 +49,6 @@
       disableTermsEnabled: false,
       customWhitelist: []
     }
-  };
-
-  let filterSettings = {
-    removeAiOverview: true,
-    removeLowQualitySites: true,
-    removeAds: true,
-    minimalistMode: false,
-    linksOnlyMode: false,
-    aggressiveMode: false,
-    hideAiModeButton: true,
-    showReplacementPlaceholders: false,
-    disableTermsEnabled: false,
-    customWhitelist: []
   };
 
   let storageListenerRegistered = false;
@@ -159,7 +150,7 @@
             ? 'lowQualitySitesRemoved'
             : type === 'ad'
               ? 'adsRemoved'
-              : 'totalElementsRemoved';
+              : 'currentPageRemoved';
 
       updateStats(statType, 1);
 
@@ -178,12 +169,28 @@
 
   // stats
 
-  function resetStats() {
+  function resetStats(force = false) {
     const urlParams = new URLSearchParams(window.location.search);
-    const currentQuery = urlParams.get('q');
+    const currentQuery = urlParams.get('q') || '';
+    const currentStart = urlParams.get('start') || '0';
+    const currentTbm = urlParams.get('tbm') || '';
+    const currentUdm = urlParams.get('udm') || '';
+    const currentPath = window.location.pathname || '';
 
-    if (currentQuery !== extension.lastQuery) {
+    const currentPageSignature = [
+      currentPath,
+      `q=${currentQuery}`,
+      `start=${currentStart}`,
+      `tbm=${currentTbm}`,
+      `udm=${currentUdm}`
+    ].join('|');
+
+    const shouldReset =
+      force || currentPageSignature !== extension.lastPageSignature;
+
+    if (shouldReset) {
       extension.lastQuery = currentQuery;
+      extension.lastPageSignature = currentPageSignature;
       safetyCounter = 0;
 
       // Reset current page stats, called each load
@@ -191,34 +198,73 @@
         aiElementsRemoved: 0,
         lowQualitySitesRemoved: 0,
         adsRemoved: 0,
-        totalElementsRemoved: 0,
+        currentPageRemoved: 0,
         scanCount: 0,
         lastScanTime: Date.now(),
-        placeholdersCreated: 0
+        placeholdersCreated: 0,
+        dailyRemoved: extension.currentStats.dailyRemoved,
+        date: extension.currentStats.date,
+        pageSignature: currentPageSignature
       };
+      // if the date has changed, reset dailyRemoved
 
+      const today = new Date().toISOString().split('T')[0];
+      if (extension.currentStats.date !== today) {
+        Logger?.info('New day detected, resetting dailyRemoved counter');
+        extension.currentStats.dailyRemoved = 0;
+        extension.currentStats.date = today;
+      }
+
+      // save to storage
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.local.set({ cleanSearchStats: extension.currentStats });
+        // print to indicate stats saved
+        console.log('Saving stats to storage', extension.currentStats);
+        chrome.storage.local.set({
+          cleanSearchStats: { ...extension.currentStats }
+        });
+      }
+    } else if (!extension.currentStats.pageSignature) {
+      extension.currentStats.pageSignature = currentPageSignature;
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        chrome.storage.local.set({
+          cleanSearchStats: { ...extension.currentStats }
+        });
       }
     }
+
+    return extension.currentStats;
   }
 
   function updateStats(type, count = 1) {
+    if (typeof extension.currentStats[type] !== 'number') {
+      extension.currentStats[type] = 0;
+    }
+
     extension.currentStats[type] += count;
 
     // if you remove this if statement we'll have inflated value since it'll increment
     if (
-      type !== 'totalElementsRemoved' &&
+      type !== 'currentPageRemoved' &&
       type !== 'scanCount' &&
       type !== 'placeholdersCreated'
     ) {
-      extension.currentStats.totalElementsRemoved += count;
+      if (typeof extension.currentStats.currentPageRemoved !== 'number') {
+        extension.currentStats.currentPageRemoved = 0;
+      }
+      if (typeof extension.currentStats.dailyRemoved !== 'number') {
+        extension.currentStats.dailyRemoved = 0;
+      }
+      extension.currentStats.currentPageRemoved += count;
+      extension.currentStats.dailyRemoved += count;
     }
 
     extension.currentStats.lastScanTime = Date.now();
+    extension.currentStats.pageSignature = extension.lastPageSignature;
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ cleanSearchStats: extension.currentStats });
+      chrome.storage.local.set({
+        cleanSearchStats: { ...extension.currentStats }
+      });
     }
   }
 
@@ -470,7 +516,8 @@
       let shouldReapply = false;
 
       if (Object.prototype.hasOwnProperty.call(changes, 'cleanSearchEnabled')) {
-        extension.extensionEnabled = changes.cleanSearchEnabled.newValue !== false;
+        extension.extensionEnabled =
+          changes.cleanSearchEnabled.newValue !== false;
         shouldReapply = true;
       }
 
@@ -520,12 +567,85 @@
       if (extension.loggingEnabled) {
         Logger?.info('Filter data loaded', getFilterData());
       }
+      // grab stats from storage and reset
+      chrome.storage.local.get(['cleanSearchStats'], result => {
+        if (result.cleanSearchStats) {
+          extension.currentStats = {
+            ...extension.currentStats,
+            ...result.cleanSearchStats
+          };
+        }
 
-      resetStats();
+        resetStats(true);
+      });
 
       // Export updateStats to namespace for use by other modules
       NS.updateStats = updateStats;
       NS.removeElement = removeElement;
+      NS.getCurrentStats = () => ({ ...extension.currentStats });
+      NS.resetCurrentStats = () => {
+        resetStats(true);
+        return { ...extension.currentStats };
+      };
+      NS.setLoggingEnabled = enabled => {
+        extension.loggingEnabled = !!enabled;
+        if (Logger && typeof Logger.setEnabled === 'function') {
+          Logger.setEnabled(extension.loggingEnabled);
+        }
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({
+            loggingEnabled: extension.loggingEnabled
+          });
+        }
+        return extension.loggingEnabled;
+      };
+      NS.setExtensionEnabledImmediate = enabled => {
+        extension.extensionEnabled = enabled !== false;
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({
+            cleanSearchEnabled: extension.extensionEnabled
+          });
+        }
+        applySettings();
+        return extension.extensionEnabled;
+      };
+      NS.applyFilterSettings = nextSettings => {
+        if (!nextSettings || typeof nextSettings !== 'object') {
+          return { ...extension.filterSettings };
+        }
+        const merged = {
+          ...extension.filterSettings,
+          ...nextSettings
+        };
+        extension.filterSettings = enforceSettingsRulesCore(
+          merged,
+          extension.filterSettings
+        );
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({
+            filterSettings: extension.filterSettings
+          });
+        }
+        applySettings();
+        return { ...extension.filterSettings };
+      };
+      NS.triggerScan = () => {
+        if (!extension.extensionEnabled) {
+          return;
+        }
+        safetyCounter = 0;
+        if (NS.scanForContent) {
+          NS.scanForContent(
+            removeElement,
+            isDangerousContainer,
+            {
+              ...extension.filterSettings,
+              extensionEnabled: extension.extensionEnabled
+            },
+            extension.currentStats
+          );
+        }
+      };
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(

@@ -86,16 +86,27 @@ const Stats = {
     aiElementsRemoved: 0,
     lowQualitySitesRemoved: 0,
     adsRemoved: 0,
-    totalElementsRemoved: 0,
+    currentPageRemoved: 0,
     scanCount: 0,
     lastScanTime: 0,
-    placeholdersCreated: 0
+    placeholdersCreated: 0,
+    dailyRemoved: 0,
+    date: new Date().toISOString().split('T')[0],
+    pageSignature: ''
   },
 
   async load() {
     try {
       const result = await chrome.storage.local.get(['cleanSearchStats']);
-      return { ...this.defaults, ...result.cleanSearchStats };
+      const merged = { ...this.defaults, ...result.cleanSearchStats };
+      if (
+        typeof merged.currentPageRemoved !== 'number' &&
+        typeof merged.totalElementsRemoved === 'number'
+      ) {
+        merged.currentPageRemoved = merged.totalElementsRemoved;
+      }
+      delete merged.totalElementsRemoved;
+      return merged;
     } catch (error) {
       console.error('Failed to load stats:', error);
       return this.defaults;

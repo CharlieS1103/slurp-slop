@@ -22,7 +22,6 @@
     document.addEventListener('DOMContentLoaded', appendStyle);
   }
 
-
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   const logger = NS.utils?.Logger;
 
@@ -76,7 +75,7 @@
       NS.updateStats('aiElementsRemoved', 1);
     }
   };
-  
+
   const containsAIGemini = value =>
     typeof value === 'string' &&
     (value.includes('ai_overview') || value.includes('gemini'));
@@ -87,7 +86,9 @@
     }
 
     document
-      .querySelectorAll('[data-async-context*="ai_overview"], [data-async-context*="gemini"], [data-ved*="ai_overview"]')
+      .querySelectorAll(
+        '[data-async-context*="ai_overview"], [data-async-context*="gemini"], [data-ved*="ai_overview"]'
+      )
       .forEach(element => {
         const attr = element.getAttribute('data-async-context') || '';
         if (attr.includes('ai_overview:true') || attr.includes('gemini:true')) {
@@ -104,8 +105,7 @@
       return;
     }
 
-    document
-      .querySelectorAll(aiSelectors.join(',')).forEach(removeWithStats);
+    document.querySelectorAll(aiSelectors.join(',')).forEach(removeWithStats);
   };
 
   const wrapFetch = () => {
@@ -195,7 +195,7 @@
     const refreshObserver = new MutationObserver(() => {
       removeGeminiInstantly();
     });
-    refreshObserver.observe(document.body, { childList: true, subtree: true })
+    refreshObserver.observe(document.body, { childList: true, subtree: true });
     state.observers.push(refreshObserver);
   };
 

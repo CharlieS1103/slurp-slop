@@ -94,7 +94,27 @@
     'shmoop',
     'cliffsnotes',
     'coursehero',
-    'study.com'
+    'study.com',
+    'gauth',
+    'bartleby',
+    'slader',
+    'studylib',
+    'gradeup',
+    'gradesaver',
+    'chegg',
+    'brainly',
+    'scribd',
+    '123helpme',
+    'megaessays',
+    'bookrags',
+    'papersowl',
+    'studymode',
+    'superprof',
+    'edubirdie',
+    'academized',
+    'essaypro',
+    'essayhub',
+    'scribbr'
   ];
 
   // Export data to namespace, objects should exist already

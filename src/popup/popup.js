@@ -21,13 +21,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const whitelistDisplay = document.getElementById('whitelist-display');
   const whitelistInput = document.getElementById('whitelist-input');
   const reportIssueBtn = document.getElementById('report-issue');
-  const viewSourceBtn = document.getElementById('view-source');
   const showHelpBtn = document.getElementById('show-help');
   const toggleLoggingBtn = document.getElementById('toggle-logging');
 
   const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
-
+  /*
+This code is unused, just here to reference if we ever add theming
   // Theme switching
   const themeButtons = document.querySelectorAll('.theme-btn');
 
@@ -56,13 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.classList.add('active');
     });
   });
-
+*/
   // Logging state for popup UI
   let loggingEnabled = false;
 
   // Stat elements
   const totalRemovedCount = document.getElementById('total-removed-count');
   const aiRemovedCount = document.getElementById('ai-removed-count');
+  const dailyRemovedCount = document.getElementById('daily-removed-count');
   const lowQualityRemovedCount = document.getElementById(
     'low-quality-removed-count'
   );
@@ -74,10 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
     aiElementsRemoved: 0,
     lowQualitySitesRemoved: 0,
     adsRemoved: 0,
-    totalElementsRemoved: 0,
+    currentPageRemoved: 0,
     scanCount: 0,
     lastScanTime: 0,
-    placeholdersCreated: 0
+    placeholdersCreated: 0,
+    dailyRemoved: 0,
+    date: new Date().toISOString().split('T')[0],
+    pageSignature: ''
   };
 
   let filterSettings = {
@@ -116,8 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (shouldDisable) {
       placeholdersToggle.checked = false;
     } else {
-      placeholdersToggle.checked =
-        !!filterSettings.showReplacementPlaceholders;
+      placeholdersToggle.checked = !!filterSettings.showReplacementPlaceholders;
     }
   }
 
@@ -247,21 +250,43 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadStats() {
     // Get current page stats from storage
     chrome.storage.local.get(['cleanSearchStats'], result => {
-      if (result.cleanSearchStats) {
-        currentStats = { ...currentStats, ...result.cleanSearchStats };
-      }
+      let storedStats = {
+        ...currentStats,
+        ...(result.cleanSearchStats || {})
+      };
 
       // Try to get real-time stats from active tab's content script
       chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        const activeTab = tabs[0];
+        const activeUrl = activeTab ? activeTab.url || '' : '';
+        const activeSignature = computePageSignature(activeUrl);
+
         if (
-          tabs[0] &&
-          tabs[0].url &&
-          tabs[0].url.includes('google.com/search')
+          storedStats.pageSignature &&
+          activeSignature &&
+          storedStats.pageSignature !== activeSignature
         ) {
+          // Different page than the stored stats were recorded on; show a fresh slate for this page
+          storedStats = {
+            ...storedStats,
+            aiElementsRemoved: 0,
+            lowQualitySitesRemoved: 0,
+            adsRemoved: 0,
+            currentPageRemoved: 0,
+            scanCount: 0,
+            lastScanTime: 0,
+            placeholdersCreated: 0,
+            pageSignature: activeSignature
+          };
+        }
+
+        currentStats = storedStats;
+
+        if (activeTab && activeUrl && activeUrl.includes('google.com/search')) {
           try {
             chrome.scripting.executeScript(
               {
-                target: { tabId: tabs[0].id },
+                target: { tabId: activeTab.id },
                 function: getStats
               },
               result => {
@@ -272,8 +297,20 @@ document.addEventListener('DOMContentLoaded', function() {
                   );
                   updateStatsDisplay();
                 } else if (result && result[0] && result[0].result) {
-                  // Use current page stats directly
-                  currentStats = { ...currentStats, ...result[0].result };
+                  const liveStats = result[0].result;
+                  if (liveStats) {
+                    if (
+                      !liveStats.pageSignature ||
+                      !activeSignature ||
+                      liveStats.pageSignature === activeSignature
+                    ) {
+                      // Use current page stats directly
+                      currentStats = {
+                        ...currentStats,
+                        ...liveStats
+                      };
+                    }
+                  }
                   updateStatsDisplay();
                 } else {
                   updateStatsDisplay();
@@ -292,10 +329,43 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function computePageSignature(urlString = '') {
+    if (!urlString) {
+      return '';
+    }
+
+    try {
+      const parsed = new URL(urlString);
+      if (!/google\.[a-z.]+\/search/i.test(parsed.href)) {
+        return '';
+      }
+
+      const query = parsed.searchParams.get('q') || '';
+      const start = parsed.searchParams.get('start') || '0';
+      const tbm = parsed.searchParams.get('tbm') || '';
+      const udm = parsed.searchParams.get('udm') || '';
+
+      return [
+        parsed.pathname || '',
+        `q=${query}`,
+        `start=${start}`,
+        `tbm=${tbm}`,
+        `udm=${udm}`
+      ].join('|');
+    } catch (error) {
+      console.log('Could not compute page signature', error);
+      return '';
+    }
+  }
+
   function updateStatsDisplay() {
     if (totalRemovedCount) {
-      totalRemovedCount.textContent = currentStats.totalElementsRemoved || 0;
+      totalRemovedCount.textContent = currentStats.currentPageRemoved || 0;
     }
+    if (dailyRemovedCount) {
+      dailyRemovedCount.textContent = currentStats.dailyRemoved || 0;
+    }
+
     if (aiRemovedCount) {
       aiRemovedCount.textContent = currentStats.aiElementsRemoved || 0;
     }
@@ -330,7 +400,6 @@ document.addEventListener('DOMContentLoaded', function() {
       lastActivity.textContent = 'Last activity: Never';
     }
   }
-
   // Initialize popup
   async function init() {
     try {
@@ -636,8 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updatePlaceholdersToggleState();
 
         statusDiv.className = 'status active';
-        statusDiv.textContent =
-          'Aggressive Mode active';
+        statusDiv.textContent = 'Aggressive Mode active';
       } else {
         updatePlaceholdersToggleState();
         statusDiv.className = 'status active';
@@ -747,8 +815,6 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
     });
 
-
-
     // Show help -> open email
     showHelpBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
@@ -768,8 +834,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // Functions to inject into the current page
 
 function updateExtensionState(enabled) {
-  if (window.cleanSearchDebug && window.cleanSearchDebug.setEnabled) {
-    window.cleanSearchDebug.setEnabled(enabled);
+  if (
+    window.SlurpSlop &&
+    typeof window.SlurpSlop.setExtensionEnabledImmediate === 'function'
+  ) {
+    window.SlurpSlop.setExtensionEnabledImmediate(enabled);
     console.log(
       `SlurpSlop extension ${enabled ? 'enabled' : 'disabled'} via popup`
     );
@@ -777,8 +846,11 @@ function updateExtensionState(enabled) {
 }
 
 function updateFilterSettings(settings) {
-  if (window.cleanSearchDebug && window.cleanSearchDebug.updateSettings) {
-    window.cleanSearchDebug.updateSettings(settings);
+  if (
+    window.SlurpSlop &&
+    typeof window.SlurpSlop.applyFilterSettings === 'function'
+  ) {
+    window.SlurpSlop.applyFilterSettings(settings);
     console.log('Filter settings updated via popup:', settings);
   }
 }
@@ -795,24 +867,30 @@ function triggerScan() {
 }
 */
 function getStats() {
-  if (window.cleanSearchDebug && window.cleanSearchDebug.getStats) {
-    return window.cleanSearchDebug.getStats();
+  if (
+    window.SlurpSlop &&
+    typeof window.SlurpSlop.getCurrentStats === 'function'
+  ) {
+    return window.SlurpSlop.getCurrentStats();
   }
   return null;
 }
 // smart to keep
 /*
 function resetStats() {
-  if (window.cleanSearchDebug && window.cleanSearchDebug.resetStats) {
-    window.cleanSearchDebug.resetStats();
+  if (window.SlurpSlop && typeof window.SlurpSlop.resetCurrentStats === 'function') {
+    window.SlurpSlop.resetCurrentStats();
     console.log('Statistics reset via popup');
   }
 }
   */
 
 function setLogging(enabled) {
-  if (window.cleanSearchDebug && window.cleanSearchDebug.setLogging) {
-    window.cleanSearchDebug.setLogging(enabled);
+  if (
+    window.SlurpSlop &&
+    typeof window.SlurpSlop.setLoggingEnabled === 'function'
+  ) {
+    window.SlurpSlop.setLoggingEnabled(enabled);
     console.log(`Logging ${enabled ? 'enabled' : 'disabled'} via popup`);
   }
 }

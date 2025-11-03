@@ -11,7 +11,10 @@ function updateRuleset(shouldEnable) {
     },
     () => {
       if (chrome.runtime.lastError) {
-        console.warn('Failed to update ruleset state', chrome.runtime.lastError);
+        console.warn(
+          'Failed to update ruleset state',
+          chrome.runtime.lastError
+        );
       } else {
         console.log(
           `Ruleset ${shouldEnable ? 'enabled' : 'disabled'} via background`,

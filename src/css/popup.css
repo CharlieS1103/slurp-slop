@@ -69,7 +69,8 @@ h4,
 h5,
 h6,
 p,
-#total-removed-count {
+#total-removed-count,
+#daily-removed-count {
   font-family: 'Courier New', Courier, monospace;
   margin: 0;
   color: var(--primary-color);
@@ -79,10 +80,10 @@ p {
   font-size: large;
 }
 
-#total-removed-count {
+#total-removed-count,
+#daily-removed-count {
   font-size: 5em;
 }
-
 
 .input-container {
   display: inline-block;
@@ -115,7 +116,7 @@ p {
 }
 
 .slider::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 2.5px;
   top: 2.5px;
@@ -127,11 +128,11 @@ p {
   transition: transform 0.3s;
 }
 
-.button:checked+.slider {
+.button:checked + .slider {
   background-color: var(--active);
 }
 
-.button:checked+.slider::before {
+.button:checked + .slider::before {
   transform: translateX(50px);
 }
 
@@ -142,10 +143,9 @@ p {
   height: 67px;
 }
 
-.button:checked+#master-slider::before {
+.button:checked + #master-slider::before {
   transform: translateX(75px);
 }
-
 
 .section {
   width: 80%;
@@ -192,7 +192,7 @@ p {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  gap: 100px
+  gap: 100px;
 }
 
 .options-div {
@@ -214,7 +214,7 @@ p {
 
 #whitelist-header {
   width: 100%;
-  gap: 25%
+  gap: 25%;
 }
 
 #whitelist-display {
@@ -314,7 +314,7 @@ p {
 }
 
 #toggle-logging.disabled p {
-  color: var(--secondary-color)
+  color: var(--secondary-color);
 }
 
 .flex {
