@@ -53,6 +53,12 @@
   ];
 
   const aiSelectors = [
+    'div.YzCcne[data-mcpr][data-mcp]',
+    'div[data-mg-cp="YzCcne"]',
+    'div[data-attrid^="SrpGenSum"]',
+    'div[jscontroller="EYwa3d"]',
+    'div[jscontroller="qwbW4b"]',
+    'div[jscontroller="i8S0p"]',
     'g-section-with-header:has(div.lLGV5d)',
     'div.JJSijf',
     'div.aeJESe',

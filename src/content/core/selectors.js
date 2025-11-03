@@ -26,6 +26,11 @@
   // AI-related elements
   const AI = {
     containers: [
+      'div.YzCcne[data-mcpr]',
+      'div[data-attrid^="SrpGenSum"]',
+      'div[jscontroller="EYwa3d"]',
+      'div[jscontroller="qwbW4b"]',
+      'div[jscontroller="i8S0p"]',
       'g-section-with-header',
       '[data-attrid*="ai"]',
       '[data-sokoban-feature*="ai"]',

@@ -37,11 +37,13 @@
   };
 
   const aiSelectors = [
+    'div.YzCcne[data-mcpr]',
+    'div[data-attrid^="SrpGenSum"]',
     '[data-async-context*="ai_overview"]',
     '[data-async-context*="gemini"]',
     '[data-ved*="ai_overview"]',
     '[jsname*="ai_overview"]'
-  ]
+  ];
 
   const removedElements = new WeakSet();
 
