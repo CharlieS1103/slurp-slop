@@ -6,7 +6,7 @@
     NS.utils;
   const SEL = NS.selectors;
 
-  /* header search can be optimized
+  /* TODO: header search can be optimized
   #search
     > div
       > div
