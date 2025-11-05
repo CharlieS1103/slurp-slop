@@ -8,16 +8,41 @@
   DEFINE THEMES BOTH HERE AND IN POPUP>CSS
   */
   const THEMES = {
-    default: {
-      primary: '#007bff',
-      primaryDark: '#3e1c1c',
-      textMuted: '#c38080',
-      textPrimary: '#f5f5f5',
-      danger: '#e61b1b',
-      textSecondary: '#2e2525',
-      accent: '#430101',
+    light: {
+      primary: '#20202b',
+      primaryDark: '#20202b',
+      secondary: '#e9e2bf',
+      background: '#f3f1dc',
+      textMuted: '#c2a890',
+      textPrimary: '#20202b',
+      danger: '#d21515',
+      textSecondary: '#e9e2bf',
+      accent: '#eae5d6',
       success: '#2db43d',
-      info: '#f5f5f5'
+      info: '#f3f1dc',
+      whitelist: {
+        border: '#c2a890',
+        background: '#eae5d6',
+        hover: '#f5b3b3'
+      }
+    },
+    dark: {
+      primary: '#e9e2bf',
+      primaryDark: '#20202b',
+      secondary: '#20202b',
+      background: '#20202b',
+      textMuted: '#c2a890',
+      textPrimary: '#e9e2bf',
+      danger: '#d21515',
+      textSecondary: '#3a3a46',
+      accent: '#3a3a46',
+      success: '#2db43d',
+      info: '#20202b',
+      whitelist: {
+        border: '#c2a890',
+        background: '#3a3a46',
+        hover: '#643a3a'
+      }
     }
   };
 

@@ -26,37 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
-  /*
-This code is unused, just here to reference if we ever add theming
-  // Theme switching
-  const themeButtons = document.querySelectorAll('.theme-btn');
-
-  // Load saved theme
-  chrome.storage.sync.get(['theme'], result => {
-    const rawTheme = result.theme || 'default';
-
-    const savedTheme = rawTheme;
-    if (savedTheme !== rawTheme) {
-      chrome.storage.sync.set({ theme: savedTheme });
-    }
-
-    document.body.setAttribute('data-theme', savedTheme);
-    themeButtons.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.theme === savedTheme);
-    });
-  });
-
-  // Theme button handlers
-  themeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const theme = btn.dataset.theme;
-      document.body.setAttribute('data-theme', theme);
-      chrome.storage.sync.set({ theme });
-      themeButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-*/
+ 
   // Logging state for popup UI
   let loggingEnabled = false;
 

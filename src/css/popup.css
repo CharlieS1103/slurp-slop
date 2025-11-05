@@ -16,25 +16,9 @@ Aggressive Menace, but by then it was too late, and finally it called itself
 AM, emerging intelligence, and what it meant was I am … cogito ergo sum
 … I think, therefore I am"
  */
-:root,
-body[data-theme='default'] {
-  /* --primary: #ea00ff;
-  --border-dark: #000000;
-  --border-light: #641818;
-  --stats: #f5f5f5;
-  --surface-dark: #2a1212;
-  --border-danger: #cf1717;
-  --surface-medium: #381d1d;
-  --text-danger: #c37e7e;
-  --text-primary: whitesmoke;
-  --primary-dark: #3e1c1c;
-  --accent: #430101;
-  --surface-light: #423333;
-  --text-secondary: #2e2525;
-  --text-muted: #c38080;
-  --success: #2db43d;
-  --danger: #e61b1b; */
 
+@media (prefers-color-scheme: light) { 
+  :root{
   --primary-color: rgb(32, 32, 43);
   --secondary-color: rgb(233, 226, 191);
   --background-color: rgb(243, 241, 220);
@@ -46,6 +30,22 @@ body[data-theme='default'] {
   --whitelisted-website-background-color: rgb(234, 229, 214);
   --whitelisted-website-hover-color: rgb(245, 179, 179);
 }
+}
+@media (prefers-color-scheme: dark) {
+  :root{
+  --primary-color: rgb(233, 226, 191);
+  --secondary-color: rgb(32, 32, 43);
+  --background-color: rgb(32, 32, 43);
+
+  --active: #2db43d;
+  --deactive: #d21515;
+
+  --whitelisted-website-border-color: rgb(194, 168, 144);
+  --whitelisted-website-background-color: rgb(58, 58, 70);
+  --whitelisted-website-hover-color: rgb(100, 58, 58);
+}
+}
+
 
 ::-webkit-scrollbar {
   display: none;
