@@ -505,11 +505,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // scanNowBtn.disabled = true;
       } else if (!isGoogleSearch) {
         statusDiv.className = 'status inactive';
-        statusDiv.textContent = 'enabled.';
+        statusDiv.innerHTML = 'enabled<br>enter query to use.';
         // scanNowBtn.disabled = true;
       } else {
         statusDiv.className = 'status active';
-        statusDiv.textContent = 'enabled and monitoring.';
+        statusDiv.innerHTML = 'enabled and monitoring.';
         // scanNowBtn.disabled = false;
       }
     });
