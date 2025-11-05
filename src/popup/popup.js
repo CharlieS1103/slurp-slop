@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const hideableSection = document.getElementById('can-be-hidden');
   const hideableSectionHTML = hideableSection.innerHTML;
- 
+
   // Logging state for popup UI
   let loggingEnabled = false;
 

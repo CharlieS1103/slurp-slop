@@ -50,9 +50,12 @@
   //use prefers color scheme query
   // kinda ironic that this is in constants given it's literally a let
   let palette = THEMES.light;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  ) {
     palette = THEMES.dark;
-  } 
+  }
   // Content script UI colors
   // the uv styles are standardly sourced from google, but we define default vals just in case
   // any UI elements which exist outside the popup will get the colors passed in this way.

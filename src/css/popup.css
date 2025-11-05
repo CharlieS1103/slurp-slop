@@ -17,38 +17,37 @@ AM, emerging intelligence, and what it meant was I am … cogito ergo sum
 … I think, therefore I am"
  */
 
-@media (prefers-color-scheme: light) { 
-  :root{
-  --primary-color: rgb(32, 32, 43);
-  --secondary-color: rgb(233, 226, 191);
-  --background-color: rgb(243, 241, 220);
+@media (prefers-color-scheme: light) {
+  :root {
+    --primary-color: rgb(32, 32, 43);
+    --secondary-color: rgb(233, 226, 191);
+    --background-color: rgb(243, 241, 220);
 
-  --active: #2db43d;
-  --deactive: #d21515;
-  /* TODO: lets figure out how to do a dynamic highlight, also actually need to use the variable in the design (ehan please)
+    --active: #2db43d;
+    --deactive: #d21515;
+    /* TODO: lets figure out how to do a dynamic highlight, also actually need to use the variable in the design (ehan please)
   */
-  --highlight: rgb(100, 149, 237);
+    --highlight: rgb(100, 149, 237);
 
-  --whitelisted-website-border-color: rgb(194, 168, 144);
-  --whitelisted-website-background-color: rgb(234, 229, 214);
-  --whitelisted-website-hover-color: rgb(245, 179, 179);
-}
+    --whitelisted-website-border-color: rgb(194, 168, 144);
+    --whitelisted-website-background-color: rgb(234, 229, 214);
+    --whitelisted-website-hover-color: rgb(245, 179, 179);
+  }
 }
 @media (prefers-color-scheme: dark) {
-  :root{
-  --primary-color: rgb(233, 226, 191);
-  --secondary-color: rgb(32, 32, 43);
-  --background-color: rgb(32, 32, 43);
+  :root {
+    --primary-color: rgb(233, 226, 191);
+    --secondary-color: rgb(32, 32, 43);
+    --background-color: rgb(32, 32, 43);
 
-  --active: #2db43d;
-  --deactive: #d21515;
+    --active: #2db43d;
+    --deactive: #d21515;
 
-  --whitelisted-website-border-color: rgb(194, 168, 144);
-  --whitelisted-website-background-color: rgb(58, 58, 70);
-  --whitelisted-website-hover-color: rgb(100, 58, 58);
+    --whitelisted-website-border-color: rgb(194, 168, 144);
+    --whitelisted-website-background-color: rgb(58, 58, 70);
+    --whitelisted-website-hover-color: rgb(100, 58, 58);
+  }
 }
-}
-
 
 ::-webkit-scrollbar {
   display: none;
