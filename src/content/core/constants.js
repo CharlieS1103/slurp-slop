@@ -78,7 +78,6 @@
     notification: 10001
   };
 
-  
   const DURATIONS = {
     notificationMs: 3000,
     notificationSlideMs: 300,
@@ -86,7 +85,7 @@
     placeholderCountdownIntervalMs: 1000
   };
 
-  // Default settings 
+  // Default settings
   const DEFAULTS = {
     removeAiOverview: true,
     removeLowQualitySites: true,
@@ -100,5 +99,12 @@
     customWhitelist: []
   };
 
-  Object.assign(NS.constants, { THEMES, palette, COLORS, Z, DURATIONS, DEFAULTS });
+  Object.assign(NS.constants, {
+    THEMES,
+    palette,
+    COLORS,
+    Z,
+    DURATIONS,
+    DEFAULTS
+  });
 })();

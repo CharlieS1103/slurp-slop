@@ -4,7 +4,6 @@
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.settings = NS.settings || {};
   const DEFAULTS = NS.constants.DEFAULTS;
-  
 
   function enforceSettingsRules(settings, oldSettings = {}) {
     const result = { ...DEFAULTS, ...settings };

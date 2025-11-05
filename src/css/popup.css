@@ -287,6 +287,7 @@ p {
   height: 75%;
   border: 1px solid var(--primary-color);
   background-color: var(--background-color);
+  color: var(--primary-color);
 }
 
 #clear-whitelist {

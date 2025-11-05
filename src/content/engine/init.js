@@ -101,11 +101,18 @@
   }
 
   function removeElement(element, type = 'unknown') {
+    const revealedAncestor =
+      element &&
+      typeof element.closest === 'function' &&
+      element.closest('[data-slurpslop-manual-reveal]');
+
     if (
       !extension.extensionEnabled ||
       !element ||
       element.hasAttribute('data-slurpslop-placeholder') ||
       element.hasAttribute('data-slurpslop-wrapper') ||
+      element.hasAttribute('data-slurpslop-manual-reveal') ||
+      revealedAncestor ||
       element.hasAttribute('data-slurpslop-removed') ||
       // If a parent was already removed, skip to avoid double placeholders
       (element.closest && element.closest('[data-slurpslop-removed]')) ||

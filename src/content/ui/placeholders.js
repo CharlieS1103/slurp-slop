@@ -16,7 +16,6 @@
   const REVEAL_DURATION_MS = DURATIONS.placeholderRevealDurationMs;
   const COUNTDOWN_INTERVAL_MS = DURATIONS.placeholderCountdownIntervalMs;
 
-
   function handlePlaceholderSettingChange(enabled) {
     if (!enabled) {
       removeAllPlaceholders();
@@ -135,7 +134,8 @@
     statusSpan.textContent = 'Content removed';
 
     const actionSpan = document.createElement('span');
-    actionSpan.style.cssText = 'font-size: 12px; color: ' + COLORS.textPrimary + ';';
+    actionSpan.style.cssText =
+      'font-size: 12px; color: ' + COLORS.textPrimary + ';';
     actionSpan.textContent = 'Click to reveal';
 
     contentRow.append(statusSpan, actionSpan);
@@ -249,10 +249,6 @@
 
       hideTimeout = setTimeout(hideContent, REVEAL_DURATION_MS);
       startCountdown();
-
-      if (NS.pauseScanning) {
-        NS.pauseScanning(REVEAL_DURATION_MS + 500);
-      }
     };
 
     renderHiddenState();

@@ -51,6 +51,10 @@
           if (element.closest && element.closest('[data-slurpslop-removed]')) {
             return;
           }
+          // skip element if manually revealed this should be redundent with the above but for safety why not
+          if (element.hasAttribute('data-slurpslop-manual-reveal')) {
+            return;
+          }
 
           // Skip if this element already has a placeholder (means it was already processed)
           if (
