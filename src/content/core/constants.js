@@ -47,16 +47,20 @@
   };
 
   // Default theme
-  const PALETTE = THEMES.default;
-
+  //use prefers color scheme query
+  // kinda ironic that this is in constants given it's literally a let
+  let palette = THEMES.light;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    palette = THEMES.dark;
+  } 
   // Content script UI colors
   // the uv styles are standardly sourced from google, but we define default vals just in case
   // any UI elements which exist outside the popup will get the colors passed in this way.
   const COLORS = {
-    bannerGradientFrom: PALETTE.danger,
-    bannerGradientTo: PALETTE.primaryDark,
-    notifInfoBg: PALETTE.info,
-    notifSuccessBg: PALETTE.success,
+    bannerGradientFrom: palette.danger,
+    bannerGradientTo: palette.primaryDark,
+    notifInfoBg: palette.info,
+    notifSuccessBg: palette.success,
     placeholderBg: 'var(--uv-styles-color-tertiary, #303134)',
     placeholderBgHover: 'var(--uv-styles-color-secondary, #394457)',
     placeholderBorder: 'var(--uv-styles-color-outline, #3c4043)',
@@ -74,5 +78,5 @@
     notificationSlideMs: 300
   };
 
-  Object.assign(NS.constants, { THEMES, PALETTE, COLORS, Z, DURATIONS });
+  Object.assign(NS.constants, { THEMES, palette, COLORS, Z, DURATIONS });
 })();

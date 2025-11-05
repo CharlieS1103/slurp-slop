@@ -567,18 +567,6 @@
       if (extension.loggingEnabled) {
         Logger?.info('Filter data loaded', getFilterData());
       }
-      // grab stats from storage and reset
-      chrome.storage.local.get(['cleanSearchStats'], result => {
-        if (result.cleanSearchStats) {
-          extension.currentStats = {
-            ...extension.currentStats,
-            ...result.cleanSearchStats
-          };
-        }
-
-        resetStats(true);
-      });
-
       // Export updateStats to namespace for use by other modules
       NS.updateStats = updateStats;
       NS.removeElement = removeElement;
@@ -698,6 +686,8 @@
                 ...result.cleanSearchStats
               };
             }
+
+            resetStats(true);
 
             // Call applySettings() AFTER storage is loaded
             applySettings();

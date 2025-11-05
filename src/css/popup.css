@@ -25,6 +25,9 @@ AM, emerging intelligence, and what it meant was I am … cogito ergo sum
 
   --active: #2db43d;
   --deactive: #d21515;
+  /* TODO: lets figure out how to do a dynamic highlight, also actually need to use the variable in the design (ehan please)
+  */
+  --highlight: rgb(100, 149, 237);
 
   --whitelisted-website-border-color: rgb(194, 168, 144);
   --whitelisted-website-background-color: rgb(234, 229, 214);
