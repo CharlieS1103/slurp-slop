@@ -3,19 +3,8 @@
 (() => {
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.settings = NS.settings || {};
-
-  const DEFAULTS = {
-    removeAiOverview: true,
-    removeLowQualitySites: true,
-    removeAds: true,
-    minimalistMode: false,
-    linksOnlyMode: false,
-    aggressiveMode: false,
-    hideAiModeButton: true,
-    showReplacementPlaceholders: false,
-    disableTermsEnabled: false,
-    customWhitelist: []
-  };
+  const DEFAULTS = NS.constants.DEFAULTS;
+  
 
   function enforceSettingsRules(settings, oldSettings = {}) {
     const result = { ...DEFAULTS, ...settings };

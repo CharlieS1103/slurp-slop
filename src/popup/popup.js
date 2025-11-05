@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggleLoggingBtn = document.getElementById('toggle-logging');
 
   const hideableSection = document.getElementById('can-be-hidden');
-  const hideableSectionHTML = hideableSection.innerHTML;
 
   // Logging state for popup UI
   let loggingEnabled = false;
@@ -96,13 +95,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Hide every setting if master switch is off; there's no need to show everything if the extension is off. -e
   function toggleSettingVisibility() {
-    if (!extensionToggle.checked) {
-      hideableSection.innerHTML = '';
-    } else {
-      if (hideableSection.innerHTML === '') {
-        hideableSection.innerHTML = hideableSectionHTML;
-      }
+    if (!hideableSection) {
+      return;
     }
+    const shouldHide = !extensionToggle.checked;
+    hideableSection.classList.toggle('hidden', shouldHide);
+    hideableSection.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
   }
 
   // Save filter settings function (enforces rules before persisting)
@@ -527,8 +525,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const enabled = extensionToggle.checked;
       chrome.storage.local.set({ cleanSearchEnabled: enabled });
       updateStatus(enabled);
-      toggleSettingVisibility(enabled);
-
+      toggleSettingVisibility();
+      loadSettings();
       chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },

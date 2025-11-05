@@ -4,8 +4,8 @@
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.constants = NS.constants || {};
 
-  /*
-  DEFINE THEMES BOTH HERE AND IN POPUP>CSS
+  /* IMPORTANT!
+  DEFINE THEMES BOTH HERE AND IN ../../css/popup.css
   */
   const THEMES = {
     light: {
@@ -71,15 +71,34 @@
     textPrimary: 'var(--uv-styles-color-text-primary, #8ab4f8)'
   };
 
+  /* this stuff is sort of unecessary given how little we use banners/notifications,
+  but figured it's nice to have*/
   const Z = {
     banner: 10000,
     notification: 10001
   };
 
+  
   const DURATIONS = {
     notificationMs: 3000,
-    notificationSlideMs: 300
+    notificationSlideMs: 300,
+    placeholderRevealDurationMs: 10000,
+    placeholderCountdownIntervalMs: 1000
   };
 
-  Object.assign(NS.constants, { THEMES, palette, COLORS, Z, DURATIONS });
+  // Default settings 
+  const DEFAULTS = {
+    removeAiOverview: true,
+    removeLowQualitySites: true,
+    removeAds: true,
+    minimalistMode: false,
+    linksOnlyMode: false,
+    aggressiveMode: false,
+    hideAiModeButton: true,
+    showReplacementPlaceholders: false,
+    disableTermsEnabled: false,
+    customWhitelist: []
+  };
+
+  Object.assign(NS.constants, { THEMES, palette, COLORS, Z, DURATIONS, DEFAULTS });
 })();

@@ -1,7 +1,7 @@
 // SLURPSLOP UI Placeholder utilities
 (() => {
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
-  const { COLORS } = NS.constants;
+  const { COLORS, DURATIONS } = NS.constants;
 
   const ATTR = {
     container: 'data-slurpslop-container',
@@ -10,8 +10,12 @@
     wrapper: 'data-slurpslop-wrapper',
     originalDisplay: 'data-slurpslop-original-display',
     removed: 'data-slurpslop-removed',
-    type: 'data-slurpslop-type'
+    type: 'data-slurpslop-type',
+    manualReveal: 'data-slurpslop-manual-reveal'
   };
+  const REVEAL_DURATION_MS = DURATIONS.placeholderRevealDurationMs;
+  const COUNTDOWN_INTERVAL_MS = DURATIONS.placeholderCountdownIntervalMs;
+
 
   function handlePlaceholderSettingChange(enabled) {
     if (!enabled) {
@@ -21,7 +25,15 @@
 
   function removeAllPlaceholders() {
     const containers = document.querySelectorAll(`[${ATTR.container}]`);
-    containers.forEach(c => c.remove());
+    containers.forEach(c => {
+      const placeholder = c.querySelector(`[${ATTR.placeholder}]`);
+      if (placeholder && typeof placeholder._cleanup === 'function') {
+        try {
+          placeholder._cleanup();
+        } catch {}
+      }
+      c.remove();
+    });
   }
 
   function shouldCreatePlaceholder(element, type, settings) {
@@ -114,12 +126,20 @@
       flex: 0 0 auto;
     `;
 
-    placeholder.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-        <span style="color: ${COLORS.textMuted};">Content removed</span>
-        <span style="font-size: 12px; color: ${COLORS.textPrimary};">Click to reveal</span>
-      </div>
-    `;
+    const contentRow = document.createElement('div');
+    contentRow.style.cssText =
+      'display: flex; align-items: center; justify-content: space-between; gap: 12px;';
+
+    const statusSpan = document.createElement('span');
+    statusSpan.style.color = COLORS.textMuted;
+    statusSpan.textContent = 'Content removed';
+
+    const actionSpan = document.createElement('span');
+    actionSpan.style.cssText = 'font-size: 12px; color: ' + COLORS.textPrimary + ';';
+    actionSpan.textContent = 'Click to reveal';
+
+    contentRow.append(statusSpan, actionSpan);
+    placeholder.appendChild(contentRow);
 
     // Add animations if not already present
     if (!document.querySelector('style[data-slurpslop-animations]')) {
@@ -144,46 +164,106 @@
       }
     });
 
+    let hideTimeout = null;
+    let countdownInterval = null;
+    let revealDeadline = 0;
+
+    const clearTimers = () => {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      revealDeadline = 0;
+    };
+
+    const renderHiddenState = () => {
+      statusSpan.textContent = 'Content removed';
+      actionSpan.textContent = 'Click to reveal';
+      placeholder.style.backgroundColor = COLORS.placeholderBg;
+    };
+
+    placeholder._cleanup = () => {
+      clearTimers();
+      element.style.display = 'none';
+      element.setAttribute(ATTR.removed, 'true');
+      element.removeAttribute(ATTR.manualReveal);
+      placeholder._revealed = false;
+      renderHiddenState();
+    };
+
+    const renderRevealedState = remainingMs => {
+      const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
+      if (seconds > 0) {
+        const unit = seconds === 1 ? 'second' : 'seconds';
+        statusSpan.textContent = `Content revealed for ${seconds} ${unit}.`;
+      } else {
+        statusSpan.textContent = 'Content revealed.';
+      }
+      actionSpan.textContent = 'Click to hide';
+      placeholder.style.backgroundColor = COLORS.placeholderBgHover;
+    };
+
+    const hideContent = () => {
+      if (!placeholder._revealed) {
+        return;
+      }
+      clearTimers();
+      element.style.display = 'none';
+      element.setAttribute(ATTR.removed, 'true');
+      element.removeAttribute(ATTR.manualReveal);
+      placeholder._revealed = false;
+      renderHiddenState();
+    };
+
+    const startCountdown = () => {
+      const update = () => {
+        if (!placeholder._revealed || !revealDeadline) {
+          return;
+        }
+        const remaining = revealDeadline - Date.now();
+        if (remaining <= 0) {
+          renderRevealedState(0);
+          hideContent();
+          return;
+        }
+        renderRevealedState(remaining);
+      };
+
+      update();
+      countdownInterval = setInterval(update, COUNTDOWN_INTERVAL_MS);
+    };
+
+    const showContent = () => {
+      const display = element.getAttribute(ATTR.originalDisplay) || 'block';
+      element.style.display = display;
+      element.removeAttribute(ATTR.removed);
+      element.setAttribute(ATTR.manualReveal, 'true');
+      clearTimers();
+      placeholder._revealed = true;
+      revealDeadline = Date.now() + REVEAL_DURATION_MS;
+      renderRevealedState(REVEAL_DURATION_MS);
+
+      hideTimeout = setTimeout(hideContent, REVEAL_DURATION_MS);
+      startCountdown();
+
+      if (NS.pauseScanning) {
+        NS.pauseScanning(REVEAL_DURATION_MS + 500);
+      }
+    };
+
+    renderHiddenState();
+    placeholder._revealed = false;
+
     // Click to reveal / hide
     placeholder.addEventListener('click', () => {
-      setTimeout(() => {
-        if (placeholder._revealed) {
-          element.style.display = 'none';
-          element.setAttribute(ATTR.removed, 'true');
-          placeholder.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-              <span style="color: ${COLORS.textMuted};">Content removed</span>
-              <span style="font-size: 12px; color: ${COLORS.textPrimary};">Click to reveal</span>
-            </div>
-          `;
-          placeholder.style.backgroundColor = COLORS.placeholderBg;
-          placeholder._revealed = false;
-        }
-      }, 10000);
-
       if (!placeholder._revealed) {
-        const display = element.getAttribute(ATTR.originalDisplay) || 'block';
-        element.style.display = display;
-        element.removeAttribute(ATTR.removed);
-        placeholder.innerHTML = `
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-            <span style="color: ${COLORS.textMuted};">Content revealed</span>
-            <span style="font-size: 12px; color: ${COLORS.textPrimary};">Click to hide</span>
-          </div>
-        `;
-        placeholder.style.backgroundColor = COLORS.placeholderBgHover;
-        placeholder._revealed = true;
+        showContent();
       } else {
-        element.style.display = 'none';
-        element.setAttribute(ATTR.removed, 'true');
-        placeholder.innerHTML = `
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-            <span style="color: ${COLORS.textMuted};">Content removed</span>
-            <span style="font-size: 12px; color: ${COLORS.textPrimary};">Click to reveal</span>
-          </div>
-        `;
-        placeholder.style.backgroundColor = COLORS.placeholderBg;
-        placeholder._revealed = false;
+        hideContent();
       }
     });
 

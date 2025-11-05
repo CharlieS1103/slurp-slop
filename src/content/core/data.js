@@ -2,7 +2,8 @@
 // All filter data bundled directly in the script
 (() => {
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
-
+  // TODO: Need to do a full review of these lists (mainly selectors), particularly as a lot of them are client-dependent 
+  // and may change dependent on google updates / obfuscation
   const adIndicatorLabels = [
     'sponsored',
     'ads',

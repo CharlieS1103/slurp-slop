@@ -3,7 +3,8 @@
 (() => {
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.selectors = NS.selectors || {};
-
+  // TODO: Full review of all of these, jscontroller values might mutate often and per google instance so might have to change around
+  // some of the mechanics of how we identify things
   // Core page structure,
   const PAGE = {
     mainContainer: 'div#rcnt',
@@ -53,6 +54,9 @@
   };
 
   // Snippet/description selectors
+  // TODO: this stuff also needs to be cleaned
+  // going to make a branch where we remove a lot of the selectors and see what's the minimum needed to get the same results
+  // just a slow process of one by one removal and testing, if you guys want to help that'd be greatly appreciated (Cole)
   const SNIPPETS = [
     '.VwiC3b',
     '.yDYNvb',

@@ -5,7 +5,8 @@
 (() => {
   const NS = (window.SlurpSlop = window.SlurpSlop || {});
   NS.config = NS.config || {};
-
+  // These are static but we might want to make them user at some point
+  // also TODO: Play with these values to see what works best, i picked them somewhat arbitrarily
   // Extension Configuration
   const CONFIG = {
     maxRemovalsPerScan: 25,
