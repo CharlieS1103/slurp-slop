@@ -780,12 +780,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Report issue button -> open email to me,
     // TODO: we should do something else, i don't want to be mailed
     reportIssueBtn.addEventListener('click', function() {
-      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
+      chrome.tabs.create({ url: 'mailto:slurpslopsupprt@gmail.com' });
     });
 
     // Show help -> open email
     showHelpBtn.addEventListener('click', function() {
-      chrome.tabs.create({ url: 'mailto:charliejsomons@gmail.com' });
+      chrome.tabs.create({ url: 'mailto:slrupslopsupprt@gmail.com' });
     });
     // we're lying to our userbase, i'm not helping with jackshit
 
