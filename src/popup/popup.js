@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
       hoverInterval = setInterval(() => {
         tooltipHoverTime++;
 
-        if (tooltipHoverTime > 1000) 
+        if (tooltipHoverTime > 150) 
           tooltipText.style.visibility = 'visible';
       }, 1);
     });
