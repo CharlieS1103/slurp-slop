@@ -115,12 +115,12 @@ document.addEventListener('DOMContentLoaded', function () {
       let left = x + defaultPadding - (tooltipWidth / 2);
       let top = y + defaultPadding;
 
-      if (left + tooltipWidth > winWidth) {
+      if (left + tooltipWidth > winWidth - (defaultPadding / 2)) {
         left = winWidth - tooltipWidth - (defaultPadding / 2);
       }
       if (left < 0) left = 0;
 
-      if (top + tooltipHeight > winHeight) {
+      if (top + tooltipHeight > winHeight - (defaultPadding / 2)) {
         top = winHeight - tooltipHeight - (defaultPadding / 2);
       }
       if (top < 0) top = 0;
