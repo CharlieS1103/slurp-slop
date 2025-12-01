@@ -3,7 +3,7 @@
 // SLURPSLOP Extension Popup (source)
 // Handles user interface interactions and extension state management
 // TODO: BREAK UP THIS FILE
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   // UI Elements
   const statusDiv = document.getElementById('status');
   const extensionToggle = document.getElementById('extension-toggle');
@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function () {
     placeholdersToggle: null
   };
 
-
   // Initialize tooltip text bs
   document.querySelectorAll('.tooltip').forEach(element => {
     const tooltipText = element.querySelector('.tooltip-text');
@@ -86,11 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
       hoverInterval = setInterval(() => {
         tooltipHoverTime++;
 
-        if (tooltipHoverTime > 150) 
+        if (tooltipHoverTime > 150) {
           tooltipText.style.visibility = 'visible';
+        }
       }, 1);
     });
-
 
     element.addEventListener('mouseleave', () => {
       clearInterval(hoverInterval);
@@ -98,8 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
       tooltipHoverTime = 0;
       tooltipText.style.visibility = 'hidden';
     });
-
-
 
     element.addEventListener('mousemove', e => {
       const x = e.clientX;
@@ -110,26 +107,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const tooltipWidth = tooltipText.offsetWidth;
       const tooltipHeight = tooltipText.offsetHeight;
-      
+
       const defaultPadding = 15;
-      let left = x + defaultPadding - (tooltipWidth / 2);
+      let left = x + defaultPadding - tooltipWidth / 2;
       let top = y + defaultPadding;
 
-      if (left + tooltipWidth > winWidth - (defaultPadding / 2)) {
-        left = winWidth - tooltipWidth - (defaultPadding / 2);
+      if (left + tooltipWidth > winWidth - defaultPadding / 2) {
+        left = winWidth - tooltipWidth - defaultPadding / 2;
       }
-      if (left < defaultPadding / 2) left = defaultPadding / 2;
+      if (left < defaultPadding / 2) {
+        left = defaultPadding / 2;
+      }
 
-      if (top + tooltipHeight > winHeight - (defaultPadding / 2)) {
-        top = winHeight - tooltipHeight - (defaultPadding / 2);
+      if (top + tooltipHeight > winHeight - defaultPadding / 2) {
+        top = winHeight - tooltipHeight - defaultPadding / 2;
       }
-      if (top < defaultPadding / 2) top = defaultPadding / 2;
+      if (top < defaultPadding / 2) {
+        top = defaultPadding / 2;
+      }
 
       tooltipText.style.left = `${left}px`;
       tooltipText.style.top = `${top}px`;
     });
   });
-
 
   function updatePlaceholdersToggleState() {
     if (!placeholdersToggle) {
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (typeof enforceSettingsRules === 'function') {
         filterSettings = enforceSettingsRules(filterSettings, prev);
       }
-    } catch { }
+    } catch {}
 
     updatePlaceholdersToggleState();
 
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.local.set(filterData);
 
     // Broadcast to all tabs
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       if (!tabs[0]) {
         return;
       }
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
       };
 
       // Try to get real-time stats from active tab's content script
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         const activeTab = tabs[0];
         const activeUrl = activeTab ? activeTab.url || '' : '';
         const activeSignature = computePageSignature(activeUrl);
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // TODO: don't print logs to console when in prod, have them appended to a show logs modal or smth
           chrome.tabs.query(
             { active: true, currentWindow: true },
-            function (tabs) {
+            function(tabs) {
               if (!tabs[0]) {
                 return;
               }
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!statusDiv) {
       return;
     }
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       const currentTab = tabs[0];
       const isGoogleSearch =
         currentTab.url &&
@@ -571,20 +571,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function checkCurrentPage() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(_tabs) {
       updateStatus(extensionToggle.checked);
     });
   }
 
   function setupEventListeners() {
     // Master extension toggle
-    extensionToggle.addEventListener('change', function () {
+    extensionToggle.addEventListener('change', function() {
       const enabled = extensionToggle.checked;
       chrome.storage.local.set({ cleanSearchEnabled: enabled });
       updateStatus(enabled);
       toggleSettingVisibility();
       loadSettings();
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: updateExtensionState,
@@ -594,29 +594,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Individual filter toggles
-    aiToggle.addEventListener('change', function () {
+    aiToggle.addEventListener('change', function() {
       filterSettings.removeAiOverview = aiToggle.checked;
       saveFilterSettings();
     });
 
-    lowQualityToggle.addEventListener('change', function () {
+    lowQualityToggle.addEventListener('change', function() {
       filterSettings.removeLowQualitySites = lowQualityToggle.checked;
       saveFilterSettings();
     });
 
-    adsToggle.addEventListener('change', function () {
+    adsToggle.addEventListener('change', function() {
       filterSettings.removeAds = adsToggle.checked;
       saveFilterSettings();
     });
 
-    placeholdersToggle.addEventListener('change', function () {
+    placeholdersToggle.addEventListener('change', function() {
       filterSettings.showReplacementPlaceholders = placeholdersToggle.checked;
       saveFilterSettings();
       // TODO: prompt user to reload on placeholder toggle, give them a banner to click
       // you guys got this
     });
 
-    minimalistToggle.addEventListener('change', function () {
+    minimalistToggle.addEventListener('change', function() {
       filterSettings.minimalistMode = minimalistToggle.checked;
 
       // Minimalist and links-only are mutually exclusive
@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Links-only mode
-    linksOnlyToggle.addEventListener('change', function () {
+    linksOnlyToggle.addEventListener('change', function() {
       filterSettings.linksOnlyMode = linksOnlyToggle.checked;
 
       // Minimalist and links-only are mutually exclusive
@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
     });
 
-    aggressiveToggle.addEventListener('change', function () {
+    aggressiveToggle.addEventListener('change', function() {
       filterSettings.aggressiveMode = aggressiveToggle.checked;
 
       if (filterSettings.aggressiveMode) {
@@ -742,13 +742,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Logging toggle
-    toggleLoggingBtn.addEventListener('click', function () {
+    toggleLoggingBtn.addEventListener('click', function() {
       loggingEnabled = !loggingEnabled;
       chrome.storage.local.set({ loggingEnabled });
 
       updateLoggingButtonUI(loggingEnabled);
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: setLogging,
@@ -797,7 +797,7 @@ document.addEventListener('DOMContentLoaded', function () {
 */
     // Whitelist input field and button event listeners
 
-    addToWhitelistBtn.addEventListener('click', function () {
+    addToWhitelistBtn.addEventListener('click', function() {
       const domain = whitelistInput.value;
       if (domain) {
         addToWhitelist(domain);
@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Also add domain when pressing Enter in the input field
-    whitelistInput.addEventListener('keypress', function (e) {
+    whitelistInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         const domain = whitelistInput.value;
         if (domain) {
@@ -814,14 +814,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    clearWhitelistBtn.addEventListener('click', function () {
+    clearWhitelistBtn.addEventListener('click', function() {
       clearWhitelist();
     });
 
     // Disable terms toggle button, seemed smart but not sure if necessary
     const disableTermsBtn = document.getElementById('disableTermsToggle');
     if (disableTermsBtn) {
-      disableTermsBtn.addEventListener('click', function () {
+      disableTermsBtn.addEventListener('click', function() {
         filterSettings.disableTermsEnabled =
           !filterSettings.disableTermsEnabled;
         saveFilterSettings();
@@ -836,18 +836,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Report issue button -> open email to me,
     // TODO: we should do something else, i don't want to be mailed
-    reportIssueBtn.addEventListener('click', function () {
+    reportIssueBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:slurpslopsupprt@gmail.com' });
     });
 
     // Show help -> open email
-    showHelpBtn.addEventListener('click', function () {
+    showHelpBtn.addEventListener('click', function() {
       chrome.tabs.create({ url: 'mailto:slrupslopsupprt@gmail.com' });
     });
     // we're lying to our userbase, i'm not helping with jackshit
 
     // AI Mode button toggle
-    hideAiModeToggle.addEventListener('change', function () {
+    hideAiModeToggle.addEventListener('change', function() {
       filterSettings.hideAiModeButton = hideAiModeToggle.checked;
       saveFilterSettings();
     });
