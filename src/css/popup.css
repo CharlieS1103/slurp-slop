@@ -224,6 +224,25 @@ p {
   gap: 25%;
 }
 
+#ai-models-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10%;
+  height: auto;
+}
+
+#ai-models-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#ai-models-title h3 {
+  font-size: 1.2em;
+  margin: 0;
+  color: var(--primary-color);
+}
+
 #whitelist-display {
   display: inline-block;
   flex-wrap: wrap;

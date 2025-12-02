@@ -524,10 +524,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
           updatePlaceholdersToggleState();
 
+          // Load ruleset states from Chrome declarativeNetRequest API
+          loadRulesetStates();
+
           updateStatus(enabled);
           resolve(result);
         }
       );
+    });
+  }
+
+  function loadRulesetStates() {
+    chrome.declarativeNetRequest.getEnabledRulesets(enabledRulesets => {
+      if (chrome.runtime.lastError) {
+        console.warn('Failed to load ruleset states:', chrome.runtime.lastError);
+        return;
+      }
+
+      const rulesetIds = new Set(enabledRulesets);
+      const rulesetToggles = document.querySelectorAll('[data-ruleset]');
+      
+      rulesetToggles.forEach(toggle => {
+        const rulesetId = toggle.getAttribute('data-ruleset');
+        toggle.checked = rulesetIds.has(rulesetId);
+      });
     });
   }
 
@@ -739,6 +759,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
       saveFilterSettings();
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
+    });
+
+    // AI Model Ruleset Toggles
+    const rulesetToggles = document.querySelectorAll('[data-ruleset]');
+    rulesetToggles.forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const rulesetId = this.getAttribute('data-ruleset');
+        const shouldEnable = this.checked;
+
+        chrome.declarativeNetRequest.updateEnabledRulesets(
+          {
+            enableRulesetIds: shouldEnable ? [rulesetId] : [],
+            disableRulesetIds: shouldEnable ? [] : [rulesetId]
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.warn(
+                `Failed to update ruleset ${rulesetId}:`,
+                chrome.runtime.lastError
+              );
+              this.checked = !shouldEnable;
+            } else {
+              console.log(`Ruleset ${rulesetId} ${shouldEnable ? 'enabled' : 'disabled'}`);
+              statusDiv.className = 'status active';
+              statusDiv.textContent = `${this.id.replace('-toggle', '').charAt(0).toUpperCase() + this.id.replace('-toggle', '').slice(1)} ${shouldEnable ? 'enabled' : 'disabled'}`;
+              setTimeout(() => updateStatus(extensionToggle.checked), 2000);
+            }
+          }
+        );
+      });
     });
 
     // Logging toggle

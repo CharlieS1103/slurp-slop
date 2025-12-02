@@ -53,9 +53,29 @@
   "declarative_net_request": {
     "rule_resources": [
       {
-        "id": "ruleset_1",
+        "id": "ruleset_gemini",
         "enabled": true,
-        "path": "rules.json"
+        "path": "rules-gemini.json"
+      },
+      {
+        "id": "ruleset_chatgpt",
+        "enabled": true,
+        "path": "rules-chatgpt.json"
+      },
+      {
+        "id": "ruleset_claude",
+        "enabled": true,
+        "path": "rules-claude.json"
+      },
+      {
+        "id": "ruleset_grok",
+        "enabled": true,
+        "path": "rules-grok.json"
+      },
+      {
+        "id": "ruleset_deepseek",
+        "enabled": true,
+        "path": "rules-deepseek.json"
       }
     ]
   },

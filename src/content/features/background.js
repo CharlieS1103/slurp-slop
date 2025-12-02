@@ -1,8 +1,16 @@
-const RULESET_ID = 'ruleset_1';
+// Import RULESETS from constants
+const getRulesets = () => {
+  return window.SlurpSlop.constants.RULESETS;
+};
 
-function updateRuleset(shouldEnable) {
-  const enableRulesetIds = shouldEnable ? [RULESET_ID] : [];
-  const disableRulesetIds = shouldEnable ? [] : [RULESET_ID];
+function updateRulesets(shouldEnable) {
+  const RULESETS = getRulesets();
+  const enableRulesetIds = shouldEnable
+    ? Object.values(RULESETS).map(r => r.key)
+    : [];
+  const disableRulesetIds = shouldEnable
+    ? []
+    : Object.values(RULESETS).map(r => r.key);
 
   chrome.declarativeNetRequest.updateEnabledRulesets(
     {
@@ -12,38 +20,38 @@ function updateRuleset(shouldEnable) {
     () => {
       if (chrome.runtime.lastError) {
         console.warn(
-          'Failed to update ruleset state',
+          'Failed to update rulesets state',
           chrome.runtime.lastError
         );
       } else {
         console.log(
-          `Ruleset ${shouldEnable ? 'enabled' : 'disabled'} via background`,
-          { shouldEnable }
+          `Rulesets ${shouldEnable ? 'enabled' : 'disabled'} via background`,
+          { shouldEnable, enableRulesetIds, disableRulesetIds }
         );
       }
     }
   );
 }
 
-function applyRulesetFromSettings() {
+function applyRulesetsFromSettings() {
   chrome.storage.local.get(
     ['cleanSearchEnabled', 'filterSettings'],
     ({ cleanSearchEnabled = true, filterSettings = {} }) => {
       const aggressiveMode = !!filterSettings.aggressiveMode;
       const extensionEnabled = cleanSearchEnabled !== false;
-      updateRuleset(extensionEnabled && aggressiveMode);
+      updateRulesets(extensionEnabled && aggressiveMode);
     }
   );
 }
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log('SlurpSlop background active');
-  applyRulesetFromSettings();
+  applyRulesetsFromSettings();
 });
 
 chrome.runtime.onStartup.addListener(() => {
   console.log('SlurpSlop background startup');
-  applyRulesetFromSettings();
+  applyRulesetsFromSettings();
 });
 
 if (chrome.storage && chrome.storage.onChanged) {
@@ -56,7 +64,7 @@ if (chrome.storage && chrome.storage.onChanged) {
       Object.prototype.hasOwnProperty.call(changes, 'filterSettings') ||
       Object.prototype.hasOwnProperty.call(changes, 'cleanSearchEnabled')
     ) {
-      applyRulesetFromSettings();
+      applyRulesetsFromSettings();
     }
   });
 }

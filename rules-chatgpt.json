@@ -1,0 +1,35 @@
+[
+  {
+    "id": 101,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*chatgpt.com*",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  },
+  {
+    "id": 102,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "gpt-4",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  },
+  {
+    "id": 103,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "openai",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  }
+]
