@@ -1,10 +1,14 @@
-// Import RULESETS from constants
-const getRulesets = () => {
-  return window.SlurpSlop.constants.RULESETS;
+// AI Model Rulesets configuration
+// TODO: PIVOT TO USE THE ONES DEFINED IN CONSTANTS.JS
+const RULESETS = {
+  gemini: { title: 'Gemini', key: 'ruleset_gemini', enabled: 1 },
+  chatgpt: { title: 'ChatGPT', key: 'ruleset_chatgpt', enabled: 1 },
+  claude: { title: 'Claude', key: 'ruleset_claude', enabled: 1 },
+  grok: { title: 'Grok', key: 'ruleset_grok', enabled: 1 },
+  deepseek: { title: 'DeepSeek', key: 'ruleset_deepseek', enabled: 1 }
 };
 
 function updateRulesets(shouldEnable) {
-  const RULESETS = getRulesets();
   const enableRulesetIds = shouldEnable
     ? Object.values(RULESETS).map(r => r.key)
     : [];
