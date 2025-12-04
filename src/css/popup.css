@@ -155,16 +155,18 @@ p {
 }
 
 .section {
-  width: 80%;
-  height: 300px;
-  margin: 20px;
-
+  width: 90%;
+  max-width: 450px;
+  height: auto;
+  margin: 12px auto;
+  padding: 12px;
   background-color: var(--background-color);
-
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  overflow: visible;
 }
 
 #header {
@@ -185,13 +187,14 @@ p {
 #stats {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 20px;
 }
 
 #removed-count-div {
   display: flex;
   flex-direction: column;
   text-align: center;
+  gap: 10px;
 }
 
 .individual-stat {
@@ -199,20 +202,31 @@ p {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  gap: 100px;
+  gap: 40px;
+  align-items: center;
 }
 
 .options-div {
   display: flex;
-  width: 50%;
+  width: 100%;
   margin: 0;
-  flex-direction: column;
-  gap: 10%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
 }
 
 .option {
-  padding: 14%;
+  padding: 10px 12px;
   text-align: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  flex: 0 1 calc(50% - 4px);
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 #whitelist-section {
@@ -404,3 +418,93 @@ p {
 .tooltip:hover .tooltip-text {
   opacity: 1;
 }
+
+/* Collapsible Sections */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 0;
+  user-select: none;
+  transition: opacity 0.2s ease;
+  width: 100%;
+}
+
+.collapsible-header:hover {
+  opacity: 0.8;
+}
+
+.collapsible-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-family: 'Courier New', Courier, monospace;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.collapsible-arrow {
+  font-size: 12px;
+  color: var(--primary-color);
+  transition: transform 0.2s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.collapsible-header.collapsed .collapsible-arrow {
+  transform: rotate(-90deg);
+}
+
+.collapsible-content {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+  margin-top: 12px;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+#ai-blocking-master {
+  border: 2px solid var(--misc);
+  border-radius: 8px;
+  background-color: transparent;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+#ai-blocking-header {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+#ai-blocking-toggle-label {
+  width: 100px;
+  height: 50px;
+  margin: 0 0 12px 0;
+  flex-shrink: 0;
+}
+
+#ai-blocking-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: visible;
+}
+
+#ai-blocking-content .options-div {
+  margin: 0;
+  gap: 8px;
+}
+

@@ -6,7 +6,11 @@
 
   /* IMPORTANT!
   DEFINE THEMES BOTH HERE AND IN ../../css/popup.css
+  not really important anymore, like at all lowkey.
+  should probably keep it as only 
+  colors for notifications and banners and whatnot
   */
+ 
   const THEMES = {
     light: {
       primary: '#20202b',
@@ -92,7 +96,6 @@
     removeAds: true,
     minimalistMode: false,
     linksOnlyMode: false,
-    aggressiveMode: false,
     hideAiModeButton: true,
     showReplacementPlaceholders: false,
     disableTermsEnabled: false,
