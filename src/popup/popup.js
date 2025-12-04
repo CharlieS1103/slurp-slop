@@ -598,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check for restricted URLs
       if (currentUrl.startsWith('chrome://') || currentUrl.startsWith('edge://') || currentUrl.startsWith('about:')) {
         statusDiv.className = 'status inactive';
-        statusDiv.textContent = 'Restricted page';
+        statusDiv.textContent = 'inactive, Slurper has nothing to do on this page...';
         return;
       }
 
