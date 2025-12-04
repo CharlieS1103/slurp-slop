@@ -473,7 +473,6 @@ p {
 }
 
 #ai-blocking-master {
-  border: 2px solid var(--misc);
   border-radius: 8px;
   background-color: transparent;
   padding: 14px 16px;
