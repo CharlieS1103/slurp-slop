@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusDiv.textContent = 'disabled.';
       } else if (!isGoogleSearch) {
         statusDiv.className = 'status inactive';
-        statusDiv.innerHTML = 'enabled<br>enter query to use.';
+        statusDiv.innerHTML = 'enabled<br>enter query..';
       } else {
         statusDiv.className = 'status active';
         statusDiv.innerHTML = 'enabled and monitoring.';

@@ -179,9 +179,10 @@ p {
 }
 
 #master-switch {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 #stats {
@@ -208,12 +209,11 @@ p {
 
 .options-div {
   display: flex;
-  width: 100%;
+  width: 50%;
   margin: 0;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  justify-content: flex-start;
 }
 
 .option {
@@ -374,26 +374,6 @@ p {
 
 #toggle-logging.disabled p {
   color: var(--secondary-color);
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.flex-row {
-  flex-direction: row;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.align-center {
-  align-items: center;
 }
 
 .tooltip {

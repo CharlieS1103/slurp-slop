@@ -5,6 +5,7 @@ const RULESETS = {
   chatgpt: { title: 'ChatGPT', key: 'ruleset_chatgpt', enabled: 1 },
   claude: { title: 'Claude', key: 'ruleset_claude', enabled: 1 },
   grok: { title: 'Grok', key: 'ruleset_grok', enabled: 1 },
+  copilot: { title: 'Copilot', key: 'ruleset_copilot', enabled: 1},
   deepseek: { title: 'DeepSeek', key: 'ruleset_deepseek', enabled: 1 }
 };
 

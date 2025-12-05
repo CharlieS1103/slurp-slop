@@ -58,7 +58,66 @@
           </div>
         </div>
       </div>
+            <!-- Search Results Filtering -->
+      <div class="section" id="search-filtering">
+        <div class="collapsible-header" id="search-filtering-header">
+          <span class="collapsible-title">Search Results Filtering</span>
+                   <span class="collapsible-arrow">></span>  
 
+        </div>
+        <div class="collapsible-content" id="search-filtering-content">
+          <div class="options-div">
+            <div class="option">
+              <label class="input-container tooltip">
+                <input type="checkbox" id="ai-toggle" class="button" checked />
+                <span class="slider"></span>
+                <span class="tooltip-text"
+                  >Removes AI Overview after a google search</span
+                >
+              </label>
+              <p>AI Overview</p>
+            </div>
+            <div class="option">
+              <label class="input-container tooltip">
+                <input
+                  type="checkbox"
+                  id="low-quality-toggle"
+                  class="button"
+                  checked
+                />
+                <span class="slider"></span>
+                <span class="tooltip-text">Filters out low quality websites</span>
+              </label>
+              <p>Low-Quality Websites</p>
+            </div>
+          </div>
+          <div class="options-div">
+            <div class="option">
+              <label class="input-container tooltip">
+                <input type="checkbox" id="ads-toggle" class="button" checked />
+                <span class="slider"></span>
+                <span class="tooltip-text">Removes ads</span>
+              </label>
+              <p>Advertisements</p>
+            </div>
+            <div class="option">
+              <label class="input-container tooltip">
+                <input
+                  type="checkbox"
+                  id="hide-ai-mode-toggle"
+                  class="button"
+                  checked
+                />
+                <span class="slider"></span>
+                <span class="tooltip-text"
+                  >Hides 'AI Mode' button in search bar</span
+                >
+              </label>
+              <p>AI Mode Button</p>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- AI Model Blocking Masta' Switch -->
       <div class="section" id="ai-blocking-master">
         <div class="collapsible-header" id="ai-blocking-header">
@@ -126,6 +185,7 @@
               </label>
               <p>Grok</p>
             </div>
+
           </div>
           <div class="options-div">
             <div class="option">
@@ -141,65 +201,18 @@
               </label>
               <p>DeepSeek</p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search Results Filtering -->
-      <div class="section" id="search-filtering">
-        <div class="collapsible-header" id="search-filtering-header">
-          <span class="collapsible-title">Search Results Filtering</span>
-          <span class="collapsible-arrow">></span>
-        </div>
-        <div class="collapsible-content" id="search-filtering-content">
-          <div class="options-div">
-            <div class="option">
-              <label class="input-container tooltip">
-                <input type="checkbox" id="ai-toggle" class="button" checked />
-                <span class="slider"></span>
-                <span class="tooltip-text"
-                  >Removes AI Overview after a google search</span
-                >
-              </label>
-              <p>AI Overview</p>
-            </div>
-            <div class="option">
+                        <div class="option">
               <label class="input-container tooltip">
                 <input
                   type="checkbox"
-                  id="low-quality-toggle"
+                  id="copilot-toggle"
                   class="button"
-                  checked
+                  data-ruleset="ruleset_copilot"
                 />
                 <span class="slider"></span>
-                <span class="tooltip-text">Filters out low quality websites</span>
+                <span class="tooltip-text">Block Copilot requests</span>
               </label>
-              <p>Low-Quality Websites</p>
-            </div>
-          </div>
-          <div class="options-div">
-            <div class="option">
-              <label class="input-container tooltip">
-                <input type="checkbox" id="ads-toggle" class="button" checked />
-                <span class="slider"></span>
-                <span class="tooltip-text">Removes ads</span>
-              </label>
-              <p>Advertisements</p>
-            </div>
-            <div class="option">
-              <label class="input-container tooltip">
-                <input
-                  type="checkbox"
-                  id="hide-ai-mode-toggle"
-                  class="button"
-                  checked
-                />
-                <span class="slider"></span>
-                <span class="tooltip-text"
-                  >Hides 'AI Mode' button in search bar</span
-                >
-              </label>
-              <p>AI Mode Button</p>
+              <p>Copilot</p>
             </div>
           </div>
         </div>
@@ -209,7 +222,7 @@
       <div class="section" id="modes">
         <div class="collapsible-header" id="modes-header">
           <span class="collapsible-title">Modes</span>
-          <span class="collapsible-arrow">></span>
+<span class="collapsible-arrow">></span> 
         </div>
         <div class="collapsible-content" id="modes-content">
           <div class="options-div">
