@@ -12,7 +12,7 @@ import './core/settings.js';
 import './ui/placeholders.js';
 import './ui/layout.js';
 
-// Feature modules (barrel)
+// Feature modules 
 import './features/index.js';
 
 // Mode setup

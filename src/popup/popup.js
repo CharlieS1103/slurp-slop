@@ -10,12 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const aiToggle = document.getElementById('ai-toggle');
   const lowQualityToggle = document.getElementById('low-quality-toggle');
   const adsToggle = document.getElementById('ads-toggle');
-  const aggressiveToggle = document.getElementById('aggressive-toggle');
   const placeholdersToggle = document.getElementById('placeholders-toggle');
   const minimalistToggle = document.getElementById('minimalist-toggle');
   const linksOnlyToggle = document.getElementById('links-only-toggle');
   const hideAiModeToggle = document.getElementById('hide-ai-mode-toggle');
-  //const scanNowBtn = document.getElementById('scanNow');
   const addToWhitelistBtn = document.getElementById('add-to-whitelist');
   const clearWhitelistBtn = document.getElementById('clear-whitelist');
   const whitelistDisplay = document.getElementById('whitelist-display');
@@ -25,6 +23,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggleLoggingBtn = document.getElementById('toggle-logging');
 
   const hideableSection = document.getElementById('can-be-hidden');
+
+  // Collapsible sections
+  const aiBlockingHeader = document.getElementById('ai-blocking-header');
+  const aiBlockingContent = document.getElementById('ai-blocking-content');
+  const searchFilteringHeader = document.getElementById('search-filtering-header');
+  const searchFilteringContent = document.getElementById('search-filtering-content');
+  const modesHeader = document.getElementById('modes-header');
+  const modesContent = document.getElementById('modes-content');
+
+  // AI Blocking Master Switch
+  const aiBlockingMasterToggle = document.getElementById('ai-blocking-master-toggle');
 
   // Logging state for popup UI
   let loggingEnabled = false;
@@ -59,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
     removeAds: true,
     minimalistMode: false,
     linksOnlyMode: false,
-    aggressiveMode: false,
     hideAiModeButton: true,
     showReplacementPlaceholders: false,
     disableTermsEnabled: false,
@@ -138,8 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const shouldDisable =
       filterSettings.minimalistMode ||
-      filterSettings.linksOnlyMode ||
-      filterSettings.aggressiveMode;
+      filterSettings.linksOnlyMode;
 
     placeholdersToggle.disabled = shouldDisable;
 
@@ -434,6 +441,15 @@ document.addEventListener('DOMContentLoaded', function() {
       checkCurrentPage();
       setupEventListeners();
       toggleSettingVisibility();
+      
+      // Initialize collapsible sections - AI blocking collapsed by default, others expanded
+      aiBlockingContent.classList.add('collapsed');
+      aiBlockingHeader.classList.add('collapsed');
+      searchFilteringContent.classList.remove('collapsed');
+      searchFilteringHeader.classList.remove('collapsed');
+      modesContent.classList.remove('collapsed');
+      modesHeader.classList.remove('collapsed');
+      
       console.log('SlurpSlop popup initialized successfully');
     } catch (error) {
       console.error('Error initializing popup:', error);
@@ -466,7 +482,6 @@ document.addEventListener('DOMContentLoaded', function() {
           adsToggle.checked = filterSettings.removeAds;
           minimalistToggle.checked = filterSettings.minimalistMode || false;
           linksOnlyToggle.checked = filterSettings.linksOnlyMode || false;
-          aggressiveToggle.checked = filterSettings.aggressiveMode || false;
           hideAiModeToggle.checked = filterSettings.hideAiModeButton !== false; // Default to true if not set
           placeholdersToggle.checked =
             filterSettings.showReplacementPlaceholders || false;
@@ -518,10 +533,6 @@ document.addEventListener('DOMContentLoaded', function() {
             filterSettings.showReplacementPlaceholders = false;
           }
 
-          if (filterSettings.aggressiveMode) {
-            filterSettings.showReplacementPlaceholders = false;
-          }
-
           updatePlaceholdersToggleState();
 
           // Load ruleset states from Chrome declarativeNetRequest API
@@ -543,11 +554,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const rulesetIds = new Set(enabledRulesets);
       const rulesetToggles = document.querySelectorAll('[data-ruleset]');
+      let allEnabled = true;
       
       rulesetToggles.forEach(toggle => {
         const rulesetId = toggle.getAttribute('data-ruleset');
-        toggle.checked = rulesetIds.has(rulesetId);
+        const isEnabled = rulesetIds.has(rulesetId);
+        toggle.checked = isEnabled;
+        if (!isEnabled) {
+          allEnabled = false;
+        }
       });
+
+      // Set master toggle state based on individual rulesets
+      aiBlockingMasterToggle.checked = allEnabled;
     });
   }
 
@@ -567,21 +586,34 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (!tabs || !tabs[0]) {
+        statusDiv.className = 'status inactive';
+        statusDiv.textContent = 'No active tab';
+        return;
+      }
+
       const currentTab = tabs[0];
+      const currentUrl = currentTab.url || '';
+
+      // Check for restricted URLs
+      if (currentUrl.startsWith('chrome://') || currentUrl.startsWith('edge://') || currentUrl.startsWith('about:')) {
+        statusDiv.className = 'status inactive';
+        statusDiv.textContent = 'inactive, Slurper has nothing to do on this page...';
+        return;
+      }
+
       const isGoogleSearch =
-        currentTab.url &&
-        (currentTab.url.includes('google.com/search') ||
-          currentTab.url.includes('google.co.uk/search') ||
-          /google\.[a-z]{2,3}\/search/.test(currentTab.url));
+        currentUrl &&
+        (currentUrl.includes('google.com/search') ||
+          currentUrl.includes('google.co.uk/search') ||
+          /google\.[a-z]{2,3}\/search/.test(currentUrl));
 
       if (!enabled) {
         statusDiv.className = 'status disabled';
         statusDiv.textContent = 'disabled.';
-        // scanNowBtn.disabled = true;
       } else if (!isGoogleSearch) {
         statusDiv.className = 'status inactive';
-        statusDiv.innerHTML = 'enabled<br>enter query to use.';
-        // scanNowBtn.disabled = true;
+        statusDiv.innerHTML = 'enabled<br>enter query..';
       } else {
         statusDiv.className = 'status active';
         statusDiv.innerHTML = 'enabled and monitoring.';
@@ -597,6 +629,50 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function setupEventListeners() {
+    // Collapsible sections toggle
+    function toggleCollapsible(header, content) {
+      header.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+    }
+
+    aiBlockingHeader.addEventListener('click', () => {
+      toggleCollapsible(aiBlockingHeader, aiBlockingContent);
+    });
+
+    searchFilteringHeader.addEventListener('click', () => {
+      toggleCollapsible(searchFilteringHeader, searchFilteringContent);
+    });
+
+    modesHeader.addEventListener('click', () => {
+      toggleCollapsible(modesHeader, modesContent);
+    });
+
+    // AI Blocking Master Switch - only enables ALL when clicked, doesn't disable individual
+    aiBlockingMasterToggle.addEventListener('change', function() {
+      const shouldEnable = aiBlockingMasterToggle.checked;
+      const rulesetToggles = document.querySelectorAll('[data-ruleset]');
+      
+      if (shouldEnable) {
+        // When master is checked, enable ALL rulesets
+        rulesetToggles.forEach(toggle => {
+          toggle.checked = true;
+          const rulesetId = toggle.getAttribute('data-ruleset');
+          chrome.declarativeNetRequest.updateEnabledRulesets(
+            {
+              enableRulesetIds: [rulesetId],
+              disableRulesetIds: []
+            },
+            () => {
+              if (!chrome.runtime.lastError) {
+                console.log(`Ruleset ${rulesetId} enabled`);
+              }
+            }
+          );
+        });
+      }
+      // When unchecked, do nothing - user toggles individual rulesets instead
+    });
+
     // Master extension toggle
     extensionToggle.addEventListener('change', function() {
       const enabled = extensionToggle.checked;
@@ -737,30 +813,6 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => updateStatus(extensionToggle.checked), 2000);
     });
 
-    aggressiveToggle.addEventListener('change', function() {
-      filterSettings.aggressiveMode = aggressiveToggle.checked;
-
-      if (filterSettings.aggressiveMode) {
-        if (filterSettings.minimalistMode) {
-          minimalistToggle.checked = false;
-          minimalistToggle.dispatchEvent(new Event('change'));
-        }
-
-        filterSettings.showReplacementPlaceholders = false;
-        updatePlaceholdersToggleState();
-
-        statusDiv.className = 'status active';
-        statusDiv.textContent = 'Aggressive Mode active';
-      } else {
-        updatePlaceholdersToggleState();
-        statusDiv.className = 'status active';
-        statusDiv.textContent = 'Aggressive Mode disabled';
-      }
-
-      saveFilterSettings();
-      setTimeout(() => updateStatus(extensionToggle.checked), 2000);
-    });
-
     // AI Model Ruleset Toggles
     const rulesetToggles = document.querySelectorAll('[data-ruleset]');
     rulesetToggles.forEach(toggle => {
@@ -782,6 +834,12 @@ document.addEventListener('DOMContentLoaded', function() {
               this.checked = !shouldEnable;
             } else {
               console.log(`Ruleset ${rulesetId} ${shouldEnable ? 'enabled' : 'disabled'}`);
+              
+              // Update master toggle based on current state of all rulesets
+              const allToggles = document.querySelectorAll('[data-ruleset]');
+              const allEnabled = Array.from(allToggles).every(t => t.checked);
+              aiBlockingMasterToggle.checked = allEnabled;
+              
               statusDiv.className = 'status active';
               statusDiv.textContent = `${this.id.replace('-toggle', '').charAt(0).toUpperCase() + this.id.replace('-toggle', '').slice(1)} ${shouldEnable ? 'enabled' : 'disabled'}`;
               setTimeout(() => updateStatus(extensionToggle.checked), 2000);

@@ -20,25 +20,11 @@
       }
     }
 
-    if (result.aggressiveMode && result.minimalistMode) {
-      if (result.aggressiveMode && !oldSettings.aggressiveMode) {
-        result.minimalistMode = false;
-      } else if (result.minimalistMode && !oldSettings.minimalistMode) {
-        result.aggressiveMode = false;
-      } else {
-        result.minimalistMode = false;
-      }
-    }
-
     // Minimalist constraints
     if (result.minimalistMode) {
       result.removeAiOverview = true;
       result.removeLowQualitySites = false;
       result.removeAds = false;
-      result.showReplacementPlaceholders = false;
-    }
-
-    if (result.aggressiveMode) {
       result.showReplacementPlaceholders = false;
     }
 

@@ -73,6 +73,11 @@
         "path": "rules-grok.json"
       },
       {
+        "id": "ruleset_copilot",
+        "enabled": true,
+        "path": "rules-copilot.json"
+      },
+      {
         "id": "ruleset_deepseek",
         "enabled": true,
         "path": "rules-deepseek.json"

@@ -5,17 +5,11 @@ const RULESETS = {
   chatgpt: { title: 'ChatGPT', key: 'ruleset_chatgpt', enabled: 1 },
   claude: { title: 'Claude', key: 'ruleset_claude', enabled: 1 },
   grok: { title: 'Grok', key: 'ruleset_grok', enabled: 1 },
+  copilot: { title: 'Copilot', key: 'ruleset_copilot', enabled: 1},
   deepseek: { title: 'DeepSeek', key: 'ruleset_deepseek', enabled: 1 }
 };
 
-function updateRulesets(shouldEnable) {
-  const enableRulesetIds = shouldEnable
-    ? Object.values(RULESETS).map(r => r.key)
-    : [];
-  const disableRulesetIds = shouldEnable
-    ? []
-    : Object.values(RULESETS).map(r => r.key);
-
+function updateRulesets(enableRulesetIds = [], disableRulesetIds = []) {
   chrome.declarativeNetRequest.updateEnabledRulesets(
     {
       enableRulesetIds,
@@ -29,33 +23,25 @@ function updateRulesets(shouldEnable) {
         );
       } else {
         console.log(
-          `Rulesets ${shouldEnable ? 'enabled' : 'disabled'} via background`,
-          { shouldEnable, enableRulesetIds, disableRulesetIds }
+          'Rulesets updated',
+          { enableRulesetIds, disableRulesetIds }
         );
       }
     }
   );
 }
 
-function applyRulesetsFromSettings() {
-  chrome.storage.local.get(
-    ['cleanSearchEnabled', 'filterSettings'],
-    ({ cleanSearchEnabled = true, filterSettings = {} }) => {
-      const aggressiveMode = !!filterSettings.aggressiveMode;
-      const extensionEnabled = cleanSearchEnabled !== false;
-      updateRulesets(extensionEnabled && aggressiveMode);
-    }
-  );
-}
-
+// Initialize rulesets on extension startup
 chrome.runtime.onInstalled.addListener(() => {
   console.log('SlurpSlop background active');
-  applyRulesetsFromSettings();
+  // Enable only Gemini by default
+  updateRulesets(['ruleset_gemini'], ['ruleset_chatgpt', 'ruleset_claude', 'ruleset_grok', 'ruleset_deepseek']);
 });
 
 chrome.runtime.onStartup.addListener(() => {
   console.log('SlurpSlop background startup');
-  applyRulesetsFromSettings();
+  // Ensure only Gemini is enabled on startup
+  updateRulesets(['ruleset_gemini'], ['ruleset_chatgpt', 'ruleset_claude', 'ruleset_grok', 'ruleset_deepseek']);
 });
 
 if (chrome.storage && chrome.storage.onChanged) {
@@ -64,11 +50,15 @@ if (chrome.storage && chrome.storage.onChanged) {
       return;
     }
 
-    if (
-      Object.prototype.hasOwnProperty.call(changes, 'filterSettings') ||
-      Object.prototype.hasOwnProperty.call(changes, 'cleanSearchEnabled')
-    ) {
-      applyRulesetsFromSettings();
+    // If extension is toggled off, disable all rulesets
+    if (Object.prototype.hasOwnProperty.call(changes, 'cleanSearchEnabled')) {
+      const enabled = changes.cleanSearchEnabled.newValue !== false;
+      if (!enabled) {
+        updateRulesets([], Object.values(RULESETS).map(r => r.key));
+      } else {
+        // Keep Gemini enabled when extension is re-enabled (user can toggle others)
+        updateRulesets(['ruleset_gemini'], []);
+      }
     }
   });
 }

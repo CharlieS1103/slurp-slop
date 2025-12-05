@@ -474,9 +474,6 @@
         });
       }
       Logger?.info('Extension auto-disabled due to query content');
-      if (NS.setAggressiveRemovalEnabled) {
-        NS.setAggressiveRemovalEnabled(false);
-      }
       return;
     }
 
@@ -485,12 +482,6 @@
         extension.extensionEnabled &&
           !!extension.filterSettings.showReplacementPlaceholders,
         extension.filterSettings
-      );
-    }
-
-    if (NS.setAggressiveRemovalEnabled) {
-      NS.setAggressiveRemovalEnabled(
-        extension.extensionEnabled && !!extension.filterSettings.aggressiveMode
       );
     }
 
