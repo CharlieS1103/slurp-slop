@@ -5,6 +5,7 @@
   "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search",
   "scripts": {
     "build": "npm run clean && npm run copy && npm run generate:icons && npm run minify && npm run obfuscate",
+    "build:noobfuscate": "npm run clean && npm run copy && npm run generate:icons && npm run minify ",
     "build:dev": "npm run clean && npm run copy && npm run generate:icons",
     "clean": "rm -rf dist/",
     "copy": "npm run copy:static && npm run copy:popup && npm run copy:js && npm run copy:css",
@@ -22,6 +23,7 @@
     "lint:fix": "npx eslint \"src/**/*.js\" --fix",
     "format": "npx prettier --write \"src/**/*.{js,css,html,json,md}\" \"*.{md,json}\" manifest.json",
     "package": "npm run build && npm run zip",
+    "package:noobfuscate": "npm run build:noobfuscate && npm run zip",
     "zip": "cd dist && zip -r ../slurpslop-v$(node -p \"require('../package.json').version\").zip . && cd ..",
     "precommit": "npm run format && npm run lint:fix && npm run generate:icons"
   },
