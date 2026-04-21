@@ -1,0 +1,13 @@
+[
+  {
+    "id": 401,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "deepseek",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  }
+]

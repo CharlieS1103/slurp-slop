@@ -1,0 +1,97 @@
+{
+  "manifest_version": 3,
+  "name": "SlurpSlop",
+  "version": "2.1.0",
+  "description": "Professional search results by slurping up AI Overview slop, low-quality sites, and advertisements from Google Search.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://google.com/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.ca/*",
+        "*://*.google.de/*",
+        "*://*.google.fr/*",
+        "*://*.google.it/*",
+        "*://*.google.es/*",
+        "*://*.google.com.au/*",
+        "*://*.google.co.in/*",
+        "*://*.google.co.jp/*",
+        "*://google.com/search*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "host_permissions": [
+    "*://*.google.com/*",
+    "*://google.com/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.ca/*",
+    "*://*.google.de/*",
+    "*://*.google.fr/*",
+    "*://*.google.it/*",
+    "*://*.google.es/*",
+    "*://*.google.com.au/*",
+    "*://*.google.co.in/*",
+    "*://*.google.co.jp/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_gemini",
+        "enabled": true,
+        "path": "rules-gemini.json"
+      },
+      {
+        "id": "ruleset_chatgpt",
+        "enabled": true,
+        "path": "rules-chatgpt.json"
+      },
+      {
+        "id": "ruleset_claude",
+        "enabled": true,
+        "path": "rules-claude.json"
+      },
+      {
+        "id": "ruleset_grok",
+        "enabled": true,
+        "path": "rules-grok.json"
+      },
+      {
+        "id": "ruleset_copilot",
+        "enabled": true,
+        "path": "rules-copilot.json"
+      },
+      {
+        "id": "ruleset_deepseek",
+        "enabled": true,
+        "path": "rules-deepseek.json"
+      }
+    ]
+  },
+  "action": {
+    "default_title": "SlurpSlop",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

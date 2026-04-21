@@ -1,0 +1,24 @@
+[
+  {
+    "id": 201,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "claude",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  },
+  {
+    "id": 202,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "anthropic",
+      "resourceTypes": ["xmlhttprequest", "sub_frame", "script"]
+    }
+  }
+]
